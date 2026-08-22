@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #fbfdfb;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-bamboo-50 text-ink-900 font-sans antialiased;
+    background-image:
+      radial-gradient(60rem 60rem at 110% -10%, rgba(71, 154, 99, 0.08), transparent 60%),
+      radial-gradient(50rem 50rem at -10% 10%, rgba(245, 158, 11, 0.06), transparent 60%);
+    background-attachment: fixed;
+  }
+  html.dark body {
+    @apply bg-ink-950 text-bamboo-50;
+    background-image:
+      radial-gradient(60rem 60rem at 110% -10%, rgba(71, 154, 99, 0.15), transparent 60%),
+      radial-gradient(50rem 50rem at -10% 10%, rgba(245, 158, 11, 0.08), transparent 60%);
+  }
+  ::selection {
+    @apply bg-bamboo-200 text-bamboo-900;
+  }
+  html.dark ::selection {
+    @apply bg-bamboo-700 text-white;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+  }
+  .tamil {
+    @apply font-tamil;
+  }
+  .card {
+    @apply rounded-2xl border border-bamboo-100 bg-white shadow-card dark:border-bamboo-800 dark:bg-ink-900;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-bamboo-600 text-white px-5 py-2.5 hover:bg-bamboo-700 hover:shadow-glow active:scale-[0.98];
+  }
+  .btn-gold {
+    @apply btn bg-golden-500 text-ink-900 px-5 py-2.5 hover:bg-golden-400 hover:shadow-golden active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply btn bg-white text-bamboo-800 px-5 py-2.5 border border-bamboo-200 hover:bg-bamboo-50 active:scale-[0.98] dark:bg-ink-800 dark:text-bamboo-100 dark:border-bamboo-700 dark:hover:bg-ink-700;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  .section-title {
+    @apply font-display text-3xl sm:text-4xl font-semibold tracking-tight text-bamboo-950 dark:text-bamboo-50;
+  }
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.18em] text-bamboo-600 dark:text-bamboo-400;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .shimmer-bg {
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.6) 50%, transparent 70%);
+    background-size: 200% 100%;
+  }
+}
