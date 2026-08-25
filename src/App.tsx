@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar, { type Page } from '@/components/Navbar';
 import LandingPage from '@/pages/LandingPage';
 import LevelsPage from '@/pages/LevelsPage';
@@ -12,6 +12,7 @@ import PracticePage from '@/pages/PracticePage';
 import PatternsPage from '@/pages/PatternsPage';
 import AITutorPage from '@/pages/AITutorPage';
 import AuthPage from '@/pages/AuthPage';
+import AdminDashboardPage from '@/pages/AdminDashboardPage';
 import type { ModuleId, Level } from '@/types';
 import { useProgress } from '@/lib/useProgress';
 import { AuthProvider, useAuth } from '@/lib/auth';
@@ -22,15 +23,29 @@ interface LessonTarget {
 }
 
 function MainApp() {
-  const { user, profile, setLevel } = useAuth();
-  const [page, setPage] = useState<Page>('home');
+  const { user, profile, setLevel, isAdmin } = useAuth();
+  const [page, setPage] = useState<Page>(() => (isAdmin ? 'admin' : 'home'));
   const [lessonTarget, setLessonTarget] = useState<LessonTarget>({
     moduleId: 'variables',
     lessonId: 'variables-what-is-var',
   });
   const progress = useProgress();
 
+  // Automatic Routing Guard: Admins default to 'admin', Students ALWAYS stay on student pages!
+  useEffect(() => {
+    if (isAdmin && (page === 'home' || !page)) {
+      setPage('admin');
+    } else if (!isAdmin && page === 'admin') {
+      setPage('home');
+    }
+  }, [isAdmin, page]);
+
   const navigate = (p: Page) => {
+    // Security check: if student attempts to navigate to 'admin', redirect to home
+    if (p === 'admin' && !isAdmin) {
+      setPage('home');
+      return;
+    }
     setPage(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -57,6 +72,7 @@ function MainApp() {
       <Navbar current={page} onNavigate={navigate} />
 
       <main className="flex-1">
+        {page === 'admin' && isAdmin && <AdminDashboardPage onNavigate={navigate} />}
         {page === 'home' && <LandingPage onNavigate={navigate} />}
         {page === 'levels' && (
           <LevelsPage onNavigate={navigate} onSelectLevel={handleSelectLevel} />

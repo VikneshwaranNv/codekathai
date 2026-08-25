@@ -10,6 +10,7 @@ import {
   Grid3x3,
   GraduationCap,
   LogOut,
+  ShieldCheck,
 } from 'lucide-react';
 import { useState } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -26,14 +27,15 @@ export type Page =
   | 'playground'
   | 'practice'
   | 'patterns'
-  | 'tutor';
+  | 'tutor'
+  | 'admin';
 
 interface NavbarProps {
   current: Page;
   onNavigate: (page: Page) => void;
 }
 
-const links: { id: Page; label: string; icon: typeof BookOpen }[] = [
+const baseLinks: { id: Page; label: string; icon: typeof BookOpen }[] = [
   { id: 'home', label: 'Home', icon: BookOpen },
   { id: 'levels', label: 'Levels', icon: GraduationCap },
   { id: 'dashboard', label: 'Courses', icon: LayoutGrid },
@@ -46,7 +48,7 @@ const links: { id: Page; label: string; icon: typeof BookOpen }[] = [
 
 export default function Navbar({ current, onNavigate }: NavbarProps) {
   const [open, setOpen] = useState(false);
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, isAdmin } = useAuth();
 
   const go = (p: Page) => {
     onNavigate(p);
@@ -55,10 +57,15 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
 
   const displayName = profile?.name ? `Hi ${profile.name} 👋` : 'Learner';
 
+  const links = [...baseLinks];
+  if (isAdmin) {
+    links.push({ id: 'admin', label: 'Admin Dashboard', icon: ShieldCheck });
+  }
+
   return (
     <header className="sticky top-0 z-40 border-b border-bamboo-100/80 bg-white/90 backdrop-blur-md dark:border-bamboo-800/80 dark:bg-ink-950/90">
       <nav className="container-page flex h-16 items-center justify-between">
-        <button onClick={() => go('home')} className="flex items-center gap-2.5 text-left">
+        <button onClick={() => go(isAdmin ? 'admin' : 'home')} className="flex items-center gap-2.5 text-left">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-bamboo-600 text-white shadow-soft">
             <BookOpen className="h-5 w-5" strokeWidth={2.4} />
           </span>
@@ -77,12 +84,18 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
           {links.map((l) => {
             const Icon = l.icon;
             const active = current === l.id || (l.id === 'dashboard' && current === 'lesson');
+            const isAdminBtn = l.id === 'admin';
+
             return (
               <button
                 key={l.id}
                 onClick={() => go(l.id)}
                 className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold transition-all ${
-                  active
+                  isAdminBtn
+                    ? active
+                      ? 'bg-purple-700 text-white shadow-md'
+                      : 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-950 dark:text-purple-300'
+                    : active
                     ? 'bg-bamboo-600 text-white shadow-soft'
                     : 'text-ink-700 hover:bg-bamboo-100 hover:text-bamboo-800 dark:text-ink-300 dark:hover:bg-ink-800'
                 }`}
@@ -99,7 +112,6 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
           <span className="rounded-full bg-bamboo-100 px-3 py-1 text-xs font-bold text-bamboo-800 dark:bg-bamboo-950 dark:text-bamboo-300 max-w-[150px] truncate">
             {displayName}
           </span>
-          <ThemeToggle />
           <button
             onClick={() => signOut()}
             className="btn-ghost p-2 text-xs text-ink-500 hover:text-red-600"
@@ -111,7 +123,6 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
 
         {/* Mobile Menu Button */}
         <div className="flex items-center gap-2 lg:hidden">
-          <ThemeToggle />
           <button
             onClick={() => setOpen((v) => !v)}
             className="grid h-10 w-10 place-items-center rounded-xl border border-bamboo-200 bg-white text-bamboo-800 dark:border-bamboo-700 dark:bg-ink-900 dark:text-white"
@@ -127,7 +138,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
         <div className="border-t border-bamboo-100 bg-white p-4 dark:border-bamboo-800 dark:bg-ink-900 lg:hidden">
           <div className="mb-3 flex items-center justify-between border-b border-bamboo-100 pb-2 dark:border-bamboo-800">
             <span className="text-xs font-bold text-bamboo-700 dark:text-bamboo-300">
-              {displayName}
+              {displayName} {isAdmin && '(Admin)'}
             </span>
             <span className="text-xs text-ink-400 capitalize">{profile?.currentLevel ?? 'beginner'} Level</span>
           </div>
@@ -140,7 +151,9 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                   key={l.id}
                   onClick={() => go(l.id)}
                   className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold ${
-                    active
+                    l.id === 'admin'
+                      ? 'bg-purple-700 text-white col-span-2 font-bold'
+                      : active
                       ? 'bg-bamboo-600 text-white'
                       : 'text-ink-700 hover:bg-bamboo-50 dark:text-ink-300 dark:hover:bg-ink-800'
                   }`}

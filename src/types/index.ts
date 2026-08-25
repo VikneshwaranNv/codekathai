@@ -137,10 +137,13 @@ export interface PatternProblem {
   xp: number;
 }
 
+export type UserRole = 'student' | 'admin';
+
 export interface UserProfile {
   id: string;
   name: string;
   email?: string;
+  role?: UserRole;
   xp: number;
   streak: number;
   completedLessons: string[];
@@ -151,4 +154,33 @@ export interface UserProfile {
   badges: string[];
   currentLevel: Level;
   createdAt: string;
+  lastActiveAt?: string;
+}
+
+export interface StudentAdminRecord {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  currentLevel: Level;
+  xp: number;
+  completedLessons: string[];
+  solvedPractice: string[];
+  completedPatterns: string[];
+  playgroundRunsCount: number;
+  aiVisualsCount: number;
+  badges: string[];
+  createdAt: string;
+  lastActiveAt: string;
+  overallProgress: number;
+  beginnerProgress: number;
+  intermediateProgress: number;
+  advancedProgress: number;
+}
+
+export interface AdminAnalytics {
+  totalStudents: number;
+  activeStudents: number;
+  totalLessonsCompleted: number;
+  totalPracticeAttempts: number;
 }

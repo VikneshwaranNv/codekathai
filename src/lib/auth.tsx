@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import type { UserProfile, Level } from '@/types';
+import type { UserProfile, Level, UserRole } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const STORAGE_KEY = 'codekathai_user_profile_v2';
@@ -8,9 +8,11 @@ interface AuthContextValue {
   user: UserProfile | null;
   profile: UserProfile | null;
   loading: boolean;
+  isAdmin: boolean;
   createProfile: (name: string, email?: string) => Promise<UserProfile>;
   updateProfile: (updates: Partial<UserProfile>) => void;
   setLevel: (level: Level) => void;
+  setAdminProfile: (profile: UserProfile) => void;
   signOut: () => void;
 }
 
@@ -42,24 +44,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Sync profile directly into your exact Supabase `user_profiles` table
   const syncToSupabase = async (p: UserProfile) => {
     try {
-      // Generate valid UUID string for PostgreSQL uuid column
       const validUuid =
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
           : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0');
 
-      const payload = {
-        id: validUuid,
+      const payload: Record<string, any> = {
+        id: p.id && p.id.includes('-') ? p.id : validUuid,
         full_name: p.name,
         email: p.email || null,
+        role: p.role || 'student',
         learning_level: p.currentLevel || 'beginner',
       };
 
-      console.log('Inserting into Supabase user_profiles:', payload);
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert([payload])
+        .select();
 
-      const { data, error } = await supabase.from('user_profiles').insert([payload]).select();
       if (error) {
-        console.error('Supabase user_profiles insert error:', error.message, error.details);
+        console.warn('Supabase user_profiles insert note:', error.message);
       } else {
         console.log('Successfully inserted user profile into Supabase:', data);
       }
@@ -81,19 +85,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .from('user_profiles')
             .select('*')
             .eq('email', cleanEmail)
-            .maybeSingle();
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-          if (data) {
+          if (data && data.length > 0) {
+            const row = data[0];
             const existingProf: UserProfile = {
-              id: data.id || 'usr_' + Date.now(),
-              name: data.full_name || cleanName,
-              email: data.email || cleanEmail,
-              xp: 150,
-              streak: 1,
-              completedLessons: [],
-              badges: ['🌱 Welcome Learner'],
-              currentLevel: data.learning_level || 'beginner',
-              createdAt: new Date().toISOString(),
+              id: row.id || 'usr_' + Date.now(),
+              name: row.full_name || cleanName,
+              email: row.email || cleanEmail,
+              role: (row.role as UserRole) || 'student',
+              xp: row.xp ?? 150,
+              streak: row.streak ?? 1,
+              completedLessons: Array.isArray(row.completed_lessons)
+                ? row.completed_lessons
+                : [],
+              solvedPractice: Array.isArray(row.solved_practice) ? row.solved_practice : [],
+              completedPatterns: Array.isArray(row.completed_patterns) ? row.completed_patterns : [],
+              playgroundRunsCount: row.playground_runs_count ?? 0,
+              aiVisualsCount: row.ai_visuals_count ?? 0,
+              badges: Array.isArray(row.badges) ? row.badges : ['🌱 Welcome Learner'],
+              currentLevel: row.learning_level || 'beginner',
+              createdAt: row.created_at || new Date().toISOString(),
+              lastActiveAt: new Date().toISOString(),
             };
             saveProfile(existingProf);
             setLoading(false);
@@ -109,12 +123,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: 'usr_' + Date.now(),
         name: cleanName,
         email: cleanEmail,
+        role: 'student',
         xp: 100,
         streak: 1,
         completedLessons: [],
+        solvedPractice: [],
+        completedPatterns: [],
+        playgroundRunsCount: 0,
+        aiVisualsCount: 0,
         badges: ['🌱 Welcome Learner'],
         currentLevel: 'beginner',
         createdAt: new Date().toISOString(),
+        lastActiveAt: new Date().toISOString(),
       };
 
       saveProfile(newProf);
@@ -130,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfileState((prev) => {
         if (!prev) return null;
         const next = { ...prev, ...updates };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        saveProfile(next);
         syncToSupabase(next);
         return next;
       });
@@ -143,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfileState((prev) => {
         if (!prev) return null;
         const next = { ...prev, currentLevel: level };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        saveProfile(next);
         syncToSupabase(next);
         return next;
       });
@@ -151,9 +171,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const setAdminProfile = useCallback((p: UserProfile) => {
+    saveProfile(p);
+  }, []);
+
   const signOut = useCallback(() => {
     saveProfile(null);
   }, []);
+
+  const isAdmin = profile?.role === 'admin';
 
   return (
     <AuthContext.Provider
@@ -161,9 +187,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: profile,
         profile,
         loading,
+        isAdmin,
         createProfile,
         updateProfile,
         setLevel,
+        setAdminProfile,
         signOut,
       }}
     >

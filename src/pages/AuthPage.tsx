@@ -7,22 +7,26 @@ import {
   Lock,
   Eye,
   EyeOff,
-  ArrowRight,
   Loader2,
   CheckCircle2,
   AlertCircle,
   Terminal,
   ShieldCheck,
   ArrowLeft,
+  ShieldAlert,
+  Wand2,
+  Check,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import {
   signInWithEmailPassword,
   signUpWithEmailPassword,
   resetPasswordForEmail,
+  adminSignInWithEmailPassword,
 } from '@/lib/authService';
 
-type AuthMode = 'login' | 'signup' | 'forgot';
+type AuthMode = 'login' | 'signup' | 'forgot' | 'admin';
 
 export default function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('login');
@@ -37,28 +41,84 @@ export default function AuthPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { createProfile } = useAuth();
+  const { createProfile, setAdminProfile } = useAuth();
 
-  // Password Strength Calculation (for Signup mode)
-  const passwordStrength = useMemo(() => {
-    if (!password) return { score: 0, label: '', color: 'bg-slate-200' };
-    let score = 0;
-    if (password.length >= 6) score += 1;
-    if (password.length >= 10) score += 1;
-    if (/[0-9]/.test(password)) score += 1;
-    if (/[A-Z]/.test(password) || /[^A-Za-z0-9]/.test(password)) score += 1;
-
-    if (score <= 1) return { score: 25, label: 'Weak', color: 'bg-red-500' };
-    if (score === 2) return { score: 50, label: 'Fair', color: 'bg-amber-500' };
-    if (score === 3) return { score: 75, label: 'Strong', color: 'bg-emerald-500' };
-    return { score: 100, label: 'Very Strong', color: 'bg-bamboo-600' };
+  // Password Requirements Breakdown for Signup Mode
+  const passwordRequirements = useMemo(() => {
+    return {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSymbol: /[^A-Za-z0-9]/.test(password),
+    };
   }, [password]);
 
-  // Strict @gmail.com Validation
+  const isPasswordStrong = useMemo(() => {
+    return (
+      passwordRequirements.minLength &&
+      passwordRequirements.hasUppercase &&
+      passwordRequirements.hasLowercase &&
+      passwordRequirements.hasNumber &&
+      passwordRequirements.hasSymbol
+    );
+  }, [passwordRequirements]);
+
+  // Password Strength Percentage & Rating
+  const passwordStrength = useMemo(() => {
+    if (!password) return { score: 0, label: '', color: 'bg-slate-200' };
+    let metCount = 0;
+    if (passwordRequirements.minLength) metCount++;
+    if (passwordRequirements.hasUppercase) metCount++;
+    if (passwordRequirements.hasLowercase) metCount++;
+    if (passwordRequirements.hasNumber) metCount++;
+    if (passwordRequirements.hasSymbol) metCount++;
+
+    const percent = Math.min(100, metCount * 20);
+
+    if (metCount <= 2) return { score: percent, label: 'Weak ❌', color: 'bg-red-500' };
+    if (metCount <= 4) return { score: percent, label: 'Medium ⚠️', color: 'bg-amber-500' };
+    return { score: 100, label: 'Strong & Secure 💪', color: 'bg-emerald-500' };
+  }, [password, passwordRequirements]);
+
+  // Auto-Generate a Guaranteed Strong Password
+  const generateStrongPassword = () => {
+    const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lowers = 'abcdefghijkmnopqrstuvwxyz';
+    const numbers = '23456789';
+    const symbols = '!@#$%^&*()_+-=';
+
+    const getChar = (str: string) => str[Math.floor(Math.random() * str.length)];
+
+    let pwd = [
+      getChar(uppers),
+      getChar(lowers),
+      getChar(numbers),
+      getChar(symbols),
+      getChar(uppers),
+      getChar(lowers),
+      getChar(numbers),
+      getChar(symbols),
+      getChar(lowers),
+      getChar(numbers),
+    ];
+
+    pwd = pwd.sort(() => Math.random() - 0.5);
+    const generated = pwd.join('');
+
+    setPassword(generated);
+    setConfirmPassword(generated);
+    setShowPassword(true);
+    setShowConfirmPassword(true);
+    setError('');
+    setSuccessMsg('✨ Strong password generated & filled automatically!');
+  };
+
+  // Email Validation
   const validateEmail = (rawEmail: string): boolean => {
     const clean = rawEmail.trim().toLowerCase();
-    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    return gmailRegex.test(clean);
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(clean);
   };
 
   const switchMode = (newMode: AuthMode) => {
@@ -76,21 +136,44 @@ export default function AuthPage() {
 
     // 1. Common Email Validation
     if (!cleanEmail) {
-      setError('தயவுசெய்து உங்கள் @gmail.com மின்னஞ்சலை உள்ளிடவும் (Please enter your Gmail address)');
+      setError('தயவுசெய்து உங்கள் மின்னஞ்சலை உள்ளிடவும் (Please enter your email address)');
       return;
     }
 
     if (!validateEmail(cleanEmail)) {
-      setError('மின்னஞ்சல் @gmail.com வடிவில் மட்டுமே இருக்க வேண்டும் (Must be a valid @gmail.com address, e.g. name@gmail.com)');
+      setError('செல்லுபடியாகும் மின்னஞ்சல் முகவரியை உள்ளிடவும் (Please enter a valid email address)');
       return;
     }
 
-    // 2. Forgot Password Handler
+    // 2. Admin Login Handler
+    if (mode === 'admin') {
+      if (!password) {
+        setError('Please enter your admin password');
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const res = await adminSignInWithEmailPassword(cleanEmail, password);
+        if (res.success && res.profile) {
+          setAdminProfile(res.profile);
+        } else {
+          setError(res.error || 'Admin authentication failed. Access denied.');
+        }
+      } catch (err: any) {
+        setError(err?.message || 'Admin login failed.');
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // 3. Forgot Password Handler
     if (mode === 'forgot') {
       setIsSubmitting(true);
       try {
         const res = await resetPasswordForEmail(cleanEmail);
-        setSuccessMsg(res.message || `Password reset link sent to ${cleanEmail}. Please check your Gmail inbox.`);
+        setSuccessMsg(res.message || `Password reset link sent to ${cleanEmail}. Please check your inbox.`);
       } catch (err: any) {
         setError('Failed to send reset link. Please try again.');
       } finally {
@@ -99,7 +182,7 @@ export default function AuthPage() {
       return;
     }
 
-    // 3. Signup Validation
+    // 4. Strict Signup Validation (Strong Password Enforced)
     if (mode === 'signup') {
       if (!fullName.trim()) {
         setError('தயவுசெய்து உங்கள் முழு பெயரை உள்ளிடவும் (Please enter your full name)');
@@ -109,10 +192,15 @@ export default function AuthPage() {
         setError('தயவுசெய்து கடவுச்சொல்லை உள்ளிடவும் (Please enter a password)');
         return;
       }
-      if (password.length < 6) {
-        setError('கடவுச்சொல் குறைந்தபட்சம் 6 எழுத்துகள் இருக்க வேண்டும் (Password must be at least 6 characters)');
+      
+      // STRICT STRONG PASSWORD REQUIREMENT CHECK
+      if (!isPasswordStrong) {
+        setError(
+          'கடவுச்சொல் போதுமான அளவு வலிமையாக இல்லை! (Password MUST contain at least 8 characters, 1 uppercase letter A-Z, 1 lowercase letter a-z, 1 number 0-9, and 1 symbol !@#$%^&*). Click "Generate Strong Password" to auto-create one.'
+        );
         return;
       }
+
       if (password !== confirmPassword) {
         setError('கடவுச்சொற்கள் பொருந்தவில்லை (Passwords do not match)');
         return;
@@ -134,7 +222,7 @@ export default function AuthPage() {
       return;
     }
 
-    // 4. Login Handler
+    // 5. Student Login Handler
     if (mode === 'login') {
       if (!password) {
         setError('தயவுசெய்து கடவுச்சொல்லை உள்ளிடவும் (Please enter your password)');
@@ -223,7 +311,7 @@ export default function AuthPage() {
                 </span>
               </div>
 
-              {/* Terminal Code Snippet with Blinking Cursor */}
+              {/* Terminal Code Snippet */}
               <div className="text-emerald-300 space-y-1">
                 <p className="text-purple-300">#include &lt;stdio.h&gt;</p>
                 <p className="text-amber-300">int main() &#123;</p>
@@ -272,27 +360,61 @@ export default function AuthPage() {
 
         {/* ================= RIGHT SECTION: AUTHENTICATION PANEL ================= */}
         <div className="flex flex-1 flex-col justify-center p-6 sm:p-10 bg-white dark:bg-ink-900">
-          <div className="mx-auto w-full max-w-sm space-y-6">
+          <div className="mx-auto w-full max-w-sm space-y-5">
             
+            {/* PORTAL SELECTOR TAB TOGGLE (Student vs Admin) */}
+            <div className="grid grid-cols-2 rounded-2xl bg-stone-100 p-1 dark:bg-ink-950 border border-bamboo-100 dark:border-bamboo-900/60 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => switchMode('login')}
+                className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                  mode !== 'admin'
+                    ? 'bg-white text-bamboo-950 shadow-sm dark:bg-ink-900 dark:text-white'
+                    : 'text-ink-500 hover:text-bamboo-800 dark:text-ink-400'
+                }`}
+              >
+                <User className="h-3.5 w-3.5" /> Student Login
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode('admin')}
+                className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                  mode === 'admin'
+                    ? 'bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md'
+                    : 'text-purple-700 hover:text-purple-900 dark:text-purple-400'
+                }`}
+              >
+                <ShieldCheck className="h-3.5 w-3.5 text-golden-400" /> Admin Portal
+              </button>
+            </div>
+
             {/* Header Titles */}
             <div>
               <div className="flex items-center gap-2 text-bamboo-600 dark:text-bamboo-400 mb-1">
-                <ShieldCheck className="h-4 w-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  {mode === 'login' ? 'Welcome Back 👋' : mode === 'signup' ? 'Start Your Story 🚀' : 'Reset Password 🔑'}
-                </span>
+                {mode === 'admin' ? (
+                  <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                    <ShieldAlert className="h-4 w-4" /> Admin Authentication Required
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-bamboo-600 dark:text-bamboo-400">
+                    <ShieldCheck className="h-4 w-4" />
+                    {mode === 'login' ? 'Welcome Back 👋' : mode === 'signup' ? 'Start Your Story 🚀' : 'Reset Password 🔑'}
+                  </span>
+                )}
               </div>
 
               <h2 className="font-display text-2xl sm:text-3xl font-bold text-bamboo-950 dark:text-white">
                 {mode === 'login' && 'Continue your coding journey.'}
                 {mode === 'signup' && 'Create your account'}
                 {mode === 'forgot' && 'Reset your password'}
+                {mode === 'admin' && 'Admin Portal Access 🛡️'}
               </h2>
 
               <p className="font-tamil text-xs text-ink-500 dark:text-ink-400 mt-1">
                 {mode === 'login' && 'உங்கள் தமிழ் C Programming கற்றல் கணக்கிற்கு நுழையுங்கள்.'}
                 {mode === 'signup' && 'கவி மற்றும் Code Buddy உடன் தமிழ் கதைகள் மூலம் பயிலுங்கள்.'}
-                {mode === 'forgot' && 'உங்கள் @gmail.com முகவரியை உள்ளிட்டு reset link பெறுங்கள்.'}
+                {mode === 'forgot' && 'உங்கள் மின்னஞ்சல் முகவரியை உள்ளிட்டு reset link பெறுங்கள்.'}
+                {mode === 'admin' && 'நிர்வாகி தரவுப் பலகையை (Admin Dashboard) அணுக அங்கீகரிக்கப்பட்ட மின்னஞ்சல் மற்றும் கடவுச்சொல்லை உள்ளிடவும்.'}
               </p>
             </div>
 
@@ -340,14 +462,14 @@ export default function AuthPage() {
               {/* Email Address Field */}
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">
-                  Email Address (*@gmail.com) *
+                  {mode === 'admin' ? 'Admin Email Address *' : 'Email Address *'}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-3 h-4 w-4 text-ink-400" />
                   <input
                     type="email"
                     required
-                    placeholder="yourname@gmail.com"
+                    placeholder={mode === 'admin' ? 'admin@codekathai.com' : 'yourname@gmail.com'}
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -358,9 +480,9 @@ export default function AuthPage() {
                 </div>
               </div>
 
-              {/* Password Field (Login & Signup Mode) */}
+              {/* Password Field (Login, Signup & Admin Mode) */}
               {mode !== 'forgot' && (
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">
                       Password / கடவுச்சொல் *
@@ -399,18 +521,65 @@ export default function AuthPage() {
                     </button>
                   </div>
 
-                  {/* Password Strength Meter (Signup mode) */}
-                  {mode === 'signup' && password && (
-                    <div className="pt-1.5 space-y-1">
-                      <div className="flex justify-between items-center text-[10px] font-bold">
-                        <span className="text-ink-500">Password Strength:</span>
-                        <span className="text-bamboo-700 dark:text-bamboo-300">{passwordStrength.label}</span>
+                  {/* AUTO-GENERATE STRONG PASSWORD BUTTON (Signup mode) */}
+                  {mode === 'signup' && (
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={generateStrongPassword}
+                        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-purple-100 via-indigo-100 to-emerald-100 hover:from-purple-200 hover:to-emerald-200 text-purple-900 dark:bg-purple-950/60 dark:text-purple-200 dark:border dark:border-purple-800 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                      >
+                        <Wand2 className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                        🎲 Generate Strong Password / பலமான கடவுச்சொல்லை உருவாக்கு
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Password Strength Meter & Interactive Requirements Checklist (Signup mode) */}
+                  {mode === 'signup' && (
+                    <div className="pt-2 space-y-2 rounded-2xl bg-stone-50 dark:bg-ink-950 p-3 border border-bamboo-100 dark:border-bamboo-900">
+                      {/* Strength Progress Bar */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                          <span className="text-ink-500 uppercase tracking-wider">Password Strength:</span>
+                          <span className="text-bamboo-700 dark:text-bamboo-300 font-mono">
+                            {password ? passwordStrength.label : 'Enter Password'}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-200 dark:bg-ink-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${passwordStrength.color} transition-all duration-300`}
+                            style={{ width: `${passwordStrength.score}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-1.5 w-full bg-slate-200 dark:bg-ink-800 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${passwordStrength.color} transition-all duration-300`}
-                          style={{ width: `${passwordStrength.score}%` }}
-                        />
+
+                      {/* Real-time Strong Password Checklist */}
+                      <div className="grid grid-cols-2 gap-1.5 text-[10px] font-bold pt-1 border-t border-stone-200 dark:border-ink-800">
+                        <div className={`flex items-center gap-1 ${passwordRequirements.minLength ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-400'}`}>
+                          {passwordRequirements.minLength ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                          Min 8 Characters
+                        </div>
+
+                        <div className={`flex items-center gap-1 ${passwordRequirements.hasUppercase ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-400'}`}>
+                          {passwordRequirements.hasUppercase ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                          1 Uppercase (A-Z)
+                        </div>
+
+                        <div className={`flex items-center gap-1 ${passwordRequirements.hasLowercase ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-400'}`}>
+                          {passwordRequirements.hasLowercase ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                          1 Lowercase (a-z)
+                        </div>
+
+                        <div className={`flex items-center gap-1 ${passwordRequirements.hasNumber ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-400'}`}>
+                          {passwordRequirements.hasNumber ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                          1 Number (0-9)
+                        </div>
+
+                        <div className={`flex items-center gap-1 col-span-2 ${passwordRequirements.hasSymbol ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-400'}`}>
+                          {passwordRequirements.hasSymbol ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                          1 Symbol (!@#$%^&*)
+                        </div>
                       </div>
                     </div>
                   )}
@@ -452,17 +621,22 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-primary w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-bamboo-600 via-bamboo-700 to-emerald-700 hover:from-bamboo-700 hover:to-emerald-800 shadow-md text-white rounded-2xl transition-all duration-300 disabled:opacity-50"
+                className={`btn-primary w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2 shadow-md text-white rounded-2xl transition-all duration-300 disabled:opacity-50 ${
+                  mode === 'admin'
+                    ? 'bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-800 hover:to-indigo-900'
+                    : 'bg-gradient-to-r from-bamboo-600 via-bamboo-700 to-emerald-700 hover:from-bamboo-700 hover:to-emerald-800'
+                }`}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Opening your story...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Verifying Credentials...
                   </>
                 ) : (
                   <>
                     {mode === 'login' && 'Enter Code Kathai →'}
                     {mode === 'signup' && 'Start Learning →'}
                     {mode === 'forgot' && 'Send Reset Link →'}
+                    {mode === 'admin' && 'Access Admin Dashboard 🛡️ →'}
                   </>
                 )}
               </button>
@@ -494,6 +668,16 @@ export default function AuthPage() {
                     Sign in
                   </button>
                 </p>
+              )}
+
+              {mode === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => switchMode('login')}
+                  className="inline-flex items-center gap-1 font-bold text-ink-600 hover:underline dark:text-ink-300"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to Student Login
+                </button>
               )}
 
               {mode === 'forgot' && (

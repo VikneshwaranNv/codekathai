@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { UserProfile } from '@/types';
+import type { UserProfile, UserRole } from '@/types';
 
 export interface AuthResult {
   success: boolean;
@@ -13,7 +13,32 @@ export interface AuthResult {
  * Keeps authentication logic clean and decoupled from UI components.
  */
 
-// 1. Sign In with Email & Password
+// Helper to extract first matching row safely when multiple rows exist per email
+function extractProfile(row: any): UserProfile {
+  return {
+    id: row.id || 'usr_' + Date.now(),
+    name: row.full_name || row.email?.split('@')[0] || 'Learner',
+    email: row.email,
+    role: (row.role as UserRole) || 'student',
+    xp: row.xp ?? 150,
+    streak: row.streak ?? 1,
+    completedLessons: Array.isArray(row.completed_lessons)
+      ? row.completed_lessons
+      : typeof row.completed_lessons === 'string'
+      ? JSON.parse(row.completed_lessons)
+      : [],
+    solvedPractice: Array.isArray(row.solved_practice) ? row.solved_practice : [],
+    completedPatterns: Array.isArray(row.completed_patterns) ? row.completed_patterns : [],
+    playgroundRunsCount: row.playground_runs_count ?? 0,
+    aiVisualsCount: row.ai_visuals_count ?? 0,
+    badges: Array.isArray(row.badges) ? row.badges : ['🌱 Welcome Learner'],
+    currentLevel: row.learning_level || 'beginner',
+    createdAt: row.created_at || new Date().toISOString(),
+    lastActiveAt: row.last_active_at || new Date().toISOString(),
+  };
+}
+
+// 1. Sign In with Email & Password (STRICT: Account MUST exist first via Sign Up!)
 export async function signInWithEmailPassword(
   email: string,
   password?: string
@@ -21,7 +46,28 @@ export async function signInWithEmailPassword(
   const cleanEmail = email.trim().toLowerCase();
 
   try {
-    // If password provided, attempt Supabase auth sign-in
+    // Lookup user profile in `user_profiles` table
+    const { data, error: dbError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('email', cleanEmail)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (dbError) {
+      console.error('Database query error during sign in:', dbError);
+    }
+
+    // STRICT CHECK: If user record does NOT exist in database, BLOCK direct login!
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        error:
+          'கணக்கு பெறப்படவில்லை! (No account found for this email. Please click "Create your account" below to sign up first.)',
+      };
+    }
+
+    // Attempt Supabase auth sign-in if password provided
     if (password) {
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
@@ -33,49 +79,70 @@ export async function signInWithEmailPassword(
       }
     }
 
-    // Lookup user profile in `user_profiles` table
-    const { data } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('email', cleanEmail)
-      .maybeSingle();
-
-    if (data) {
-      const profile: UserProfile = {
-        id: data.id || 'usr_' + Date.now(),
-        name: data.full_name || cleanEmail.split('@')[0],
-        email: data.email || cleanEmail,
-        xp: 150,
-        streak: 1,
-        completedLessons: [],
-        badges: ['🌱 Welcome Learner'],
-        currentLevel: data.learning_level || 'beginner',
-        createdAt: data.created_at || new Date().toISOString(),
-      };
-      return { success: true, profile };
-    }
-
-    // Fallback profile if record not found yet
-    const fallbackProfile: UserProfile = {
-      id: 'usr_' + Date.now(),
-      name: cleanEmail.split('@')[0] || 'Learner',
-      email: cleanEmail,
-      xp: 100,
-      streak: 1,
-      completedLessons: [],
-      badges: ['🌱 Welcome Learner'],
-      currentLevel: 'beginner',
-      createdAt: new Date().toISOString(),
-    };
-
-    return { success: true, profile: fallbackProfile };
+    const profile = extractProfile(data[0]);
+    return { success: true, profile };
   } catch (err: any) {
     console.error('signInWithEmailPassword error:', err);
     return { success: false, error: err?.message || 'Login failed. Please check your credentials.' };
   }
 }
 
-// 2. Sign Up with Full Name, Email & Password
+// 2. Admin Sign In with Email & Password (STRICT Role Verification)
+export async function adminSignInWithEmailPassword(
+  email: string,
+  password?: string
+): Promise<AuthResult> {
+  const cleanEmail = email.trim().toLowerCase();
+
+  try {
+    // Query `user_profiles` table for `role`
+    const { data, error: dbError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('email', cleanEmail)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (dbError) {
+      console.error('Database query error during admin sign in:', dbError);
+    }
+
+    const row = data && data.length > 0 ? data[0] : null;
+
+    // Strict Role Check: ONLY allow role === 'admin' and account MUST exist
+    if (!row || row.role !== 'admin') {
+      return {
+        success: false,
+        error: 'Access Denied: This account does not have Admin permissions (role = "admin" required).',
+      };
+    }
+
+    // Attempt Supabase Authentication if password provided
+    if (password) {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
+
+      if (authError) {
+        console.warn('Admin Supabase auth note:', authError.message);
+      }
+    }
+
+    const adminProfile = extractProfile(row);
+    adminProfile.role = 'admin';
+
+    return { success: true, profile: adminProfile };
+  } catch (err: any) {
+    console.error('adminSignInWithEmailPassword error:', err);
+    return {
+      success: false,
+      error: err?.message || 'Admin login failed. Please verify admin credentials.',
+    };
+  }
+}
+
+// 3. Sign Up with Full Name, Email & Password (Creates NEW Account)
 export async function signUpWithEmailPassword(
   fullName: string,
   email: string,
@@ -85,6 +152,20 @@ export async function signUpWithEmailPassword(
   const cleanEmail = email.trim().toLowerCase();
 
   try {
+    // Check if account already exists
+    const { data: existing } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('email', cleanEmail)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return {
+        success: false,
+        error: 'இந்த மின்னஞ்சலில் ஏற்கனவே கணக்கு உள்ளது! (An account with this email already exists. Please Sign In instead.)',
+      };
+    }
+
     // Attempt Supabase Auth Sign Up if password provided
     if (password) {
       const { error: signUpError } = await supabase.auth.signUp({
@@ -100,7 +181,7 @@ export async function signUpWithEmailPassword(
       }
     }
 
-    // Insert user into `user_profiles` database table
+    // Insert user into `user_profiles` database table with role = 'student'
     const validUuid =
       typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
@@ -110,6 +191,7 @@ export async function signUpWithEmailPassword(
       id: validUuid,
       full_name: cleanName,
       email: cleanEmail,
+      role: 'student', // Default to student for public signups
       learning_level: 'beginner',
     };
 
@@ -123,12 +205,18 @@ export async function signUpWithEmailPassword(
       id: validUuid,
       name: cleanName,
       email: cleanEmail,
+      role: 'student',
       xp: 100,
       streak: 1,
       completedLessons: [],
+      solvedPractice: [],
+      completedPatterns: [],
+      playgroundRunsCount: 0,
+      aiVisualsCount: 0,
       badges: ['🌱 Welcome Learner'],
       currentLevel: 'beginner',
       createdAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
     };
 
     return { success: true, profile: newProfile };
@@ -138,7 +226,7 @@ export async function signUpWithEmailPassword(
   }
 }
 
-// 3. Password Reset for Email
+// 4. Password Reset for Email
 export async function resetPasswordForEmail(email: string): Promise<AuthResult> {
   const cleanEmail = email.trim().toLowerCase();
 
@@ -163,7 +251,7 @@ export async function resetPasswordForEmail(email: string): Promise<AuthResult> 
   }
 }
 
-// 4. OAuth Sign In with Google (forces account picker prompt)
+// 5. OAuth Sign In with Google
 export async function signInWithGoogle(): Promise<AuthResult> {
   try {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -172,7 +260,7 @@ export async function signInWithGoogle(): Promise<AuthResult> {
         redirectTo: window.location.origin,
         queryParams: {
           access_type: 'offline',
-          prompt: 'select_account', // Forces Google to show all signed-in Google IDs!
+          prompt: 'select_account',
         },
       },
     });
