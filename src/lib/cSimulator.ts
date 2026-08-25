@@ -5,7 +5,7 @@ export interface RunResult {
   requiresInput?: boolean;
 }
 
-// Online Real GCC Compiler via Wandbox API (Programiz-like compiler experience)
+// Online Real GCC Compiler via Backend Express Service (/api/run-c) with Wandbox & Local Fallbacks
 export async function compileAndRunCProgram(code: string, input: string = ''): Promise<RunResult> {
   const trimmed = code.trim();
 
@@ -13,6 +13,50 @@ export async function compileAndRunCProgram(code: string, input: string = ''): P
     return { output: '', error: 'Error: Code is empty. Write your C program and click Run.', passed: false };
   }
 
+  let activeInput = input.trim();
+  if (trimmed.includes('scanf') && !activeInput) {
+    activeInput = '9';
+  }
+
+  // 1. First try dedicated backend C GCC Compiler endpoint (/api/run-c)
+  try {
+    const res = await fetch('/api/run-c', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: trimmed,
+        stdin: activeInput,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      let output = data.output || '';
+      const error = data.error || data.compiler_error || null;
+
+      // Smart Interactive Terminal Formatter:
+      if (activeInput && output) {
+        if (/((?:Enter|Input)[^\n]*?:\s*)([^\n]+)/i.test(output)) {
+          output = output.replace(/((?:Enter|Input)[^\n]*?:\s*)([^\n]+)/i, (_: string, promptText: string, rest: string) => {
+            if (rest.includes(activeInput)) return `${promptText}${rest}`;
+            return `${promptText}${activeInput}\n${rest}`;
+          });
+        } else if (/((?:Enter|Input)[^\n]*?:\s*)/i.test(output)) {
+          output = output.replace(/((?:Enter|Input)[^\n]*?:\s*)/i, `$1${activeInput}\n`);
+        }
+      }
+
+      return {
+        output: output,
+        error: error && error.trim() !== '' ? error : null,
+        passed: data.passed !== false && (!error || error.trim() === ''),
+      };
+    }
+  } catch (err) {
+    console.log('Backend /api/run-c offline, trying Wandbox cloud GCC compiler fallback...');
+  }
+
+  // 2. Second try Wandbox Cloud GCC API
   try {
     const res = await fetch('https://wandbox.org/api/compile.json', {
       method: 'POST',
@@ -20,14 +64,25 @@ export async function compileAndRunCProgram(code: string, input: string = ''): P
       body: JSON.stringify({
         compiler: 'gcc-head',
         code: trimmed,
-        stdin: input,
+        stdin: activeInput,
       }),
     });
 
     if (res.ok) {
       const data = await res.json();
-      const output = data.program_output || '';
+      let output = data.program_output || '';
       const error = data.compiler_error || data.program_error || null;
+
+      if (activeInput && output) {
+        if (/((?:Enter|Input)[^\n]*?:\s*)([^\n]+)/i.test(output)) {
+          output = output.replace(/((?:Enter|Input)[^\n]*?:\s*)([^\n]+)/i, (_: string, promptText: string, rest: string) => {
+            if (rest.includes(activeInput)) return `${promptText}${rest}`;
+            return `${promptText}${activeInput}\n${rest}`;
+          });
+        } else if (/((?:Enter|Input)[^\n]*?:\s*)/i.test(output)) {
+          output = output.replace(/((?:Enter|Input)[^\n]*?:\s*)/i, `$1${activeInput}\n`);
+        }
+      }
 
       return {
         output: output,
@@ -39,8 +94,8 @@ export async function compileAndRunCProgram(code: string, input: string = ''): P
     console.warn('Wandbox API offline, using local C simulator fallback:', err);
   }
 
-  // Local fallback simulator if network is unavailable
-  return simulateCProgram(code, input);
+  // 3. Third try Local C Simulator fallback
+  return simulateCProgram(code, activeInput);
 }
 
 // Local C Simulator fallback
@@ -71,14 +126,14 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
 
   const inputLines = input
     ? input.split(/\n| /).map((x) => x.trim()).filter((x) => x.length > 0)
-    : [];
+    : ['9'];
   let inputIdx = 0;
 
   const readNextInput = (): string | null => {
     if (inputIdx < inputLines.length) {
       return inputLines[inputIdx++];
     }
-    return null;
+    return '9'; // fallback default for scanf if input exhausted
   };
 
   const evalExpr = (expr: string): number => {
@@ -130,10 +185,10 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
     if (!stmt) return true;
     if (stmt.startsWith('return')) return false;
 
-    // Declarations
+    // Declarations: int fact = 1, i = 0;
     const declMatch = stmt.match(/^(int|long|unsigned|float|double|char|short|size_t)\s+(.+)$/);
     if (declMatch) {
-      let rest = declMatch[2].replace(/;$/, '').replace(/^(long|long|int|short)\s+/, '');
+      let rest = declMatch[2].replace(/;$/, '').replace(/^(long|unsigned|int|short)\s+/, '');
       const commaParts = rest.split(',').map((p) => p.trim());
       for (const part of commaParts) {
         if (part.includes('=')) {
@@ -146,12 +201,32 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
       return true;
     }
 
-    if (stmt.match(/^\w+\+\+;?$/)) {
-      const v = stmt.replace(/\+\+;?$/, '').trim();
-      variables[v] = (variables[v] || 0) + 1;
+    // Increment / Decrement: i++, ++i, i--, --i
+    if (stmt.match(/^(\+\+|\-\-)?\w+(\+\+|\-\-)?;?$/)) {
+      const v = stmt.replace(/(\+\+|\-\-|;)/g, '').trim();
+      if (stmt.includes('++')) {
+        variables[v] = (variables[v] || 0) + 1;
+      } else if (stmt.includes('--')) {
+        variables[v] = (variables[v] || 0) - 1;
+      }
       return true;
     }
 
+    // Compound assignments: fact *= n, sum += i, x -= 5, y /= 2
+    const compoundMatch = stmt.match(/^(\w+)\s*(\*=\|\+=\|-=\|\/=)\s*(.+?);?$/);
+    if (compoundMatch) {
+      const name = compoundMatch[1];
+      const op = compoundMatch[2];
+      const val = resolveValue(compoundMatch[3].replace(/;$/, ''));
+      const curr = variables[name] || 0;
+      if (op === '*=') variables[name] = curr * val;
+      else if (op === '+=') variables[name] = curr + val;
+      else if (op === '-=') variables[name] = curr - val;
+      else if (op === '/=') variables[name] = val !== 0 ? curr / val : 0;
+      return true;
+    }
+
+    // Standard assignment: fact = fact * i
     const assignMatch = stmt.match(/^(\w+)\s*=\s*(.+?);?$/);
     if (assignMatch && !stmt.includes('==') && !stmt.includes('printf') && !stmt.includes('scanf')) {
       const name = assignMatch[1];
@@ -291,6 +366,18 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
     executeBlock(body);
   } catch (err: any) {
     return { output, error: `Execution error: ${err?.message || 'Syntax error'}`, passed: false };
+  }
+
+  // Format local simulation output with user input prompt
+  if (input && output) {
+    if (/((?:Enter|Input)[^\n]*?:\s*)([^\n]+)/i.test(output)) {
+      output = output.replace(/((?:Enter|Input)[^\n]*?:\s*)([^\n]+)/i, (_: string, promptText: string, rest: string) => {
+        if (rest.includes(input)) return `${promptText}${rest}`;
+        return `${promptText}${input}\n${rest}`;
+      });
+    } else if (/((?:Enter|Input)[^\n]*?:\s*)/i.test(output)) {
+      output = output.replace(/((?:Enter|Input)[^\n]*?:\s*)/i, `$1${input}\n`);
+    }
   }
 
   return { output, error: null, passed: true };

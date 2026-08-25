@@ -1,7 +1,10 @@
-import { ArrowLeft, Lightbulb, CheckCircle2, XCircle, Code2, Eye, Bug, FileCode, Star, Send, Award } from 'lucide-react';
+import { ArrowLeft, Lightbulb, CheckCircle2, XCircle, Code2, Eye, Bug, FileCode, Star, Send, Award, Play } from 'lucide-react';
 import { useState } from 'react';
 import { practiceProblems, type PracticeProblem, type Difficulty, type ProblemType } from '@/data/practice';
 import type { Page } from '@/components/Navbar';
+import { compileAndRunCProgram } from '@/lib/cSimulator';
+import CCodeEditor from '@/components/CCodeEditor';
+import InteractiveTerminal from '@/components/InteractiveTerminal';
 
 interface PracticePageProps {
   onNavigate: (page: Page) => void;
@@ -42,6 +45,13 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
   const [debugInput, setDebugInput] = useState('');
   const [debugResult, setDebugResult] = useState<'idle' | 'correct' | 'wrong'>('idle');
 
+  // Compiler state for practice problems
+  const [userCode, setUserCode] = useState('');
+  const [programInput, setProgramInput] = useState('9');
+  const [compilerOutput, setCompilerOutput] = useState('');
+  const [compilerError, setCompilerError] = useState<string | null>(null);
+  const [isCompiling, setIsCompiling] = useState(false);
+
   const filtered = practiceProblems.filter((p) => {
     if (filterDiff !== 'all' && p.difficulty !== filterDiff) return false;
     return true;
@@ -56,17 +66,37 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
     setShowSolution(false);
     setDebugInput(p.buggyCode ?? '');
     setDebugResult('idle');
+    setUserCode(p.code || p.buggyCode || p.solution || '#include <stdio.h>\n\nint main() {\n    int n;\n    printf("Enter number: ");\n    scanf("%d", &n);\n    printf("Output: %d\\n", n);\n    return 0;\n}');
+    setProgramInput('9');
+    setCompilerOutput('');
+    setCompilerError(null);
+  };
+
+  const handleRunCompiler = async (overrideInput?: string) => {
+    if (!userCode.trim()) return;
+    setIsCompiling(true);
+    setCompilerError(null);
+    setCompilerOutput('Compiling C code with GCC...');
+
+    const activeStdin = overrideInput !== undefined ? overrideInput.trim() : programInput.trim();
+    if (overrideInput !== undefined) {
+      setProgramInput(overrideInput);
+    }
+
+    const result = await compileAndRunCProgram(userCode, activeStdin || '9');
+    if (result.error) {
+      setCompilerError(result.error);
+      setCompilerOutput('');
+    } else {
+      setCompilerOutput(result.output || 'Program finished with exit code 0.');
+      setCompilerError(null);
+    }
+    setIsCompiling(false);
   };
 
   const handleSubmitAnswer = () => {
     if (!active || picked === null || submitted) return;
     setSubmitted(true);
-  };
-
-  const checkDebug = () => {
-    if (!active?.fixedCode) return;
-    const norm = (s: string) => s.trim().replace(/\s+/g, ' ');
-    setDebugResult(norm(debugInput) === norm(active.fixedCode) ? 'correct' : 'wrong');
   };
 
   if (active) {
@@ -103,12 +133,45 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
             )}
           </div>
 
-          {/* Code snippet */}
-          {active.code && (
-            <pre className="mt-4 overflow-x-auto rounded-xl bg-ink-950 p-4 text-xs text-emerald-400 font-mono border border-ink-800">
-              {active.code}
-            </pre>
-          )}
+          {/* Interactive GCC Compiler Panel with In-Terminal Input Prompt */}
+          <div className="mt-6 rounded-2xl border border-bamboo-200 bg-ink-950 p-4 shadow-md dark:border-bamboo-800">
+            <div className="flex items-center justify-between border-b border-ink-800 pb-3 mb-3">
+              <span className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                <Code2 className="h-4 w-4" /> ⚡ C GCC Compiler (Edit Code & Type Input directly in Terminal)
+              </span>
+              <button
+                onClick={() => handleRunCompiler()}
+                disabled={isCompiling}
+                className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-soft"
+              >
+                <Play className="h-3.5 w-3.5 fill-current" /> {isCompiling ? 'Running...' : 'Run Code'}
+              </button>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              {/* Code Editor */}
+              <div>
+                <CCodeEditor
+                  value={userCode}
+                  onChange={setUserCode}
+                  rows={10}
+                  placeholder="// Write or modify C code..."
+                />
+              </div>
+
+              {/* Interactive Terminal Output */}
+              <div>
+                <InteractiveTerminal
+                  output={compilerOutput}
+                  error={compilerError}
+                  isRunning={isCompiling}
+                  onRun={handleRunCompiler}
+                  initialInput={programInput}
+                  placeholder="Type number here (e.g. 9) & press Enter..."
+                />
+              </div>
+            </div>
+          </div>
 
           {/* MCQ Options with Submit Answer Button & Green/Red Feedback */}
           {active.options && (
@@ -221,7 +284,7 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
           Sharpen Your Skills 🎯
         </h1>
         <p className="mt-2 max-w-2xl text-xs text-ink-600 dark:text-ink-400">
-          C Programming Technical Placement & Interview Questions mapped directly for practice.
+          C Programming Technical Placement & Interview Questions mapped directly for practice with interactive GCC compiler.
         </p>
       </div>
 
@@ -246,7 +309,7 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
         </div>
       </div>
 
-      {/* Clean Filters Bar (Showing only Level buttons) */}
+      {/* Clean Filters Bar */}
       <div className="mb-6 flex flex-wrap gap-2 items-center">
         <button
           onClick={() => setFilterDiff('all')}

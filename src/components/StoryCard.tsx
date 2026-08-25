@@ -1,6 +1,7 @@
 import { CharacterAvatar } from './CharacterAvatar';
 import SceneVisual from './SceneVisual';
 import CodeBlock from './CodeBlock';
+import AudioPlayerButton from './AudioPlayerButton';
 import type { StoryScene } from '@/types';
 
 interface StoryCardProps {
@@ -49,9 +50,18 @@ export default function StoryCard({ scene, active = true, index = 0 }: StoryCard
         {/* Bubble + visual */}
         <div className={`flex-1 ${isNarrator ? 'max-w-2xl' : ''}`}>
           <div className={`card overflow-hidden p-4 ${active ? 'animate-fade-up' : ''}`}>
+            {/* Speech bubble header with Audio Voiceover Button */}
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-[10px] font-bold text-ink-400 uppercase tracking-wider">
+                {meta.name} Dialogue
+              </span>
+              {/* Play Audio 🔊 Voiceover Button */}
+              <AudioPlayerButton text={scene.dialogue} speaker={scene.speaker} />
+            </div>
+
             {/* Speech bubble */}
-            <div className={`rounded-2xl ${meta.bubble} px-4 py-3`}>
-              <p className="font-tamil text-[15px] leading-relaxed text-ink-800">
+            <div className={`rounded-2xl ${meta.bubble} px-4 py-3 border border-bamboo-100 dark:border-bamboo-800`}>
+              <p className="font-tamil text-[15px] leading-relaxed text-ink-800 dark:text-ink-200">
                 {scene.dialogue}
               </p>
             </div>
@@ -59,25 +69,25 @@ export default function StoryCard({ scene, active = true, index = 0 }: StoryCard
             {/* Visual */}
             {(scene.visual !== 'code' || scene.code) && (
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div className="grid place-items-center rounded-2xl bg-bamboo-50/60 p-3 min-h-[140px]">
+                <div className="grid place-items-center rounded-2xl bg-bamboo-50/60 p-3 min-h-[140px] dark:bg-ink-900 border border-bamboo-100 dark:border-bamboo-800">
                   <SceneVisual visual={scene.visual} />
                 </div>
                 {scene.code && (
                   <CodeBlock parts={scene.code} animate={active} />
                 )}
                 {!scene.code && scene.caption && (
-                  <div className="grid place-items-center rounded-2xl bg-golden-50 p-3 text-center">
-                    <p className="font-mono text-xs text-golden-700">{scene.caption}</p>
+                  <div className="grid place-items-center rounded-2xl bg-golden-50 p-3 text-center dark:bg-golden-950/40">
+                    <p className="font-mono text-xs text-golden-700 dark:text-golden-300">{scene.caption}</p>
                   </div>
                 )}
               </div>
             )}
 
             {scene.caption && scene.code && (
-              <p className="mt-3 text-center font-mono text-xs text-bamboo-600">{scene.caption}</p>
+              <p className="mt-3 text-center font-mono text-xs text-bamboo-600 dark:text-bamboo-400">{scene.caption}</p>
             )}
           </div>
-          <p className="mt-1.5 text-center text-[10px] font-medium text-ink-300">
+          <p className="mt-1.5 text-center text-[10px] font-medium text-ink-400">
             Scene {index + 1}
           </p>
         </div>

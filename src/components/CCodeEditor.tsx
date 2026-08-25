@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, type UIEvent, type KeyboardEvent } from 'react';
 
 interface CCodeEditorProps {
   value: string;
@@ -6,39 +6,453 @@ interface CCodeEditorProps {
   placeholder?: string;
   rows?: number;
   className?: string;
+  errorLineIndex?: number | null;
+}
+
+/**
+ * Tokenize and highlight C source code with high-contrast distinct color coding
+ * - Data Types: Sky Blue (text-sky-400)
+ * - Keywords & Control: Vivid Pink (text-pink-400)
+ * - Functions: Amber Yellow (text-amber-300)
+ * - Variables & Identifiers: Bright Soft White (text-gray-100)
+ * - Strings: Emerald Green (text-emerald-400)
+ * - Numbers: Bright Orange (text-orange-400)
+ * - Comments: Soft Slate Gray (text-slate-400 italic)
+ * - Operators: Rose Red (text-rose-400)
+ * - Brackets & Punctuation: Warm Yellow (text-yellow-300)
+ */
+function highlightCSyntax(code: string): string {
+  if (!code) return '';
+
+  const escapeHtml = (str: string) =>
+    str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const lines = code.split('\n');
+
+  const highlightedLines = lines.map((line) => {
+    let lineText = line;
+    let resultHtml = '';
+    let i = 0;
+
+    while (i < lineText.length) {
+      // 1. Single-line Comment: //
+      if (lineText.slice(i, i + 2) === '//') {
+        const commentText = lineText.slice(i);
+        resultHtml += `<span class="text-slate-400 italic font-normal">${escapeHtml(commentText)}</span>`;
+        break;
+      }
+
+      // 2. Preprocessor directive: #include, #define
+      if (lineText[i] === '#') {
+        let prepEnd = i;
+        while (prepEnd < lineText.length && /[a-zA-Z0-9_#]/.test(lineText[prepEnd])) {
+          prepEnd++;
+        }
+        const directive = lineText.slice(i, prepEnd);
+        resultHtml += `<span class="text-purple-400 font-bold">${escapeHtml(directive)}</span>`;
+        i = prepEnd;
+
+        // Header file after #include: <stdio.h> or "header.h"
+        const remaining = lineText.slice(i);
+        const headerMatch = remaining.match(/^\s*(&lt;|<)[^>]*(&gt;|>)|^\s*"[^"]*"/);
+        if (headerMatch) {
+          const matchedHeader = headerMatch[0];
+          resultHtml += `<span class="text-teal-300 font-semibold">${escapeHtml(matchedHeader)}</span>`;
+          i += matchedHeader.length;
+        }
+        continue;
+      }
+
+      // 3. String Literal: "..."
+      if (lineText[i] === '"') {
+        let endIdx = i + 1;
+        while (endIdx < lineText.length && (lineText[endIdx] !== '"' || lineText[endIdx - 1] === '\\')) {
+          endIdx++;
+        }
+        if (endIdx < lineText.length) endIdx++; // include closing quote
+        const strLit = lineText.slice(i, endIdx);
+        resultHtml += `<span class="text-emerald-400 font-semibold">${escapeHtml(strLit)}</span>`;
+        i = endIdx;
+        continue;
+      }
+
+      // 4. Character Literal: '...'
+      if (lineText[i] === "'") {
+        let endIdx = i + 1;
+        while (endIdx < lineText.length && (lineText[endIdx] !== "'" || lineText[endIdx - 1] === '\\')) {
+          endIdx++;
+        }
+        if (endIdx < lineText.length) endIdx++;
+        const charLit = lineText.slice(i, endIdx);
+        resultHtml += `<span class="text-emerald-400 font-semibold">${escapeHtml(charLit)}</span>`;
+        i = endIdx;
+        continue;
+      }
+
+      // 5. Numbers (Integer / Float)
+      if (/\d/.test(lineText[i]) && (i === 0 || !/[a-zA-Z_]/.test(lineText[i - 1]))) {
+        let numEnd = i;
+        while (numEnd < lineText.length && /[\d.fF]/.test(lineText[numEnd])) {
+          numEnd++;
+        }
+        const numLit = lineText.slice(i, numEnd);
+        resultHtml += `<span class="text-orange-400 font-bold">${escapeHtml(numLit)}</span>`;
+        i = numEnd;
+        continue;
+      }
+
+      // 6. Keywords, Data Types, Functions, Identifiers
+      if (/[a-zA-Z_]/.test(lineText[i])) {
+        let wordEnd = i;
+        while (wordEnd < lineText.length && /[a-zA-Z0-9_]/.test(lineText[wordEnd])) {
+          wordEnd++;
+        }
+        const word = lineText.slice(i, wordEnd);
+        const restOfLine = lineText.slice(wordEnd).trim();
+        const isFunctionCall = restOfLine.startsWith('(');
+
+        // C Data Types
+        const dataTypes = new Set([
+          'int',
+          'float',
+          'double',
+          'char',
+          'void',
+          'long',
+          'short',
+          'unsigned',
+          'signed',
+          'size_t',
+          'struct',
+          'union',
+          'enum',
+          'bool',
+          'int8_t',
+          'int16_t',
+          'int32_t',
+          'int64_t',
+          'uint8_t',
+          'uint16_t',
+          'uint32_t',
+          'uint64_t',
+        ]);
+        
+        // C Control & Structural Keywords
+        const keywords = new Set([
+          'if',
+          'else',
+          'for',
+          'while',
+          'do',
+          'return',
+          'switch',
+          'case',
+          'break',
+          'continue',
+          'typedef',
+          'sizeof',
+          'goto',
+          'static',
+          'const',
+          'extern',
+          'register',
+          'volatile',
+        ]);
+
+        // Common C Functions
+        const stdFunctions = new Set([
+          'printf',
+          'scanf',
+          'main',
+          'strlen',
+          'strcpy',
+          'strcmp',
+          'strcat',
+          'puts',
+          'gets',
+          'fgets',
+          'malloc',
+          'free',
+          'exit',
+          'push',
+          'pop',
+          'peek',
+          'enqueue',
+          'dequeue',
+          'fopen',
+          'fprintf',
+          'fclose',
+        ]);
+
+        if (dataTypes.has(word)) {
+          // Data Types -> Sky Blue
+          resultHtml += `<span class="text-sky-400 font-extrabold">${escapeHtml(word)}</span>`;
+        } else if (keywords.has(word)) {
+          // Keywords & Return -> Vivid Pink
+          resultHtml += `<span class="text-pink-400 font-bold">${escapeHtml(word)}</span>`;
+        } else if (stdFunctions.has(word) || isFunctionCall) {
+          // Functions -> Amber Yellow
+          resultHtml += `<span class="text-amber-300 font-bold">${escapeHtml(word)}</span>`;
+        } else {
+          // Variables / Identifiers -> Bright Soft White
+          resultHtml += `<span class="text-gray-100 font-medium">${escapeHtml(word)}</span>`;
+        }
+
+        i = wordEnd;
+        continue;
+      }
+
+      // 7. Operators & Punctuation
+      const char = lineText[i];
+      if (/[+\-*/%=&|!<>?:;.,(){}\[\]]/.test(char)) {
+        let opClass = 'text-gray-300';
+        if (/[+\-*/%=<>&|!]/.test(char)) {
+          // Operators -> Rose Red
+          opClass = 'text-rose-400 font-bold';
+        } else if (/[(){}\[\]]/.test(char)) {
+          // Brackets -> Warm Yellow
+          opClass = 'text-yellow-300 font-bold';
+        } else if (/[;,.]/.test(char)) {
+          // Punctuation -> Slate
+          opClass = 'text-slate-300';
+        }
+
+        resultHtml += `<span class="${opClass}">${escapeHtml(char)}</span>`;
+        i++;
+        continue;
+      }
+
+      // Plain whitespace
+      resultHtml += escapeHtml(char);
+      i++;
+    }
+
+    return resultHtml;
+  });
+
+  return highlightedLines.join('\n');
 }
 
 export default function CCodeEditor({
   value,
   onChange,
-  placeholder = '// Write C code here...',
+  placeholder = '// Write your C program here...',
   rows = 16,
   className = '',
+  errorLineIndex = null,
 }: CCodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const lineCount = value.split('\n').length;
-  const lineNumbers = Array.from({ length: Math.max(lineCount, 15) }, (_, i) => i + 1);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const lineNumbersRef = useRef<HTMLDivElement>(null);
+
+  const [activeLine, setActiveLine] = useState<number>(1);
+
+  const lines = value.split('\n');
+  const lineCount = Math.max(lines.length, 15);
+  const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
+
+  // Synchronize scrolling between textarea and overlay
+  const handleScroll = (e: UIEvent<HTMLTextAreaElement>) => {
+    const { scrollTop, scrollLeft } = e.currentTarget;
+    if (overlayRef.current) {
+      overlayRef.current.scrollTop = scrollTop;
+      overlayRef.current.scrollLeft = scrollLeft;
+    }
+    if (lineNumbersRef.current) {
+      lineNumbersRef.current.scrollTop = scrollTop;
+    }
+  };
+
+  // Handle Tab Indentation and IDE Auto-Closing Pairs: {}, (), [], "", ''
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    const target = e.currentTarget;
+    const start = target.selectionStart;
+    const end = target.selectionEnd;
+
+    // 1. Tab Indentation (4 spaces)
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const newValue = value.substring(0, start) + '    ' + value.substring(end);
+      onChange(newValue);
+      setTimeout(() => {
+        target.selectionStart = target.selectionEnd = start + 4;
+      }, 0);
+      return;
+    }
+
+    // Brackets & Quotes Pairs Mapping
+    const pairMap: Record<string, string> = {
+      '{': '}',
+      '(': ')',
+      '[': ']',
+      '"': '"',
+      "'": "'",
+    };
+
+    // 2. Auto-close opening brackets & quotes: {, (, [, ", '
+    if (pairMap[e.key]) {
+      const closing = pairMap[e.key];
+
+      // If text selected, wrap selected text in quotes/brackets!
+      if (start !== end) {
+        e.preventDefault();
+        const selectedText = value.substring(start, end);
+        const newValue = value.substring(0, start) + e.key + selectedText + closing + value.substring(end);
+        onChange(newValue);
+        setTimeout(() => {
+          target.selectionStart = start + 1;
+          target.selectionEnd = end + 1;
+        }, 0);
+        return;
+      }
+
+      // If typing quote and character right after cursor is already the quote, skip over it!
+      if ((e.key === '"' || e.key === "'") && value[start] === e.key) {
+        e.preventDefault();
+        setTimeout(() => {
+          target.selectionStart = target.selectionEnd = start + 1;
+        }, 0);
+        return;
+      }
+
+      // Auto-insert pair and place cursor inside
+      e.preventDefault();
+      const newValue = value.substring(0, start) + e.key + closing + value.substring(end);
+      onChange(newValue);
+      setTimeout(() => {
+        target.selectionStart = target.selectionEnd = start + 1;
+      }, 0);
+      return;
+    }
+
+    // 3. Skip over closing bracket/quote if already right in front of cursor
+    const closingChars = new Set(['}', ')', ']', '"', "'"]);
+    if (closingChars.has(e.key) && value[start] === e.key) {
+      e.preventDefault();
+      setTimeout(() => {
+        target.selectionStart = target.selectionEnd = start + 1;
+      }, 0);
+      return;
+    }
+
+    // 4. Smart Backspace: Delete matching empty pair if cursor is in between (e.g. {|} or "|" or (|))
+    if (e.key === 'Backspace' && start === end && start > 0) {
+      const charBefore = value[start - 1];
+      const charAfter = value[start];
+      if (pairMap[charBefore] && pairMap[charBefore] === charAfter) {
+        e.preventDefault();
+        const newValue = value.substring(0, start - 1) + value.substring(start + 1);
+        onChange(newValue);
+        setTimeout(() => {
+          target.selectionStart = target.selectionEnd = start - 1;
+        }, 0);
+        return;
+      }
+    }
+  };
+
+  // Track current active line for line highlighting
+  const handleSelect = (e: UIEvent<HTMLTextAreaElement>) => {
+    const target = e.currentTarget;
+    const cursorPos = target.selectionStart;
+    const currentLine = value.substring(0, cursorPos).split('\n').length;
+    setActiveLine(currentLine);
+  };
+
+  const highlightedHtml = highlightCSyntax(value);
 
   return (
-    <div className={`flex rounded-xl border border-bamboo-800 bg-ink-950 font-mono text-xs overflow-hidden shadow-inner ${className}`}>
-      {/* Line Numbers Sidebar */}
-      <div className="select-none bg-ink-900 px-3 py-4 text-right font-mono text-[11px] text-ink-500 border-r border-ink-800 leading-6">
-        {lineNumbers.map((num) => (
-          <div key={num}>{num}</div>
-        ))}
+    <div className={`flex flex-col rounded-2xl border border-bamboo-800 bg-ink-950 font-mono text-xs overflow-hidden shadow-2xl ${className}`}>
+      {/* C Compiler Syntax Color Legend Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-800 bg-ink-900/90 px-4 py-2 text-[11px] select-none">
+        <div className="flex items-center gap-1.5 font-bold text-emerald-400">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>C Syntax Color Guide:</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-sky-400" />
+            <span className="text-sky-400 font-bold">Data Type</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-pink-400" />
+            <span className="text-pink-400 font-bold">Keyword / Return</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-amber-300" />
+            <span className="text-amber-300 font-bold">Function</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-gray-100" />
+            <span className="text-gray-100 font-medium">Variable</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="text-emerald-400 font-semibold">String</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-orange-400" />
+            <span className="text-orange-400 font-bold">Number</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-rose-400" />
+            <span className="text-rose-400 font-bold">Operator</span>
+          </span>
+        </div>
       </div>
 
-      {/* Editor Main Input Area */}
-      <div className="relative flex-1 p-4">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          rows={rows}
-          placeholder={placeholder}
-          spellCheck={false}
-          className="w-full h-full bg-transparent font-mono text-xs leading-6 text-emerald-400 caret-white focus:outline-none resize-none whitespace-pre"
-        />
+      <div className="relative flex flex-1 overflow-hidden min-h-[280px]">
+        {/* Line Numbers Sidebar with Active Line & Error Highlights */}
+        <div
+          ref={lineNumbersRef}
+          className="select-none bg-ink-900/60 px-3 py-4 text-right font-mono text-[11px] text-ink-500 border-r border-ink-800 leading-6 overflow-hidden min-w-[40px]"
+        >
+          {lineNumbers.map((num) => {
+            const isActive = num === activeLine;
+            const isError = errorLineIndex === num;
+            return (
+              <div
+                key={num}
+                className={`px-1 rounded transition-colors ${
+                  isError
+                    ? 'bg-red-900/80 text-white font-bold animate-pulse'
+                    : isActive
+                    ? 'text-emerald-400 font-bold bg-ink-800/80'
+                    : ''
+                }`}
+              >
+                {num}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Editor Main Container */}
+        <div className="relative flex-1 overflow-hidden min-h-[280px]">
+          {/* Layer 1: Syntax Highlighting Visual Overlay */}
+          <div
+            ref={overlayRef}
+            aria-hidden="true"
+            className="absolute inset-0 p-4 font-mono text-xs leading-6 pointer-events-none overflow-auto whitespace-pre tab-4"
+            dangerouslySetInnerHTML={{ __html: highlightedHtml + '<br/>' }}
+          />
+
+          {/* Layer 2: Transparent Input Textarea for native typing & copy/paste */}
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onScroll={handleScroll}
+            onKeyDown={handleKeyDown}
+            onSelect={handleSelect}
+            onKeyUp={handleSelect}
+            onClick={handleSelect}
+            rows={rows}
+            placeholder={placeholder}
+            spellCheck={false}
+            className="absolute inset-0 w-full h-full p-4 bg-transparent font-mono text-xs leading-6 text-transparent caret-emerald-400 focus:outline-none resize-none whitespace-pre overflow-auto tab-4 selection:bg-emerald-500/30 selection:text-transparent"
+          />
+        </div>
       </div>
     </div>
   );

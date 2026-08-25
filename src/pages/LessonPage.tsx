@@ -60,14 +60,22 @@ export default function LessonPage({
     );
   }
 
-  // Find prev/next lesson index in current module
-  const moduleLessons = allLessons.filter((l) => l.moduleId === moduleId);
-  const currentIndex = moduleLessons.findIndex((l) => l.id === lessonId);
-  const prevLesson = currentIndex > 0 ? moduleLessons[currentIndex - 1] : undefined;
+  // Find prev/next lesson index across ALL lessons in order!
+  const currentGlobalIndex = allLessons.findIndex((l) => l.id === lessonId);
+  const prevLesson = currentGlobalIndex > 0 ? allLessons[currentGlobalIndex - 1] : undefined;
   const nextLesson =
-    currentIndex >= 0 && currentIndex < moduleLessons.length - 1
-      ? moduleLessons[currentIndex + 1]
+    currentGlobalIndex >= 0 && currentGlobalIndex < allLessons.length - 1
+      ? allLessons[currentGlobalIndex + 1]
       : undefined;
+
+  const handleSelectLesson = (targetLessonId: string) => {
+    const target = allLessons.find((l) => l.id === targetLessonId);
+    if (target) {
+      onStartLesson(target.moduleId, target.id);
+    } else {
+      onStartLesson(moduleId, targetLessonId);
+    }
+  };
 
   return (
     <LessonViewer
@@ -77,7 +85,7 @@ export default function LessonPage({
       prevLesson={prevLesson}
       nextLesson={nextLesson}
       onNavigateModule={() => onNavigate('dashboard')}
-      onSelectLesson={(nextId) => onStartLesson(moduleId, nextId)}
+      onSelectLesson={handleSelectLesson}
       onCompleteLesson={(id, xp) => completeLesson(moduleId, id, xp)}
       isCompleted={isCompleted(matchedLesson.id)}
     />

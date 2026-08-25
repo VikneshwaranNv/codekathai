@@ -5,7 +5,6 @@ import {
   LayoutGrid,
   Menu,
   X,
-  PlayCircle,
   Code2,
   Sparkles,
   Grid3x3,
@@ -42,7 +41,6 @@ const links: { id: Page; label: string; icon: typeof BookOpen }[] = [
   { id: 'practice', label: 'Practice', icon: Sparkles },
   { id: 'patterns', label: 'Patterns', icon: Grid3x3 },
   { id: 'tutor', label: 'AI Tutor', icon: Trophy },
-  { id: 'story', label: 'Story', icon: PlayCircle },
   { id: 'profile', label: 'Profile', icon: User },
 ];
 

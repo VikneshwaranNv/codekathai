@@ -1,14 +1,22 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Play, Pause, RotateCcw, Volume2, Loader2 } from 'lucide-react';
+import { speakTamilStory, stopTamilStory } from '@/lib/speechUtils';
 
 interface AudioButtonProps {
   src: string;
   label?: string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  fallbackText?: string;
 }
 
-export default function AudioButton({ src, label = 'Play Tamil Voice', size = 'md', className = '' }: AudioButtonProps) {
+export default function AudioButton({
+  src,
+  label = 'Play Tamil Voice',
+  size = 'md',
+  className = '',
+  fallbackText,
+}: AudioButtonProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'playing' | 'paused' | 'error'>('idle');
   const [progress, setProgress] = useState(0);
@@ -16,6 +24,7 @@ export default function AudioButton({ src, label = 'Play Tamil Voice', size = 'm
   useEffect(() => {
     const audio = new Audio();
     audio.preload = 'none';
+    audio.volume = 1.0; // 100% Max Volume
     audioRef.current = audio;
 
     const onTime = () => {
@@ -29,7 +38,22 @@ export default function AudioButton({ src, label = 'Play Tamil Voice', size = 'm
     const onPlaying = () => setStatus('playing');
     const onPause = () => setStatus((s) => (s === 'error' ? s : 'paused'));
     const onWaiting = () => setStatus('loading');
-    const onError = () => setStatus('error');
+    const onError = () => {
+      // Fallback to Web Speech API at 100% volume
+      if (fallbackText) {
+        const speechSuccess = speakTamilStory(
+          fallbackText,
+          'narrator',
+          () => setStatus('idle'),
+          () => setStatus('error')
+        );
+        if (speechSuccess) {
+          setStatus('playing');
+          return;
+        }
+      }
+      setStatus('error');
+    };
 
     audio.addEventListener('timeupdate', onTime);
     audio.addEventListener('ended', onEnded);
@@ -40,6 +64,7 @@ export default function AudioButton({ src, label = 'Play Tamil Voice', size = 'm
 
     return () => {
       audio.pause();
+      stopTamilStory();
       audio.removeEventListener('timeupdate', onTime);
       audio.removeEventListener('ended', onEnded);
       audio.removeEventListener('playing', onPlaying);
@@ -47,41 +72,56 @@ export default function AudioButton({ src, label = 'Play Tamil Voice', size = 'm
       audio.removeEventListener('waiting', onWaiting);
       audio.removeEventListener('error', onError);
     };
-  }, [src]);
+  }, [src, fallbackText]);
 
   const toggle = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (status === 'error') {
+    if (status === 'playing') {
+      audio.pause();
+      stopTamilStory();
       setStatus('idle');
       return;
     }
 
-    if (status === 'idle' || status === 'paused') {
-      if (audio.src !== src) {
-        audio.src = src;
-        audio.load();
-      }
-      setStatus('loading');
-      audio.play().catch(() => setStatus('error'));
-    } else if (status === 'playing') {
-      audio.pause();
+    if (status === 'error' || !audio.src || audio.src !== src) {
+      audio.src = src;
+      audio.volume = 1.0;
     }
-  }, [status, src]);
+    setStatus('loading');
+    audio.play().catch(() => {
+      // Fallback to max volume speech synthesis
+      if (fallbackText) {
+        const speechSuccess = speakTamilStory(
+          fallbackText,
+          'narrator',
+          () => setStatus('idle'),
+          () => setStatus('error')
+        );
+        if (speechSuccess) {
+          setStatus('playing');
+          return;
+        }
+      }
+      setStatus('error');
+    });
+  }, [status, src, fallbackText]);
 
   const restart = useCallback(() => {
+    stopTamilStory();
     const audio = audioRef.current;
-    if (!audio || status === 'error') return;
+    if (!audio) return;
     if (audio.src !== src) {
       audio.src = src;
+      audio.volume = 1.0;
       audio.load();
     }
     audio.currentTime = 0;
     setProgress(0);
     setStatus('loading');
     audio.play().catch(() => setStatus('error'));
-  }, [status, src]);
+  }, [src]);
 
   const sizeClasses = {
     sm: 'h-9 px-3 text-xs gap-1.5',
@@ -96,7 +136,7 @@ export default function AudioButton({ src, label = 'Play Tamil Voice', size = 'm
       <button
         onClick={toggle}
         disabled={status === 'loading'}
-        className={`btn bg-bamboo-600 text-white hover:bg-bamboo-700 ${sizeClasses[size]} relative overflow-hidden`}
+        className={`btn bg-bamboo-600 text-white hover:bg-bamboo-700 font-bold ${sizeClasses[size]} relative overflow-hidden shadow-sm`}
         aria-label={label}
       >
         <span className="absolute inset-0 -z-10 bg-bamboo-600 transition-all" style={{ width: `${progress}%`, opacity: 0.25 }} />
@@ -108,7 +148,7 @@ export default function AudioButton({ src, label = 'Play Tamil Voice', size = 'm
           <Play className={`${iconSize[size]} fill-current`} />
         )}
         <Volume2 className={iconSize[size]} />
-        <span>{status === 'playing' ? 'Playing...' : status === 'error' ? 'Voice N/A' : label}</span>
+        <span>{status === 'playing' ? 'Playing Voiceover... 🔊' : label}</span>
       </button>
 
       {(status === 'playing' || status === 'paused') && (

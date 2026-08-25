@@ -1,0 +1,14 @@
+# Per-Run Isolated Sandbox Container for Untrusted Student C Code
+FROM alpine:latest
+
+# Install lightweight GCC and Musl C library
+RUN apk add --no-cache gcc musl-dev
+
+# Create non-root sandbox user for security
+RUN adduser -D -u 1000 sandboxuser
+
+WORKDIR /sandbox
+USER sandboxuser
+
+# Default command
+CMD ["gcc", "--version"]

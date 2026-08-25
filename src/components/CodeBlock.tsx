@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { CodePart } from '@/data/course';
+import type { CodePart } from '@/types';
 
 interface CodeBlockProps {
   parts: CodePart[];
@@ -9,13 +9,14 @@ interface CodeBlockProps {
 }
 
 const toneClasses: Record<string, string> = {
-  keyword: 'text-golden-500 font-semibold',
-  type: 'text-bamboo-600 font-semibold',
-  name: 'text-ink-900',
-  value: 'text-golden-600 font-medium',
-  punct: 'text-ink-400',
-  comment: 'text-ink-400 italic',
-  plain: 'text-ink-700',
+  keyword: 'text-pink-400 font-bold',      // Control & Return Keywords -> Pink
+  type: 'text-sky-400 font-extrabold',      // Data Types -> Sky Blue
+  name: 'text-amber-300 font-bold',        // Functions & Identifiers -> Amber Yellow
+  value: 'text-emerald-400 font-semibold',  // Strings & Literals -> Emerald Green
+  number: 'text-orange-400 font-bold',     // Numbers -> Orange
+  punct: 'text-rose-400 font-bold',        // Operators & Punctuation -> Rose
+  comment: 'text-slate-400 italic',         // Comments -> Muted Slate
+  plain: 'text-gray-100 font-medium',       // Plain Variables & Text -> Soft White
 };
 
 export default function CodeBlock({ parts, caption, animate = true, className = '' }: CodeBlockProps) {
@@ -38,14 +39,23 @@ export default function CodeBlock({ parts, caption, animate = true, className = 
   }, [parts, animate]);
 
   return (
-    <div className={`overflow-hidden rounded-2xl bg-ink-950 shadow-card ${className}`}>
-      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2.5">
-        <span className="h-3 w-3 rounded-full bg-red-400/80" />
-        <span className="h-3 w-3 rounded-full bg-golden-400/80" />
-        <span className="h-3 w-3 rounded-full bg-bamboo-400/80" />
-        <span className="ml-2 font-mono text-xs text-white/40">code.c</span>
+    <div className={`overflow-hidden rounded-2xl bg-ink-950 border border-ink-800 shadow-card ${className}`}>
+      {/* Top Header with Color Guide Indicator */}
+      <div className="flex flex-wrap items-center justify-between border-b border-white/10 bg-ink-900 px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full bg-red-500/80" />
+          <span className="h-3 w-3 rounded-full bg-amber-400/80" />
+          <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
+          <span className="ml-2 font-mono text-xs font-bold text-emerald-400">code.c</span>
+        </div>
+        <div className="flex items-center gap-2.5 text-[11px] font-mono select-none">
+          <span className="text-sky-400 font-bold">Data Type</span>
+          <span className="text-pink-400 font-bold">Keyword</span>
+          <span className="text-amber-300 font-bold">Function</span>
+          <span className="text-gray-100 font-medium">Variable</span>
+        </div>
       </div>
-      <div className="px-5 py-4 font-mono text-[15px] leading-relaxed">
+      <div className="px-5 py-4 font-mono text-[15px] leading-relaxed text-gray-100">
         <pre className="whitespace-pre-wrap break-words">
           <code>
             {parts.map((p, idx) => (
@@ -57,11 +67,11 @@ export default function CodeBlock({ parts, caption, animate = true, className = 
                 {p.text}
               </span>
             ))}
-            <span className="ml-0.5 inline-block h-4 w-2 animate-type-cursor bg-bamboo-400 align-middle" />
+            <span className="ml-0.5 inline-block h-4 w-2 animate-type-cursor bg-emerald-400 align-middle" />
           </code>
         </pre>
         {caption && (
-          <p className="mt-3 border-t border-white/10 pt-3 font-sans text-xs text-bamboo-300">
+          <p className="mt-3 border-t border-white/10 pt-3 font-sans text-xs font-semibold text-emerald-300">
             {caption}
           </p>
         )}

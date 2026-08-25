@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { UserProfile, Level } from '@/types';
+import { supabase } from '@/lib/supabase';
 
 const STORAGE_KEY = 'codekathai_user_profile_v2';
 
@@ -7,25 +8,13 @@ interface AuthContextValue {
   user: UserProfile | null;
   profile: UserProfile | null;
   loading: boolean;
-  createProfile: (name: string, email?: string) => UserProfile;
+  createProfile: (name: string, email?: string) => Promise<UserProfile>;
   updateProfile: (updates: Partial<UserProfile>) => void;
   setLevel: (level: Level) => void;
   signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-const defaultProfile: UserProfile = {
-  id: 'usr_default',
-  name: 'Learner',
-  email: '',
-  xp: 150,
-  streak: 3,
-  completedLessons: ['intro-what-is-c', 'variables-beginner-lunchbox'],
-  badges: ['🌱 Starter', '📖 First Kathai'],
-  currentLevel: 'beginner',
-  createdAt: new Date().toISOString(),
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfileState] = useState<UserProfile | null>(() => {
@@ -50,40 +39,117 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const createProfile = useCallback((name: string, email?: string): UserProfile => {
-    const cleanName = name.trim() || 'Learner';
-    const newProf: UserProfile = {
-      id: 'usr_' + Date.now(),
-      name: cleanName,
-      email: email?.trim() || '',
-      xp: 100,
-      streak: 1,
-      completedLessons: [],
-      badges: ['🌱 Welcome Learner'],
-      currentLevel: 'beginner',
-      createdAt: new Date().toISOString(),
-    };
-    saveProfile(newProf);
-    return newProf;
-  }, []);
+  // Sync profile directly into your exact Supabase `user_profiles` table
+  const syncToSupabase = async (p: UserProfile) => {
+    try {
+      // Generate valid UUID string for PostgreSQL uuid column
+      const validUuid =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0');
 
-  const updateProfile = useCallback((updates: Partial<UserProfile>) => {
-    setProfileState((prev) => {
-      if (!prev) return null;
-      const next = { ...prev, ...updates };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
+      const payload = {
+        id: validUuid,
+        full_name: p.name,
+        email: p.email || null,
+        learning_level: p.currentLevel || 'beginner',
+      };
 
-  const setLevel = useCallback((level: Level) => {
-    setProfileState((prev) => {
-      if (!prev) return null;
-      const next = { ...prev, currentLevel: level };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
+      console.log('Inserting into Supabase user_profiles:', payload);
+
+      const { data, error } = await supabase.from('user_profiles').insert([payload]).select();
+      if (error) {
+        console.error('Supabase user_profiles insert error:', error.message, error.details);
+      } else {
+        console.log('Successfully inserted user profile into Supabase:', data);
+      }
+    } catch (err) {
+      console.error('Supabase user_profiles sync catch error:', err);
+    }
+  };
+
+  const createProfile = useCallback(
+    async (name: string, email?: string): Promise<UserProfile> => {
+      setLoading(true);
+      const cleanName = name.trim() || 'Learner';
+      const cleanEmail = email?.trim() || '';
+
+      // 1. Check if user already exists in `user_profiles` by email
+      if (cleanEmail) {
+        try {
+          const { data } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('email', cleanEmail)
+            .maybeSingle();
+
+          if (data) {
+            const existingProf: UserProfile = {
+              id: data.id || 'usr_' + Date.now(),
+              name: data.full_name || cleanName,
+              email: data.email || cleanEmail,
+              xp: 150,
+              streak: 1,
+              completedLessons: [],
+              badges: ['🌱 Welcome Learner'],
+              currentLevel: data.learning_level || 'beginner',
+              createdAt: new Date().toISOString(),
+            };
+            saveProfile(existingProf);
+            setLoading(false);
+            return existingProf;
+          }
+        } catch (e) {
+          console.warn('Supabase lookup warning:', e);
+        }
+      }
+
+      // 2. Create new profile object
+      const newProf: UserProfile = {
+        id: 'usr_' + Date.now(),
+        name: cleanName,
+        email: cleanEmail,
+        xp: 100,
+        streak: 1,
+        completedLessons: [],
+        badges: ['🌱 Welcome Learner'],
+        currentLevel: 'beginner',
+        createdAt: new Date().toISOString(),
+      };
+
+      saveProfile(newProf);
+      await syncToSupabase(newProf);
+      setLoading(false);
+      return newProf;
+    },
+    []
+  );
+
+  const updateProfile = useCallback(
+    (updates: Partial<UserProfile>) => {
+      setProfileState((prev) => {
+        if (!prev) return null;
+        const next = { ...prev, ...updates };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        syncToSupabase(next);
+        return next;
+      });
+    },
+    []
+  );
+
+  const setLevel = useCallback(
+    (level: Level) => {
+      setProfileState((prev) => {
+        if (!prev) return null;
+        const next = { ...prev, currentLevel: level };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        syncToSupabase(next);
+        return next;
+      });
+    },
+    []
+  );
 
   const signOut = useCallback(() => {
     saveProfile(null);

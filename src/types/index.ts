@@ -15,7 +15,9 @@ export type ModuleId =
   | 'pointers'
   | 'structures'
   | 'filehandling'
-  | 'problemsolving';
+  | 'problemsolving'
+  | 'stack'
+  | 'queue';
 
 export interface Topic {
   id: string;
@@ -57,6 +59,8 @@ export interface StoryScene {
     | 'machine'
     | 'lockers'
     | 'address'
+    | 'stack'
+    | 'queue'
     | 'generic';
   dialogue: string;
   code?: CodePart[];
@@ -140,6 +144,10 @@ export interface UserProfile {
   xp: number;
   streak: number;
   completedLessons: string[];
+  solvedPractice?: string[];
+  completedPatterns?: string[];
+  playgroundRunsCount?: number;
+  aiVisualsCount?: number;
   badges: string[];
   currentLevel: Level;
   createdAt: string;

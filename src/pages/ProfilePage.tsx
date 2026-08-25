@@ -1,7 +1,8 @@
-import { Trophy, Award, Flame, Zap, GraduationCap, CheckCircle2, User } from 'lucide-react';
+import { Trophy, Award, Flame, Zap, GraduationCap, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import type { ProgressState } from '@/lib/useProgress';
 import type { Page } from '@/components/Navbar';
+import SectionProgressTracker from '@/components/SectionProgressTracker';
 
 interface ProfilePageProps {
   onNavigate: (page: Page) => void;
@@ -87,6 +88,11 @@ export default function ProfilePage({ onNavigate, progress }: ProfilePageProps) 
             <p className="font-display text-xl font-bold text-purple-600">Level {progress.level}</p>
           </div>
         </div>
+      </div>
+
+      {/* UNIVERSAL ALL-SECTIONS PROGRESS TRACKER */}
+      <div className="mb-8">
+        <SectionProgressTracker progress={progress} />
       </div>
 
       {/* Badges Section */}

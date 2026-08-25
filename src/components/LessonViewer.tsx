@@ -16,11 +16,15 @@ import {
   Clock,
   RotateCcw,
   Check,
+  Play,
 } from 'lucide-react';
 import type { Lesson, Level, Module } from '@/types';
 import CodeBlock from '@/components/CodeBlock';
 import StoryCard from '@/components/StoryCard';
 import SceneVisual from '@/components/SceneVisual';
+import CCodeEditor from '@/components/CCodeEditor';
+import InteractiveTerminal from '@/components/InteractiveTerminal';
+import { compileAndRunCProgram } from '@/lib/cSimulator';
 
 interface LessonViewerProps {
   lesson: Lesson;
@@ -63,6 +67,15 @@ export default function LessonViewer({
   const [challengePassed, setChallengePassed] = useState<boolean | null>(null);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
 
+  // Lesson Compiler State
+  const initialCode =
+    lesson.code.parts.map((p) => p.text).join('') ||
+    '#include <stdio.h>\n\nint main() {\n    printf("Hello Lesson!\\n");\n    return 0;\n}';
+  const [lessonCode, setLessonCode] = useState(initialCode);
+  const [lessonCompilerOutput, setLessonCompilerOutput] = useState('');
+  const [lessonCompilerError, setLessonCompilerError] = useState<string | null>(null);
+  const [isCompilingLesson, setIsCompilingLesson] = useState(false);
+
   useEffect(() => {
     setActiveTab('concept');
     setSceneIndex(0);
@@ -70,7 +83,31 @@ export default function LessonViewer({
     setChallengeCode(lesson.challenge.starter);
     setChallengePassed(null);
     setShowCompletionModal(false);
+
+    const c = lesson.code.parts.map((p) => p.text).join('');
+    setLessonCode(
+      c || '#include <stdio.h>\n\nint main() {\n    printf("Hello Lesson!\\n");\n    return 0;\n}',
+    );
+    setLessonCompilerOutput('');
+    setLessonCompilerError(null);
   }, [lesson.id]);
+
+  const handleRunLessonCompiler = async (overrideInput?: string) => {
+    setIsCompilingLesson(true);
+    setLessonCompilerError(null);
+    setLessonCompilerOutput('Compiling lesson code with GCC...');
+
+    const result = await compileAndRunCProgram(lessonCode, overrideInput || '5');
+
+    if (result.error) {
+      setLessonCompilerError(result.error);
+      setLessonCompilerOutput('');
+    } else {
+      setLessonCompilerOutput(result.output || 'Program finished with exit code 0.');
+      setLessonCompilerError(null);
+    }
+    setIsCompilingLesson(false);
+  };
 
   const handlePracticeOption = (idx: number) => {
     setPracticePicked(idx);
@@ -107,7 +144,7 @@ export default function LessonViewer({
 
   return (
     <div className="container-page py-6 sm:py-10">
-      {/* Breadcrumb Header */}
+      {/* Breadcrumb Header & Top Next Lesson Quick Button */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-sm text-ink-500">
           <button
@@ -118,11 +155,24 @@ export default function LessonViewer({
             {module.title}
           </button>
           <span>/</span>
-          <span className="font-semibold text-bamboo-800 dark:text-bamboo-200">{lesson.title}</span>
+          <span className="font-semibold text-bamboo-800 dark:text-bamboo-200">
+            {lesson.title}
+          </span>
         </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-bold ${levelBadgeColor}`}>
-          {levelBadgeLabel}
-        </span>
+
+        <div className="flex items-center gap-2">
+          {nextLesson && (
+            <button
+              onClick={() => onSelectLesson(nextLesson.id)}
+              className="flex items-center gap-1.5 rounded-full bg-bamboo-100 px-3.5 py-1.5 text-xs font-bold text-bamboo-800 hover:bg-bamboo-200 dark:bg-bamboo-950 dark:text-bamboo-300 dark:hover:bg-bamboo-900 transition-all border border-bamboo-200 dark:border-bamboo-800"
+            >
+              Next Lesson: {nextLesson.title} <ArrowRight className="h-3.5 w-3.5 text-bamboo-600" />
+            </button>
+          )}
+          <span className={`rounded-full px-3 py-1 text-xs font-bold ${levelBadgeColor}`}>
+            {levelBadgeLabel}
+          </span>
+        </div>
       </div>
 
       {/* Main Card Header */}
@@ -256,14 +306,55 @@ export default function LessonViewer({
             </div>
           )}
 
-          {/* TAB 4: CODE & BREAKDOWN */}
+          {/* TAB 4: CODE & INTERACTIVE COMPILER */}
           {activeTab === 'code' && (
             <div className="space-y-6">
               <div>
                 <h3 className="font-display text-base font-bold text-bamboo-950 dark:text-white mb-2">
-                  C Code Example
+                  C Code Example (High-Contrast View)
                 </h3>
                 <CodeBlock parts={lesson.code.parts} />
+              </div>
+
+              {/* Interactive Compiler Section inside Lesson */}
+              <div className="rounded-2xl border border-bamboo-200 bg-ink-950 p-4 shadow-md dark:border-bamboo-800">
+                <div className="flex items-center justify-between border-b border-ink-800 pb-3 mb-3">
+                  <span className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                    <Code2 className="h-4 w-4" /> ⚡ Live Lesson C GCC Compiler (Edit & Run Live)
+                  </span>
+                  <button
+                    onClick={() => handleRunLessonCompiler()}
+                    disabled={isCompilingLesson}
+                    className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-soft"
+                  >
+                    <Play className="h-3.5 w-3.5 fill-current" />{' '}
+                    {isCompilingLesson ? 'Running...' : 'Run Lesson Code'}
+                  </button>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {/* C Code Editor */}
+                  <div>
+                    <CCodeEditor
+                      value={lessonCode}
+                      onChange={setLessonCode}
+                      rows={10}
+                      placeholder="// Edit lesson C code here..."
+                    />
+                  </div>
+
+                  {/* Interactive Terminal */}
+                  <div>
+                    <InteractiveTerminal
+                      output={lessonCompilerOutput}
+                      error={lessonCompilerError}
+                      isRunning={isCompilingLesson}
+                      onRun={handleRunLessonCompiler}
+                      initialInput="5"
+                      placeholder="Type input here & press Enter..."
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -329,9 +420,7 @@ export default function LessonViewer({
               </div>
 
               {/* Story Scene Card */}
-              {lesson.story[sceneIndex] && (
-                <StoryCard scene={lesson.story[sceneIndex]} />
-              )}
+              {lesson.story[sceneIndex] && <StoryCard scene={lesson.story[sceneIndex]} />}
             </div>
           )}
 
@@ -354,9 +443,11 @@ export default function LessonViewer({
 
                     if (practicePicked !== null) {
                       if (isCorrect) {
-                        style = 'border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200';
+                        style =
+                          'border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200';
                       } else if (isSelected) {
-                        style = 'border-red-500 bg-red-50 text-red-900 dark:bg-red-950/60 dark:text-red-200';
+                        style =
+                          'border-red-500 bg-red-50 text-red-900 dark:bg-red-950/60 dark:text-red-200';
                       }
                     }
 
@@ -430,17 +521,17 @@ export default function LessonViewer({
       </div>
 
       {/* Lesson Navigation Footer */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-ink-900 border border-bamboo-100 dark:border-bamboo-800 shadow-soft">
         {prevLesson ? (
           <button
             onClick={() => onSelectLesson(prevLesson.id)}
-            className="btn-ghost flex items-center gap-2 text-xs"
+            className="btn-ghost flex items-center gap-2 text-xs font-bold text-ink-700 dark:text-ink-300 hover:text-bamboo-700"
           >
             <ArrowLeft className="h-4 w-4" /> Previous: {prevLesson.title}
           </button>
         ) : (
-          <button onClick={onNavigateModule} className="btn-ghost flex items-center gap-2 text-xs">
-            <ArrowLeft className="h-4 w-4" /> Back to Module
+          <button onClick={onNavigateModule} className="btn-ghost flex items-center gap-2 text-xs font-bold">
+            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
           </button>
         )}
 
@@ -452,12 +543,21 @@ export default function LessonViewer({
           {isCompleted ? 'Completed (Earn XP)' : 'Complete Lesson & Claim XP 🎉'}
         </button>
 
-        {nextLesson && (
+        {nextLesson ? (
           <button
             onClick={() => onSelectLesson(nextLesson.id)}
-            className="btn-ghost flex items-center gap-2 text-xs"
+            className="btn-primary flex items-center gap-2 bg-bamboo-600 hover:bg-bamboo-700 text-white text-xs px-6 py-3 font-bold shadow-soft transition-all"
           >
-            Next: {nextLesson.title} <ArrowRight className="h-4 w-4" />
+            <span>Next Lesson: <strong>{nextLesson.title}</strong> (அடுத்த பாடம்)</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        ) : (
+          <button
+            onClick={onNavigateModule}
+            className="btn-primary flex items-center gap-2 bg-emerald-600 text-white text-xs px-6 py-3 font-bold"
+          >
+            <span>Finish Course Track 🎉</span>
+            <CheckCircle2 className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -489,15 +589,26 @@ export default function LessonViewer({
             </div>
 
             <div className="flex flex-col gap-3">
-              {nextLesson && (
+              {nextLesson ? (
                 <button
                   onClick={() => {
                     setShowCompletionModal(false);
                     onSelectLesson(nextLesson.id);
                   }}
-                  className="btn-primary w-full text-sm py-3"
+                  className="btn-primary w-full text-sm py-3 font-bold bg-bamboo-600 hover:bg-bamboo-700 text-white flex items-center justify-center gap-2"
                 >
-                  Continue to Next Lesson <ArrowRight className="h-4 w-4 inline ml-1" />
+                  <span>Next Lesson: <strong>{nextLesson.title}</strong> (அடுத்த பாடம்)</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setShowCompletionModal(false);
+                    onNavigateModule();
+                  }}
+                  className="btn-primary w-full text-sm py-3 bg-emerald-600 text-white font-bold"
+                >
+                  Return to Course Dashboard
                 </button>
               )}
               <button
@@ -505,7 +616,7 @@ export default function LessonViewer({
                   setShowCompletionModal(false);
                   onNavigateModule();
                 }}
-                className="btn-ghost w-full text-sm py-2.5"
+                className="btn-ghost w-full text-xs py-2 text-ink-500"
               >
                 Back to Module Courses
               </button>

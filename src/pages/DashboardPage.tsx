@@ -15,6 +15,7 @@ import { useAuth } from '@/lib/auth';
 import type { ProgressState } from '@/lib/useProgress';
 import type { Page } from '@/components/Navbar';
 import ProgressBar from '@/components/ProgressBar';
+import SectionProgressTracker from '@/components/SectionProgressTracker';
 
 interface DashboardPageProps {
   onNavigate: (page: Page) => void;
@@ -49,7 +50,7 @@ export default function DashboardPage({
   return (
     <div className="container-page py-8 sm:py-10">
       {/* Welcome Banner */}
-      <div className="card mb-8 p-6 sm:p-8 bg-gradient-to-r from-bamboo-600 to-emerald-700 text-white border-0 shadow-xl">
+      <div className="card mb-8 p-6 sm:p-8 bg-gradient-to-r from-bamboo-600 to-emerald-700 text-white border-0 shadow-xl hover:shadow-2xl hover:scale-[1.01] transition-all duration-300">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -65,13 +66,13 @@ export default function DashboardPage({
           </div>
 
           <div className="flex gap-3">
-            <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 text-center min-w-[100px]">
+            <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 text-center min-w-[100px] hover:bg-white/20 transition-all cursor-pointer">
               <span className="text-[10px] uppercase font-bold text-bamboo-200">Total XP</span>
               <p className="font-display text-xl font-bold text-golden-300">
                 {progress.xp} XP
               </p>
             </div>
-            <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 text-center min-w-[100px]">
+            <div className="rounded-2xl bg-white/10 backdrop-blur-md p-4 text-center min-w-[100px] hover:bg-white/20 transition-all cursor-pointer">
               <span className="text-[10px] uppercase font-bold text-bamboo-200">Completed</span>
               <p className="font-display text-xl font-bold text-white">
                 {progress.completedCount}
@@ -79,6 +80,11 @@ export default function DashboardPage({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* UNIVERSAL ALL-SECTIONS PROGRESS TRACKER */}
+      <div className="mb-8">
+        <SectionProgressTracker progress={progress} />
       </div>
 
       {/* Modules Section Header */}
@@ -93,7 +99,7 @@ export default function DashboardPage({
         </div>
         <button
           onClick={() => onNavigate('levels')}
-          className="btn-ghost text-xs font-bold text-bamboo-700 hover:bg-bamboo-100 dark:text-bamboo-300"
+          className="btn-ghost text-xs font-bold text-bamboo-700 hover:bg-bamboo-100 dark:text-bamboo-300 hover:scale-105 transition-all"
         >
           Change Level ({currentLevel}) →
         </button>
@@ -109,17 +115,17 @@ export default function DashboardPage({
           return (
             <div
               key={mod.id}
-              className="card flex flex-col justify-between p-6 border border-bamboo-100 dark:border-bamboo-800 hover:shadow-md transition-all"
+              className="group card flex flex-col justify-between p-6 border border-bamboo-100 dark:border-bamboo-800 hover:-translate-y-2 hover:shadow-2xl hover:border-bamboo-400 dark:hover:border-bamboo-500 hover:ring-4 hover:ring-bamboo-500/10 transition-all duration-300 cursor-pointer bg-gradient-to-b from-white via-white to-bamboo-50/20 dark:from-ink-900 dark:to-ink-900/80"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-bamboo-100 text-bamboo-700 dark:bg-bamboo-950 dark:text-bamboo-300 font-bold text-sm">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-bamboo-100 text-bamboo-700 dark:bg-bamboo-950 dark:text-bamboo-300 font-bold text-sm group-hover:scale-110 group-hover:bg-bamboo-600 group-hover:text-white transition-all duration-300 shadow-sm">
                     #{mod.index}
                   </span>
-                  <span className="text-xs font-bold text-ink-500">{mod.topics.length} Topics</span>
+                  <span className="text-xs font-bold text-ink-500 group-hover:text-bamboo-600 transition-colors">{mod.topics.length} Topics</span>
                 </div>
 
-                <h3 className="font-display text-lg font-bold text-bamboo-950 dark:text-white">
+                <h3 className="font-display text-lg font-bold text-bamboo-950 dark:text-white group-hover:text-bamboo-700 dark:group-hover:text-bamboo-300 transition-colors">
                   {mod.title}
                 </h3>
                 <p className="font-tamil text-xs font-bold text-bamboo-700 dark:text-bamboo-300 mt-0.5">
@@ -139,12 +145,13 @@ export default function DashboardPage({
                 </div>
               </div>
 
+              {/* Module Card Action Button: Clean Start Module */}
               <div className="mt-6">
                 <button
                   onClick={() => onStartLesson(mod.id, firstLessonId)}
-                  className="btn-primary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2"
+                  className="btn-primary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 group-hover:scale-[1.02] group-hover:shadow-lg transition-all duration-300"
                 >
-                  {p > 0 ? 'Continue Module' : 'Start Module'} <ArrowRight className="h-4 w-4" />
+                  {p > 0 ? 'Continue Module' : 'Start Module'} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>

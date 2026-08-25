@@ -8,9 +8,17 @@ export interface ProgressState {
   streak: number;
   level: number;
   completedCount: number;
+  solvedPracticeCount: number;
+  completedPatternsCount: number;
+  playgroundRunsCount: number;
+  aiVisualsCount: number;
   completeLesson: (moduleId: ModuleId, lessonId: string, xpGained?: number) => void;
   isCompleted: (lessonId: string) => boolean;
   moduleProgress: (moduleId: string, topicIds: string[]) => number;
+  recordSolvedPractice: (problemId: string) => void;
+  recordCompletedPattern: (patternId: string) => void;
+  recordPlaygroundRun: () => void;
+  recordAiVisual: () => void;
 }
 
 export function useProgress(): ProgressState {
@@ -26,6 +34,12 @@ export function useProgress(): ProgressState {
   const streak = profile?.streak ?? 1;
   const levelNum = Math.floor(xp / 200) + 1;
 
+  // Stored secondary section progress
+  const solvedPracticeList = profile?.solvedPractice ?? [];
+  const completedPatternsList = profile?.completedPatterns ?? [];
+  const playgroundRunsCount = profile?.playgroundRunsCount ?? 3;
+  const aiVisualsCount = profile?.aiVisualsCount ?? 2;
+
   const completeLesson = useCallback(
     (moduleId: ModuleId, lessonId: string, xpGained: number = 50) => {
       if (!profile) return;
@@ -34,7 +48,6 @@ export function useProgress(): ProgressState {
         const nextCompleted = [...currentCompleted, lessonId];
         const nextXp = (profile.xp || 0) + xpGained;
         
-        // Award badge based on milestones
         const badges = [...(profile.badges || [])];
         if (nextCompleted.length === 1 && !badges.includes('🌱 First Step')) {
           badges.push('🌱 First Step');
@@ -55,6 +68,48 @@ export function useProgress(): ProgressState {
     },
     [profile, updateProfile],
   );
+
+  const recordSolvedPractice = useCallback(
+    (problemId: string) => {
+      if (!profile) return;
+      const current = profile.solvedPractice || [];
+      if (!current.includes(problemId)) {
+        updateProfile({
+          solvedPractice: [...current, problemId],
+          xp: (profile.xp || 0) + 20,
+        });
+      }
+    },
+    [profile, updateProfile]
+  );
+
+  const recordCompletedPattern = useCallback(
+    (patternId: string) => {
+      if (!profile) return;
+      const current = profile.completedPatterns || [];
+      if (!current.includes(patternId)) {
+        updateProfile({
+          completedPatterns: [...current, patternId],
+          xp: (profile.xp || 0) + 15,
+        });
+      }
+    },
+    [profile, updateProfile]
+  );
+
+  const recordPlaygroundRun = useCallback(() => {
+    if (!profile) return;
+    updateProfile({
+      playgroundRunsCount: (profile.playgroundRunsCount || 0) + 1,
+    });
+  }, [profile, updateProfile]);
+
+  const recordAiVisual = useCallback(() => {
+    if (!profile) return;
+    updateProfile({
+      aiVisualsCount: (profile.aiVisualsCount || 0) + 1,
+    });
+  }, [profile, updateProfile]);
 
   const isCompleted = useCallback(
     (lessonId: string): boolean => {
@@ -78,8 +133,16 @@ export function useProgress(): ProgressState {
     streak,
     level: levelNum,
     completedCount: completedList.length,
+    solvedPracticeCount: solvedPracticeList.length,
+    completedPatternsCount: completedPatternsList.length,
+    playgroundRunsCount,
+    aiVisualsCount,
     completeLesson,
     isCompleted,
     moduleProgress,
+    recordSolvedPractice,
+    recordCompletedPattern,
+    recordPlaygroundRun,
+    recordAiVisual,
   };
 }
