@@ -261,12 +261,6 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
 
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => onNavigate('home')}
-              className="btn-secondary px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-bamboo-600 hover:bg-bamboo-700 text-white border-bamboo-500 rounded-xl transition-all shadow-sm"
-            >
-              <BookOpen className="h-4 w-4 text-golden-300" /> Start Learning Page →
-            </button>
-            <button
               onClick={fetchStudentData}
               disabled={refreshing}
               className="btn-secondary px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl transition-all"

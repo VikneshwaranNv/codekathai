@@ -25,19 +25,26 @@ interface LessonTarget {
 
 function MainApp() {
   const { user, profile, setLevel, isAdmin } = useAuth();
-  const [page, setPage] = useState<Page>(() => (isAdmin ? 'admin' : 'home'));
+  const [page, setPage] = useState<Page>(() => {
+    if (isAdmin) return 'admin';
+    if (!user) return 'login' as any;
+    return 'home';
+  });
+
   const [lessonTarget, setLessonTarget] = useState<LessonTarget>({
     moduleId: 'variables',
     lessonId: 'variables-what-is-var',
   });
   const progress = useProgress();
 
-  // Routing Guard: Prevent non-admin students from accessing admin dashboard
+  // Redirect upon login or routing guard
   useEffect(() => {
-    if (!isAdmin && page === 'admin') {
+    if (user && (page === ('login' as any) || !page)) {
+      setPage(isAdmin ? 'admin' : 'home');
+    } else if (!isAdmin && page === 'admin') {
       setPage('home');
     }
-  }, [isAdmin, page]);
+  }, [user, isAdmin, page]);
 
   const navigate = (p: Page) => {
     // Security check: if student attempts to navigate to 'admin', redirect to home
@@ -60,20 +67,8 @@ function MainApp() {
     navigate('dashboard');
   };
 
-  // If user is not logged in but clicks Home, show Landing Page!
-  if (!user && page === 'home') {
-    return (
-      <div className="flex min-h-screen flex-col bg-bamboo-50/20 dark:bg-ink-950">
-        <Navbar current={page} onNavigate={navigate} />
-        <main className="flex-1">
-          <LandingPage onNavigate={navigate} />
-        </main>
-      </div>
-    );
-  }
-
   if (!user) {
-    return <AuthPage onNavigate={navigate} />;
+    return <AuthPage />;
   }
 
   const currentLevel = profile?.currentLevel ?? 'beginner';
