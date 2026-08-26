@@ -18,6 +18,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
+import type { Page } from '@/components/Navbar';
 import { useAuth } from '@/lib/auth';
 import {
   signInWithEmailPassword,
@@ -30,7 +31,11 @@ import {
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'admin';
 
-export default function AuthPage() {
+interface AuthPageProps {
+  onNavigate?: (page: Page) => void;
+}
+
+export default function AuthPage({ onNavigate }: AuthPageProps = {}) {
   const [mode, setMode] = useState<AuthMode>('login');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -265,12 +270,16 @@ export default function AuthPage() {
 
           {/* Top Brand Tag */}
           <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-bamboo-600 text-white shadow-soft">
+            <div
+              onClick={() => onNavigate?.('home')}
+              className="flex items-center gap-2.5 cursor-pointer group"
+              title="Go to Start Learning Home Page"
+            >
+              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-bamboo-600 text-white shadow-soft group-hover:scale-105 transition-transform">
                 <BookOpen className="h-5 w-5" strokeWidth={2.4} />
               </span>
               <div>
-                <span className="font-display text-lg font-bold tracking-tight text-white block leading-none">
+                <span className="font-display text-lg font-bold tracking-tight text-white block leading-none group-hover:text-bamboo-300 transition-colors">
                   Code Kathai
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-bamboo-400">
@@ -278,9 +287,18 @@ export default function AuthPage() {
                 </span>
               </div>
             </div>
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-bamboo-200 border border-white/10 backdrop-blur-md">
-              <Sparkles className="h-3.5 w-3.5 text-golden-400" /> Story Terminal Mode
-            </span>
+            {onNavigate ? (
+              <button
+                onClick={() => onNavigate('home')}
+                className="inline-flex items-center gap-1.5 rounded-full bg-bamboo-500/20 hover:bg-bamboo-500/40 px-3.5 py-1.5 text-xs font-bold text-bamboo-200 border border-bamboo-400/40 backdrop-blur-md transition-all"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Start Learning (Home)
+              </button>
+            ) : (
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-bamboo-200 border border-white/10 backdrop-blur-md">
+                <Sparkles className="h-3.5 w-3.5 text-golden-400" /> Story Terminal Mode
+              </span>
+            )}
           </div>
 
           {/* Core Visual & Headlines */}
@@ -381,8 +399,8 @@ export default function AuthPage() {
                   onClick={() => switchMode('admin')}
                   className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
                     mode === 'admin'
-                      ? 'bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md'
-                      : 'text-purple-700 hover:text-purple-900 dark:text-purple-400'
+                      ? 'bg-gradient-to-r from-bamboo-600 to-emerald-700 text-white shadow-md font-bold'
+                      : 'text-bamboo-700 hover:text-bamboo-900 dark:text-bamboo-400 font-semibold'
                   }`}
                 >
                   <ShieldCheck className="h-3.5 w-3.5 text-golden-400" /> Admin Portal
@@ -394,8 +412,8 @@ export default function AuthPage() {
             <div>
               <div className="flex items-center gap-2 text-bamboo-600 dark:text-bamboo-400 mb-1">
                 {mode === 'admin' ? (
-                  <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                    <ShieldAlert className="h-4 w-4" /> Admin Authentication Required
+                  <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-bamboo-600 dark:text-bamboo-400">
+                    <ShieldAlert className="h-4 w-4 text-bamboo-600" /> Admin Authentication Required
                   </span>
                 ) : (
                   <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-bamboo-600 dark:text-bamboo-400">
@@ -623,11 +641,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`btn-primary w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2 shadow-md text-white rounded-2xl transition-all duration-300 disabled:opacity-50 ${
-                  mode === 'admin'
-                    ? 'bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-800 hover:to-indigo-900'
-                    : 'bg-gradient-to-r from-bamboo-600 via-bamboo-700 to-emerald-700 hover:from-bamboo-700 hover:to-emerald-800'
-                }`}
+                className="btn-primary w-full py-3.5 text-sm font-bold flex items-center justify-center gap-2 shadow-md text-white rounded-2xl transition-all duration-300 disabled:opacity-50 bg-gradient-to-r from-bamboo-600 via-bamboo-700 to-emerald-700 hover:from-bamboo-700 hover:to-emerald-800"
               >
                 {isSubmitting ? (
                   <>
@@ -677,13 +691,26 @@ export default function AuthPage() {
               )}
 
               {mode === 'admin' && (
-                <button
-                  type="button"
-                  onClick={() => switchMode('login')}
-                  className="inline-flex items-center gap-1 font-bold text-ink-600 hover:underline dark:text-ink-300"
-                >
-                  <ArrowLeft className="h-3.5 w-3.5" /> Back to Student Login
-                </button>
+                <div className="space-y-2.5 pt-1">
+                  {onNavigate && (
+                    <button
+                      type="button"
+                      onClick={() => onNavigate('home')}
+                      className="w-full py-2.5 px-3 rounded-xl bg-bamboo-600 hover:bg-bamboo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                    >
+                      <ArrowLeft className="h-4 w-4" /> Go to Start Learning Page (Home)
+                    </button>
+                  )}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => switchMode('login')}
+                      className="inline-flex items-center gap-1 font-bold text-ink-600 hover:underline dark:text-ink-300 text-xs"
+                    >
+                      Back to Student Login
+                    </button>
+                  </div>
+                </div>
               )}
 
               {mode === 'forgot' && (

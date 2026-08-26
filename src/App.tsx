@@ -11,6 +11,7 @@ import PlaygroundPage from '@/pages/PlaygroundPage';
 import PracticePage from '@/pages/PracticePage';
 import PatternsPage from '@/pages/PatternsPage';
 import AITutorPage from '@/pages/AITutorPage';
+import BugHunterPage from '@/pages/BugHunterPage';
 import AuthPage from '@/pages/AuthPage';
 import AdminDashboardPage from '@/pages/AdminDashboardPage';
 import type { ModuleId, Level } from '@/types';
@@ -31,11 +32,9 @@ function MainApp() {
   });
   const progress = useProgress();
 
-  // Automatic Routing Guard: Admins default to 'admin', Students ALWAYS stay on student pages!
+  // Routing Guard: Prevent non-admin students from accessing admin dashboard
   useEffect(() => {
-    if (isAdmin && (page === 'home' || !page)) {
-      setPage('admin');
-    } else if (!isAdmin && page === 'admin') {
+    if (!isAdmin && page === 'admin') {
       setPage('home');
     }
   }, [isAdmin, page]);
@@ -61,8 +60,20 @@ function MainApp() {
     navigate('dashboard');
   };
 
+  // If user is not logged in but clicks Home, show Landing Page!
+  if (!user && page === 'home') {
+    return (
+      <div className="flex min-h-screen flex-col bg-bamboo-50/20 dark:bg-ink-950">
+        <Navbar current={page} onNavigate={navigate} />
+        <main className="flex-1">
+          <LandingPage onNavigate={navigate} />
+        </main>
+      </div>
+    );
+  }
+
   if (!user) {
-    return <AuthPage />;
+    return <AuthPage onNavigate={navigate} />;
   }
 
   const currentLevel = profile?.currentLevel ?? 'beginner';
@@ -102,6 +113,7 @@ function MainApp() {
         {page === 'practice' && <PracticePage onNavigate={navigate} />}
         {page === 'patterns' && <PatternsPage onNavigate={navigate} />}
         {page === 'tutor' && <AITutorPage onNavigate={navigate} />}
+        {page === 'bughunter' && <BugHunterPage onNavigate={navigate} />}
       </main>
 
       <footer className="border-t border-bamboo-100 bg-white/80 py-8 dark:border-bamboo-800 dark:bg-ink-950/80">

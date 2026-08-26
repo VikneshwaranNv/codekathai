@@ -89,6 +89,10 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
             ? row.completed_patterns
             : [];
 
+          const completedBugLevelsList: string[] = Array.isArray(row.completed_bug_levels)
+            ? row.completed_bug_levels
+            : [];
+
           const badgesList: string[] = Array.isArray(row.badges) ? row.badges : [];
 
           // Count completed per level
@@ -105,14 +109,21 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
             .filter((l) => l.level === 'advanced')
             .filter((l) => completedSet.has(l.id)).length;
 
-          const begProg = beginnerTotal > 0 ? Math.round((beginnerDone / beginnerTotal) * 100) : 0;
-          const intProg = intermediateTotal > 0 ? Math.round((intermediateDone / intermediateTotal) * 100) : 0;
-          const advProg = advancedTotal > 0 ? Math.round((advancedDone / advancedTotal) * 100) : 0;
-          const overallProg = totalAppLessons > 0 ? Math.round((completedList.length / totalAppLessons) * 100) : 0;
+          const overallPct =
+            totalAppLessons > 0
+              ? Math.min(100, Math.round((completedList.length / totalAppLessons) * 100))
+              : 0;
+
+          const begPct =
+            beginnerTotal > 0 ? Math.round((beginnerDone / beginnerTotal) * 100) : 0;
+          const intPct =
+            intermediateTotal > 0 ? Math.round((intermediateDone / intermediateTotal) * 100) : 0;
+          const advPct =
+            advancedTotal > 0 ? Math.round((advancedDone / advancedTotal) * 100) : 0;
 
           return {
-            id: row.id,
-            email: row.email || 'No email provided',
+            id: row.id || 'usr_' + Math.random().toString(36).substring(2, 9),
+            email: row.email || 'student@codekathai.com',
             name: row.full_name || row.email?.split('@')[0] || 'Learner',
             role: (row.role as UserRole) || 'student',
             currentLevel: (row.learning_level as Level) || 'beginner',
@@ -120,23 +131,24 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
             completedLessons: completedList,
             solvedPractice: solvedPracticeList,
             completedPatterns: completedPatternsList,
+            completedBugLevels: completedBugLevelsList,
             playgroundRunsCount: row.playground_runs_count ?? 0,
             aiVisualsCount: row.ai_visuals_count ?? 0,
             badges: badgesList,
             createdAt: row.created_at || new Date().toISOString(),
-            lastActiveAt: row.last_active_at || row.created_at || new Date().toISOString(),
-            overallProgress: Math.min(100, overallProg),
-            beginnerProgress: Math.min(100, begProg),
-            intermediateProgress: Math.min(100, intProg),
-            advancedProgress: Math.min(100, advProg),
+            lastActiveAt: row.updated_at || row.created_at || new Date().toISOString(),
+            overallProgress: overallPct,
+            beginnerProgress: begPct,
+            intermediateProgress: intPct,
+            advancedProgress: advPct,
           };
         });
 
         setStudents(records);
       }
     } catch (err: any) {
-      console.error('Fetch error:', err);
-      setError(err?.message || 'Failed to load student profiles.');
+      console.error('Failed to load student profiles:', err);
+      setError('Failed to connect to database.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -147,36 +159,28 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
     fetchStudentData();
   }, []);
 
-  // Automatic redirect if non-admin user lands here
-  useEffect(() => {
-    if (!profile || profile.role !== 'admin') {
-      onNavigate('home');
-    }
-  }, [profile, onNavigate]);
-
-  // Filter & Search Calculations
+  // Filtered & Sorted Student Directory
   const filteredStudents = useMemo(() => {
     return students
       .filter((s) => {
-        // Search by name or email
         const matchesSearch =
           s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           s.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-        // Level filter
         const matchesLevel = levelFilter === 'all' || s.currentLevel === levelFilter;
-
         return matchesSearch && matchesLevel;
       })
       .sort((a, b) => {
-        if (sortBy === 'progress') return b.overallProgress - a.overallProgress;
-        if (sortBy === 'joined') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        if (sortBy === 'name') return a.name.localeCompare(b.name);
-        return 0;
+        if (sortBy === 'progress') {
+          return b.overallProgress - a.overallProgress;
+        } else if (sortBy === 'joined') {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        } else {
+          return a.name.localeCompare(b.name);
+        }
       });
   }, [students, searchQuery, levelFilter, sortBy]);
 
-  // Analytics Metrics Calculations
+  // Overall Admin Analytics Metrics
   const analytics: AdminAnalytics = useMemo(() => {
     const studentOnly = students.filter((s) => s.role === 'student');
     const now = new Date().getTime();
@@ -238,24 +242,30 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
     <div className="min-h-screen bg-stone-50 dark:bg-ink-950 text-ink-900 dark:text-white font-sans py-8">
       <div className="container-page space-y-8">
         
-        {/* ================= TOP DASHBOARD HEADER ================= */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl bg-gradient-to-r from-purple-900 via-indigo-950 to-ink-950 p-6 sm:p-8 text-white shadow-2xl border border-purple-800/40">
+        {/* ================= TOP BAMBOO GREEN DASHBOARD HEADER ================= */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl bg-gradient-to-r from-bamboo-950 via-bamboo-900 to-emerald-950 p-6 sm:p-8 text-white shadow-2xl border border-bamboo-700/50">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 text-purple-200 text-xs font-bold border border-purple-400/30 backdrop-blur-md">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-bamboo-500/20 text-bamboo-200 text-xs font-bold border border-bamboo-400/30 backdrop-blur-md">
                 <ShieldCheck className="h-3.5 w-3.5 text-golden-400" /> Administrator Portal
               </span>
-              <span className="text-xs text-purple-300 font-mono">Code Kathai v2.0</span>
+              <span className="text-xs text-bamboo-300 font-mono">Code Kathai v2.0</span>
             </div>
-            <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight">
+            <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-white">
               Code Kathai Admin Dashboard 🛡️
             </h1>
-            <p className="font-tamil mt-1 text-xs sm:text-sm text-purple-200/90">
+            <p className="font-tamil mt-1 text-xs sm:text-sm text-bamboo-200/90">
               மாணவர்களின் C Programming கற்றல் மற்றும் முன்னேற்ற நேரடித் தரவு (Real Supabase Analytics).
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => onNavigate('home')}
+              className="btn-secondary px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-bamboo-600 hover:bg-bamboo-700 text-white border-bamboo-500 rounded-xl transition-all shadow-sm"
+            >
+              <BookOpen className="h-4 w-4 text-golden-300" /> Start Learning Page →
+            </button>
             <button
               onClick={fetchStudentData}
               disabled={refreshing}
@@ -278,16 +288,16 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           
           {/* Stat 1: Total Students */}
-          <div className="card p-5 border border-purple-100 dark:border-purple-900/40 bg-white dark:bg-ink-900 hover:shadow-xl transition-all group">
+          <div className="card p-5 border border-bamboo-100 dark:border-bamboo-900/40 bg-white dark:bg-ink-900 hover:shadow-xl transition-all group">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-ink-500 dark:text-ink-400">
                 Total Students
               </span>
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-bold group-hover:scale-110 transition-transform">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-bamboo-100 text-bamboo-700 dark:bg-bamboo-950 dark:text-bamboo-300 font-bold group-hover:scale-110 transition-transform">
                 <Users className="h-5 w-5" />
               </span>
             </div>
-            <p className="font-display text-3xl font-bold text-purple-950 dark:text-white">
+            <p className="font-display text-3xl font-bold text-bamboo-950 dark:text-white">
               {analytics.totalStudents}
             </p>
             <p className="font-tamil text-[11px] text-ink-500 mt-1">
@@ -363,7 +373,7 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
                 placeholder="Search student by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-bamboo-200 bg-stone-50/50 py-2 pl-10 pr-4 text-xs font-semibold text-ink-900 focus:border-purple-600 focus:bg-white focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white"
+                className="w-full rounded-xl border border-bamboo-200 bg-stone-50/50 py-2 pl-10 pr-4 text-xs font-semibold text-ink-900 focus:border-bamboo-600 focus:bg-white focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white"
               />
               {searchQuery && (
                 <button
@@ -380,11 +390,11 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
               
               {/* Level Filter Dropdown */}
               <div className="flex items-center gap-1.5 text-xs font-bold">
-                <Filter className="h-4 w-4 text-purple-600" />
+                <Filter className="h-4 w-4 text-bamboo-600" />
                 <select
                   value={levelFilter}
                   onChange={(e) => setLevelFilter(e.target.value as any)}
-                  className="rounded-xl border border-bamboo-200 bg-white py-2 px-3 text-xs font-semibold text-ink-900 focus:border-purple-600 focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white cursor-pointer"
+                  className="rounded-xl border border-bamboo-200 bg-white py-2 px-3 text-xs font-semibold text-ink-900 focus:border-bamboo-600 focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white cursor-pointer"
                 >
                   <option value="all">All Levels ({students.length})</option>
                   <option value="beginner">🌱 Beginner</option>
@@ -399,7 +409,7 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="rounded-xl border border-bamboo-200 bg-white py-2 px-3 text-xs font-semibold text-ink-900 focus:border-purple-600 focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white cursor-pointer"
+                  className="rounded-xl border border-bamboo-200 bg-white py-2 px-3 text-xs font-semibold text-ink-900 focus:border-bamboo-600 focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white cursor-pointer"
                 >
                   <option value="progress">Highest Progress %</option>
                   <option value="joined">Recently Joined</option>
@@ -415,7 +425,7 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
         <div className="card overflow-hidden border border-bamboo-100 dark:border-bamboo-800 bg-white dark:bg-ink-900 shadow-xl">
           <div className="p-5 border-b border-bamboo-100 dark:border-bamboo-800 flex items-center justify-between">
             <h3 className="font-display text-lg font-bold text-bamboo-950 dark:text-white flex items-center gap-2">
-              <Users className="h-5 w-5 text-purple-600" /> Student Progress Directory
+              <Users className="h-5 w-5 text-bamboo-600" /> Student Progress Directory
               <span className="text-xs font-semibold text-ink-500 font-mono">
                 ({filteredStudents.length} Students)
               </span>
@@ -425,7 +435,7 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
 
           <div className="overflow-x-auto">
             <table className="w-full text-left font-sans text-xs">
-              <thead className="bg-stone-100 dark:bg-ink-950 text-ink-600 dark:text-ink-400 uppercase text-[10px] font-bold tracking-wider select-none">
+              <thead className="bg-bamboo-50/80 dark:bg-ink-950 text-bamboo-950 dark:text-bamboo-300 uppercase text-[10px] font-bold tracking-wider select-none border-b border-bamboo-100 dark:border-bamboo-800">
                 <tr>
                   <th className="py-3.5 px-4">Student</th>
                   <th className="py-3.5 px-4">Role & Level</th>
@@ -441,129 +451,140 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
                 {loading ? (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-ink-400">
-                      <RefreshCw className="h-6 w-6 animate-spin mx-auto text-purple-600 mb-2" />
+                      <RefreshCw className="h-6 w-6 animate-spin mx-auto text-bamboo-600 mb-2" />
                       Loading real student data from Supabase...
                     </td>
                   </tr>
                 ) : filteredStudents.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-ink-500 font-tamil">
-                      <p className="font-bold text-base text-ink-700 dark:text-white">மாணவர்கள் யாரும் இல்லை (No Students Found)</p>
-                      <p className="text-xs mt-1">தேடல் வினவலை அல்லது வடிகட்டியை மாற்றவும்.</p>
+                      தேடலுக்குப் பொருந்தக்கூடிய மாணவர்கள் இல்லை (No students found).
                     </td>
                   </tr>
                 ) : (
-                  filteredStudents.map((st) => {
-                    const levelBadge =
-                      st.currentLevel === 'beginner' ? (
-                        <span className="chip bg-bamboo-100 text-bamboo-800 dark:bg-bamboo-950 dark:text-bamboo-300">
-                          <Sprout className="h-3 w-3" /> Beginner
-                        </span>
-                      ) : st.currentLevel === 'intermediate' ? (
-                        <span className="chip bg-golden-100 text-golden-800 dark:bg-golden-950 dark:text-golden-300">
-                          <Flame className="h-3 w-3" /> Intermediate
-                        </span>
-                      ) : (
-                        <span className="chip bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
-                          <Crown className="h-3 w-3" /> Advanced
-                        </span>
-                      );
+                  filteredStudents.map((std) => {
+                    const isStudentAdmin = std.role === 'admin';
 
                     return (
                       <tr
-                        key={st.id}
-                        className="hover:bg-stone-50 dark:hover:bg-ink-800/50 transition-colors"
+                        key={std.id}
+                        className="hover:bg-bamboo-50/40 dark:hover:bg-bamboo-950/30 transition-colors"
                       >
                         {/* Student Name & Email */}
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 text-white font-bold text-sm shadow-sm">
-                              {st.name.charAt(0).toUpperCase()}
+                            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-bamboo-500 to-emerald-600 text-white font-bold text-xs shadow-sm">
+                              {std.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <p className="font-bold text-ink-950 dark:text-white leading-snug">
-                                {st.name}
+                              <p className="font-bold text-ink-900 dark:text-white flex items-center gap-1.5">
+                                {std.name}
+                                {isStudentAdmin && (
+                                  <span className="chip bg-golden-100 text-golden-800 dark:bg-golden-950 dark:text-golden-300 text-[10px]">
+                                    🛡️ Admin
+                                  </span>
+                                )}
                               </p>
-                              <p className="text-[11px] text-ink-500 dark:text-ink-400 font-mono">
-                                {st.email}
-                              </p>
+                              <p className="text-[11px] text-ink-500 font-mono">{std.email}</p>
                             </div>
                           </div>
                         </td>
 
-                        {/* Role & Level Badge */}
+                        {/* Role & Level */}
                         <td className="py-4 px-4">
                           <div className="space-y-1">
-                            {st.role === 'admin' ? (
-                              <span className="chip bg-purple-600 text-white font-extrabold">
-                                🛡️ Admin
+                            {std.currentLevel === 'beginner' ? (
+                              <span className="chip bg-bamboo-100 text-bamboo-800 dark:bg-bamboo-950 dark:text-bamboo-300 text-[10px]">
+                                🌱 Beginner
+                              </span>
+                            ) : std.currentLevel === 'intermediate' ? (
+                              <span className="chip bg-golden-100 text-golden-800 dark:bg-golden-950 dark:text-golden-300 text-[10px]">
+                                🚀 Intermediate
                               </span>
                             ) : (
-                              levelBadge
+                              <span className="chip bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px]">
+                                🧠 Advanced
+                              </span>
                             )}
+                            <p className="text-[10px] text-golden-600 font-bold">⭐ {std.xp} XP</p>
                           </div>
                         </td>
 
                         {/* Overall Progress Bar */}
-                        <td className="py-4 px-4 min-w-[140px]">
+                        <td className="py-4 px-4 w-44">
                           <div className="space-y-1">
-                            <div className="flex justify-between text-[11px] font-bold">
-                              <span>{st.overallProgress}%</span>
-                              <span className="text-ink-500">{st.completedLessons.length}/{totalAppLessons}</span>
+                            <div className="flex justify-between items-center text-[10px] font-bold">
+                              <span>Overall</span>
+                              <span className="text-bamboo-600 dark:text-bamboo-400">
+                                {std.overallProgress}%
+                              </span>
                             </div>
-                            <div className="h-2 w-full bg-slate-200 dark:bg-ink-800 rounded-full overflow-hidden">
+                            <div className="h-2 w-full bg-stone-200 dark:bg-ink-800 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-gradient-to-r from-bamboo-500 to-emerald-500 transition-all duration-300"
-                                style={{ width: `${st.overallProgress}%` }}
+                                className="h-full bg-gradient-to-r from-bamboo-500 to-emerald-500 rounded-full transition-all duration-500"
+                                style={{ width: `${std.overallProgress}%` }}
                               />
                             </div>
                           </div>
                         </td>
 
-                        {/* Level Progress Breakdown */}
+                        {/* Level Breakdown Badges */}
                         <td className="py-4 px-4 text-center">
-                          <div className="flex items-center justify-center gap-1.5 font-mono text-[11px] font-bold">
-                            <span className="text-bamboo-600 dark:text-bamboo-400" title="Beginner Progress">
-                              {st.beginnerProgress}%
+                          <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold">
+                            <span
+                              className="px-2 py-0.5 rounded bg-bamboo-100 text-bamboo-800 dark:bg-bamboo-950 dark:text-bamboo-300"
+                              title="Beginner Lessons Done %"
+                            >
+                              B: {std.beginnerProgress}%
                             </span>
-                            <span className="text-ink-300">/</span>
-                            <span className="text-golden-600 dark:text-golden-400" title="Intermediate Progress">
-                              {st.intermediateProgress}%
+                            <span
+                              className="px-2 py-0.5 rounded bg-golden-100 text-golden-800 dark:bg-golden-950 dark:text-golden-300"
+                              title="Intermediate Lessons Done %"
+                            >
+                              I: {std.intermediateProgress}%
                             </span>
-                            <span className="text-ink-300">/</span>
-                            <span className="text-purple-600 dark:text-purple-400" title="Advanced Progress">
-                              {st.advancedProgress}%
+                            <span
+                              className="px-2 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300"
+                              title="Advanced Lessons Done %"
+                            >
+                              A: {std.advancedProgress}%
                             </span>
                           </div>
                         </td>
 
-                        {/* Completed Lessons Count */}
-                        <td className="py-4 px-4 text-center font-bold text-bamboo-700 dark:text-bamboo-300">
-                          {st.completedLessons.length}
+                        {/* Lessons Completed Count */}
+                        <td className="py-4 px-4 text-center">
+                          <span className="font-bold text-ink-900 dark:text-white font-mono text-xs">
+                            {std.completedLessons.length} / {totalAppLessons}
+                          </span>
+                          <p className="text-[10px] text-ink-400">Lessons</p>
                         </td>
 
-                        {/* Practice Solved Count */}
-                        <td className="py-4 px-4 text-center font-bold text-golden-600 dark:text-golden-400">
-                          {st.solvedPractice.length + st.completedPatterns.length}
+                        {/* Practice & Challenges Solved */}
+                        <td className="py-4 px-4 text-center">
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono text-xs">
+                            {std.solvedPractice.length + std.completedPatterns.length}
+                          </span>
+                          <p className="text-[10px] text-ink-400">Solved</p>
                         </td>
 
-                        {/* Joined Date & Last Active */}
-                        <td className="py-4 px-4 text-[11px] text-ink-500 font-mono">
-                          <p title="Joined Date">
-                            📅 {new Date(st.createdAt).toLocaleDateString()}
+                        {/* Joined / Last Active */}
+                        <td className="py-4 px-4 text-ink-500 text-[11px]">
+                          <p className="font-bold text-ink-800 dark:text-ink-200">
+                            {new Date(std.createdAt).toLocaleDateString()}
                           </p>
-                          <p title="Last Active" className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">
-                            ⚡ {new Date(st.lastActiveAt).toLocaleDateString()}
+                          <p className="text-[10px] text-ink-400">
+                            Active: {new Date(std.lastActiveAt).toLocaleDateString()}
                           </p>
                         </td>
 
-                        {/* Action: View Details Button */}
+                        {/* View Action */}
                         <td className="py-4 px-4 text-right">
                           <button
-                            onClick={() => setSelectedStudent(st)}
-                            className="btn-ghost py-1.5 px-3 text-xs font-bold text-purple-700 hover:bg-purple-100 dark:text-purple-300 dark:hover:bg-purple-950/60 rounded-xl inline-flex items-center gap-1 transition-all"
+                            onClick={() => setSelectedStudent(std)}
+                            className="btn-secondary py-1.5 px-3 text-xs font-bold inline-flex items-center gap-1 text-bamboo-700 bg-bamboo-50 hover:bg-bamboo-100 border-bamboo-200 dark:bg-bamboo-950 dark:text-bamboo-300 dark:border-bamboo-800 rounded-xl"
                           >
-                            <Eye className="h-3.5 w-3.5" /> Details
+                            <Eye className="h-3.5 w-3.5" /> View Details
                           </button>
                         </td>
                       </tr>
@@ -575,24 +596,30 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
           </div>
         </div>
 
-        {/* ================= STUDENT DETAILS MODAL ================= */}
+        {/* ================= STUDENT DETAIL MODAL ================= */}
         {selectedStudent && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fade-in">
-            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-ink-900 border border-bamboo-800 shadow-2xl p-6 space-y-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
+            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-ink-900 border border-bamboo-400 shadow-2xl p-6 sm:p-8 space-y-6">
               
               {/* Modal Header */}
-              <div className="flex items-center justify-between border-b border-bamboo-100 dark:border-bamboo-800 pb-4">
+              <div className="flex items-start justify-between border-b border-bamboo-100 dark:border-bamboo-800 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-purple-600 text-white font-bold text-xl shadow-md">
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-bamboo-500 to-emerald-600 text-white font-bold text-lg shadow-md">
                     {selectedStudent.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-display text-xl font-bold text-ink-900 dark:text-white">
+                    <h3 className="font-display text-xl font-bold text-ink-900 dark:text-white flex items-center gap-2">
                       {selectedStudent.name}
+                      {selectedStudent.role === 'admin' && (
+                        <span className="chip bg-golden-100 text-golden-800 dark:bg-golden-950 dark:text-golden-300 text-xs">
+                          🛡️ Admin
+                        </span>
+                      )}
                     </h3>
                     <p className="text-xs text-ink-500 font-mono">{selectedStudent.email}</p>
                   </div>
                 </div>
+
                 <button
                   onClick={() => setSelectedStudent(null)}
                   className="grid h-8 w-8 place-items-center rounded-full bg-stone-100 dark:bg-ink-800 text-ink-600 dark:text-ink-300 hover:bg-stone-200"
@@ -601,106 +628,100 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
                 </button>
               </div>
 
-              {/* Student Metadata Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-stone-50 dark:bg-ink-950 p-4 rounded-2xl border border-bamboo-100 dark:border-bamboo-900 text-xs">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-ink-500 block">Total XP</span>
-                  <span className="font-display font-bold text-golden-600 text-base">{selectedStudent.xp} XP</span>
+              {/* Progress Summary Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="p-3 rounded-2xl bg-bamboo-50 dark:bg-bamboo-950/40 border border-bamboo-200 dark:border-bamboo-800">
+                  <span className="text-[10px] font-bold uppercase text-bamboo-700 dark:text-bamboo-300">XP Points</span>
+                  <p className="font-display text-lg font-bold text-golden-600">⭐ {selectedStudent.xp}</p>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-ink-500 block">Current Level</span>
-                  <span className="font-bold text-bamboo-700 dark:text-bamboo-300 capitalize">{selectedStudent.currentLevel}</span>
+                <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                  <span className="text-[10px] font-bold uppercase text-emerald-700 dark:text-emerald-300">Total Progress</span>
+                  <p className="font-display text-lg font-bold text-emerald-600">{selectedStudent.overallProgress}%</p>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-ink-500 block">Account Joined</span>
-                  <span className="font-mono">{new Date(selectedStudent.createdAt).toLocaleDateString()}</span>
+                <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+                  <span className="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-300">Lessons Done</span>
+                  <p className="font-display text-lg font-bold text-amber-600">{selectedStudent.completedLessons.length}</p>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-ink-500 block">Last Active</span>
-                  <span className="font-mono text-emerald-600">{new Date(selectedStudent.lastActiveAt).toLocaleDateString()}</span>
-                </div>
-              </div>
-
-              {/* Level Progress Gauges Breakdown */}
-              <div className="space-y-3">
-                <h4 className="font-display text-sm font-bold text-bamboo-950 dark:text-white flex items-center gap-1.5">
-                  <Layers className="h-4 w-4 text-purple-600" /> Level Breakdown & Mastery
-                </h4>
-
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {/* Beginner */}
-                  <div className="rounded-2xl border border-bamboo-200 bg-bamboo-50/40 p-4 dark:border-bamboo-800 dark:bg-bamboo-950/30 space-y-1">
-                    <span className="text-[10px] font-bold uppercase text-bamboo-700">🌱 Beginner Level</span>
-                    <p className="font-display text-xl font-bold text-bamboo-950 dark:text-white">{selectedStudent.beginnerProgress}%</p>
-                    <div className="h-1.5 w-full bg-bamboo-200 dark:bg-bamboo-900 rounded-full overflow-hidden">
-                      <div className="h-full bg-bamboo-600" style={{ width: `${selectedStudent.beginnerProgress}%` }} />
-                    </div>
-                  </div>
-
-                  {/* Intermediate */}
-                  <div className="rounded-2xl border border-golden-200 bg-golden-50/40 p-4 dark:border-golden-800 dark:bg-golden-950/30 space-y-1">
-                    <span className="text-[10px] font-bold uppercase text-golden-700">🚀 Intermediate Level</span>
-                    <p className="font-display text-xl font-bold text-bamboo-950 dark:text-white">{selectedStudent.intermediateProgress}%</p>
-                    <div className="h-1.5 w-full bg-golden-200 dark:bg-golden-900 rounded-full overflow-hidden">
-                      <div className="h-full bg-golden-500" style={{ width: `${selectedStudent.intermediateProgress}%` }} />
-                    </div>
-                  </div>
-
-                  {/* Advanced */}
-                  <div className="rounded-2xl border border-purple-200 bg-purple-50/40 p-4 dark:border-purple-800 dark:bg-purple-950/30 space-y-1">
-                    <span className="text-[10px] font-bold uppercase text-purple-700">🧠 Advanced Level</span>
-                    <p className="font-display text-xl font-bold text-bamboo-950 dark:text-white">{selectedStudent.advancedProgress}%</p>
-                    <div className="h-1.5 w-full bg-purple-200 dark:bg-purple-900 rounded-full overflow-hidden">
-                      <div className="h-full bg-purple-600" style={{ width: `${selectedStudent.advancedProgress}%` }} />
-                    </div>
-                  </div>
+                <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800">
+                  <span className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-300">Practice Solved</span>
+                  <p className="font-display text-lg font-bold text-purple-600">{selectedStudent.solvedPractice.length + selectedStudent.completedPatterns.length}</p>
                 </div>
               </div>
 
-              {/* Activity & Completed Lessons */}
-              <div className="space-y-3">
-                <h4 className="font-display text-sm font-bold text-bamboo-950 dark:text-white flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Completed Lessons ({selectedStudent.completedLessons.length})
+              {/* Level Progress Bars */}
+              <div className="space-y-3 p-4 rounded-2xl bg-stone-50 dark:bg-ink-950 border border-stone-200 dark:border-ink-800">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">
+                  Level Breakdown
                 </h4>
+                
+                {/* Beginner */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold">
+                    <span>🌱 Beginner Track</span>
+                    <span className="text-bamboo-600">{selectedStudent.beginnerProgress}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-stone-200 dark:bg-ink-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-bamboo-500 rounded-full"
+                      style={{ width: `${selectedStudent.beginnerProgress}%` }}
+                    />
+                  </div>
+                </div>
 
-                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-3 rounded-2xl bg-stone-50 dark:bg-ink-950 border border-bamboo-100 dark:border-bamboo-900">
-                  {selectedStudent.completedLessons.length === 0 ? (
-                    <span className="text-xs text-ink-400 italic">No lessons completed yet.</span>
-                  ) : (
-                    selectedStudent.completedLessons.map((lId) => (
-                      <span key={lId} className="chip bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-mono text-[10px]">
-                        ✓ {lId}
+                {/* Intermediate */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold">
+                    <span>🚀 Intermediate Track</span>
+                    <span className="text-golden-600">{selectedStudent.intermediateProgress}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-stone-200 dark:bg-ink-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-golden-500 rounded-full"
+                      style={{ width: `${selectedStudent.intermediateProgress}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Advanced */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold">
+                    <span>🧠 Advanced Track</span>
+                    <span className="text-purple-600">{selectedStudent.advancedProgress}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-stone-200 dark:bg-ink-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-purple-500 rounded-full"
+                      style={{ width: `${selectedStudent.advancedProgress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Badges Earned */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">
+                  Badges Earned
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedStudent.badges.length > 0 ? (
+                    selectedStudent.badges.map((b, idx) => (
+                      <span key={idx} className="chip bg-bamboo-100 text-bamboo-800 dark:bg-bamboo-950 dark:text-bamboo-300 text-xs font-bold">
+                        {b}
                       </span>
                     ))
+                  ) : (
+                    <span className="text-xs text-ink-400 italic">No badges earned yet.</span>
                   )}
                 </div>
               </div>
 
-              {/* Secondary Practice Statistics */}
-              <div className="grid grid-cols-3 gap-3 text-center text-xs font-bold">
-                <div className="p-3 rounded-2xl bg-stone-100 dark:bg-ink-950 border border-bamboo-100">
-                  <span className="text-ink-500 text-[10px] block">Solved Practice</span>
-                  <span className="text-emerald-600 text-sm font-display">{selectedStudent.solvedPractice.length}</span>
-                </div>
-                <div className="p-3 rounded-2xl bg-stone-100 dark:bg-ink-950 border border-bamboo-100">
-                  <span className="text-ink-500 text-[10px] block">Completed Patterns</span>
-                  <span className="text-purple-600 text-sm font-display">{selectedStudent.completedPatterns.length}</span>
-                </div>
-                <div className="p-3 rounded-2xl bg-stone-100 dark:bg-ink-950 border border-bamboo-100">
-                  <span className="text-ink-500 text-[10px] block">Playground Code Runs</span>
-                  <span className="text-golden-600 text-sm font-display">{selectedStudent.playgroundRunsCount}</span>
-                </div>
-              </div>
-
-              {/* Close Button */}
-              <div className="pt-2">
-                <button
-                  onClick={() => setSelectedStudent(null)}
-                  className="btn-primary py-2.5 text-xs font-bold w-full bg-stone-200 dark:bg-ink-800 text-ink-900 dark:text-white hover:bg-stone-300"
-                >
-                  Close Student Details
-                </button>
-              </div>
+              {/* Close Modal Button */}
+              <button
+                onClick={() => setSelectedStudent(null)}
+                className="btn-primary py-3 text-xs font-bold w-full bg-bamboo-600 text-white rounded-xl"
+              >
+                Close Details
+              </button>
 
             </div>
           </div>

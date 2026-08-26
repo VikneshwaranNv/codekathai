@@ -149,6 +149,7 @@ export interface UserProfile {
   completedLessons: string[];
   solvedPractice?: string[];
   completedPatterns?: string[];
+  completedBugLevels?: string[];
   playgroundRunsCount?: number;
   aiVisualsCount?: number;
   badges: string[];
@@ -167,6 +168,7 @@ export interface StudentAdminRecord {
   completedLessons: string[];
   solvedPractice: string[];
   completedPatterns: string[];
+  completedBugLevels?: string[];
   playgroundRunsCount: number;
   aiVisualsCount: number;
   badges: string[];

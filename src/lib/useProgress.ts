@@ -10,6 +10,7 @@ export interface ProgressState {
   completedCount: number;
   solvedPracticeCount: number;
   completedPatternsCount: number;
+  completedBugLevelsCount: number;
   playgroundRunsCount: number;
   aiVisualsCount: number;
   completeLesson: (moduleId: ModuleId, lessonId: string, xpGained?: number) => void;
@@ -17,6 +18,8 @@ export interface ProgressState {
   moduleProgress: (moduleId: string, topicIds: string[]) => number;
   recordSolvedPractice: (problemId: string) => void;
   recordCompletedPattern: (patternId: string) => void;
+  recordCompletedBugLevel: (levelId: string, xpReward: number) => void;
+  isBugLevelCompleted: (levelId: string) => boolean;
   recordPlaygroundRun: () => void;
   recordAiVisual: () => void;
 }
@@ -37,6 +40,7 @@ export function useProgress(): ProgressState {
   // Stored secondary section progress
   const solvedPracticeList = profile?.solvedPractice ?? [];
   const completedPatternsList = profile?.completedPatterns ?? [];
+  const completedBugLevelsList = profile?.completedBugLevels ?? [];
   const playgroundRunsCount = profile?.playgroundRunsCount ?? 3;
   const aiVisualsCount = profile?.aiVisualsCount ?? 2;
 
@@ -97,6 +101,40 @@ export function useProgress(): ProgressState {
     [profile, updateProfile]
   );
 
+  const recordCompletedBugLevel = useCallback(
+    (levelId: string, xpReward: number = 100) => {
+      if (!profile) return;
+      const currentLevels = profile.completedBugLevels || [];
+      const badges = [...(profile.badges || [])];
+
+      if (!currentLevels.includes(levelId)) {
+        const nextLevels = [...currentLevels, levelId];
+        const nextXp = (profile.xp || 0) + xpReward;
+
+        if (nextLevels.length >= 1 && !badges.includes('🐛 Bug Hunter')) {
+          badges.push('🐛 Bug Hunter');
+        }
+        if (nextLevels.length >= 10 && !badges.includes('🏆 Dragon Slayer')) {
+          badges.push('🏆 Dragon Slayer');
+        }
+
+        updateProfile({
+          completedBugLevels: nextLevels,
+          xp: nextXp,
+          badges,
+        });
+      }
+    },
+    [profile, updateProfile]
+  );
+
+  const isBugLevelCompleted = useCallback(
+    (levelId: string): boolean => {
+      return (profile?.completedBugLevels || []).includes(levelId);
+    },
+    [profile]
+  );
+
   const recordPlaygroundRun = useCallback(() => {
     if (!profile) return;
     updateProfile({
@@ -135,6 +173,7 @@ export function useProgress(): ProgressState {
     completedCount: completedList.length,
     solvedPracticeCount: solvedPracticeList.length,
     completedPatternsCount: completedPatternsList.length,
+    completedBugLevelsCount: completedBugLevelsList.length,
     playgroundRunsCount,
     aiVisualsCount,
     completeLesson,
@@ -142,6 +181,8 @@ export function useProgress(): ProgressState {
     moduleProgress,
     recordSolvedPractice,
     recordCompletedPattern,
+    recordCompletedBugLevel,
+    isBugLevelCompleted,
     recordPlaygroundRun,
     recordAiVisual,
   };

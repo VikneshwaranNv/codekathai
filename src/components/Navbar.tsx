@@ -11,6 +11,7 @@ import {
   GraduationCap,
   LogOut,
   ShieldCheck,
+  Bug,
 } from 'lucide-react';
 import { useState } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -28,6 +29,7 @@ export type Page =
   | 'practice'
   | 'patterns'
   | 'tutor'
+  | 'bughunter'
   | 'admin';
 
 interface NavbarProps {
@@ -39,6 +41,7 @@ const baseLinks: { id: Page; label: string; icon: typeof BookOpen }[] = [
   { id: 'home', label: 'Home', icon: BookOpen },
   { id: 'levels', label: 'Levels', icon: GraduationCap },
   { id: 'dashboard', label: 'Courses', icon: LayoutGrid },
+  { id: 'bughunter', label: '🐛 Bug Hunter', icon: Bug },
   { id: 'playground', label: 'Playground', icon: Code2 },
   { id: 'practice', label: 'Practice', icon: Sparkles },
   { id: 'patterns', label: 'Patterns', icon: Grid3x3 },
@@ -91,11 +94,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                 key={l.id}
                 onClick={() => go(l.id)}
                 className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold transition-all ${
-                  isAdminBtn
-                    ? active
-                      ? 'bg-purple-700 text-white shadow-md'
-                      : 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-950 dark:text-purple-300'
-                    : active
+                  active
                     ? 'bg-bamboo-600 text-white shadow-soft'
                     : 'text-ink-700 hover:bg-bamboo-100 hover:text-bamboo-800 dark:text-ink-300 dark:hover:bg-ink-800'
                 }`}
@@ -151,10 +150,8 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                   key={l.id}
                   onClick={() => go(l.id)}
                   className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold ${
-                    l.id === 'admin'
-                      ? 'bg-purple-700 text-white col-span-2 font-bold'
-                      : active
-                      ? 'bg-bamboo-600 text-white'
+                    active
+                      ? 'bg-bamboo-600 text-white font-bold'
                       : 'text-ink-700 hover:bg-bamboo-50 dark:text-ink-300 dark:hover:bg-ink-800'
                   }`}
                 >
