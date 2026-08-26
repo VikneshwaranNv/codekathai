@@ -122,7 +122,10 @@ export default function ReelsModal({ isOpen, onClose }: ReelsModalProps) {
             setIsPlaying(true);
           })
           .catch((err) => {
-            console.log('Autoplay handled:', err);
+            // Ignore AbortError when interrupted by new video load
+            if (err?.name === 'AbortError' || err?.message?.includes('interrupted')) {
+              return;
+            }
             // If browser requires user interaction for sound, mute and auto-play
             if (videoRef.current) {
               videoRef.current.muted = true;
@@ -174,7 +177,7 @@ export default function ReelsModal({ isOpen, onClose }: ReelsModalProps) {
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch(() => {});
         setIsPlaying(true);
       }
     }

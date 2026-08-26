@@ -9,9 +9,124 @@ export interface AuthResult {
 }
 
 /**
- * Service Layer for Supabase Authentication & Profile Management
- * Keeps authentication logic clean and decoupled from UI components.
+ * Validation Helpers for Email and Full Name
  */
+export function isValidEmailFormat(email: string): { valid: boolean; error?: string } {
+  const clean = email.trim().toLowerCase();
+  if (!clean) {
+    return { valid: false, error: 'தயவுசெய்து உங்கள் மின்னஞ்சலை உள்ளிடவும் (Please enter your email address)' };
+  }
+
+  // 1. MUST start with an alphabet letter (a-z or A-Z)!
+  if (!/^[a-zA-Z]/.test(clean)) {
+    return {
+      valid: false,
+      error:
+        'மின்னஞ்சல் முகவரி எழுத்தில் (Alphabet) மட்டுமே தொடங்க வேண்டும்! (Email address MUST start with a letter, e.g. name@gmail.com, not numbers like 123@gmail.com)',
+    };
+  }
+
+  // 2. Complete Email Regex: starts with letter, valid username, @ domain and valid TLD extension
+  const emailRegex = /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(clean)) {
+    return {
+      valid: false,
+      error:
+        'செல்லுபடியாகும் மின்னஞ்சல் முகவரியை உள்ளிடவும் (Please enter a valid email address, e.g. vishal@gmail.com)',
+    };
+  }
+
+  // 3. Strict Official Google / Gmail Account Validation
+  if (clean.endsWith('@gmail.com') || clean.endsWith('@googlemail.com')) {
+    const username = clean.split('@')[0];
+
+    // Google Official Rule: Gmail username must be at least 6 characters long (e.g. abc@gmail.com is 3 chars, which Google does NOT allow!)
+    if (username.length < 6) {
+      return {
+        valid: false,
+        error:
+          'போலி ஜிமெயில் முகவரி நிராகரிக்கப்பட்டது! கூகிள் விதிகளின்படி ஜிமெயில் முகவரி குறைந்தபட்சம் 6 எழுத்துகள் இருக்க வேண்டும் (Fake Gmail address rejected! Google requires Gmail usernames to be at least 6 characters long, e.g. vishal.student@gmail.com, not short fake emails like abc@gmail.com)',
+      };
+    }
+
+    if (username.length > 30) {
+      return {
+        valid: false,
+        error: 'ஜிமெயில் முகவரி 30 எழுத்துகளுக்கு மிகாமல் இருக்க வேண்டும் (Gmail usernames cannot exceed 30 characters)',
+      };
+    }
+
+    // Google Rule: Gmail only allows letters, numbers, and dots. No special characters like _, +, -
+    if (!/^[a-zA-Z0-9.]+$/.test(username)) {
+      return {
+        valid: false,
+        error:
+          'ஜிமெயில் முகவரியில் சிறப்பு எழுத்துக்கள் (_ + -) இருக்கக்கூடாது (Gmail usernames only allow letters, numbers, and dots)',
+      };
+    }
+
+    // Google Rule: Cannot start or end with a dot, or contain consecutive dots
+    if (username.startsWith('.') || username.endsWith('.') || username.includes('..')) {
+      return {
+        valid: false,
+        error: 'செல்லுபடியற்ற ஜிமெயில் வடிவம் (Invalid Gmail format: dots cannot start, end, or be repeated)',
+      };
+    }
+
+    // Block known fake test usernames
+    const fakeUsernames = [
+      'abcdef',
+      'test123',
+      'testing',
+      'dummy12',
+      'user123',
+      'admin12',
+      'sample1',
+      'fake123',
+      'temp123',
+    ];
+    if (fakeUsernames.includes(username)) {
+      return {
+        valid: false,
+        error:
+          'உண்மையான ஜிமெயில் முகவரியை உள்ளிடவும் (Please enter your real, registered Google/Gmail account)',
+      };
+    }
+  }
+
+  return { valid: true };
+}
+
+export function isValidFullNameFormat(name: string): { valid: boolean; error?: string } {
+  const clean = name.trim();
+  if (!clean) {
+    return { valid: false, error: 'தயவுசெய்து உங்கள் முழு பெயரை உள்ளிடவும் (Please enter your full name)' };
+  }
+
+  if (clean.length < 2) {
+    return { valid: false, error: 'பெயர் குறைந்தபட்சம் 2 எழுத்துகள் இருக்க வேண்டும் (Full Name must be at least 2 characters)' };
+  }
+
+  // MUST start with an alphabet letter!
+  if (!/^[a-zA-Z]/.test(clean)) {
+    return {
+      valid: false,
+      error:
+        'பெயர் எழுத்தில் (Alphabet) மட்டுமே தொடங்க வேண்டும்! (Full Name MUST start with an alphabet letter, e.g. Vishal or Kavi)',
+    };
+  }
+
+  // Letters, spaces, hyphens, and dots ONLY (No digits like 123)
+  if (!/^[a-zA-Z\s'.-]+$/.test(clean)) {
+    return {
+      valid: false,
+      error:
+        'பெயரில் எழுத்துகள் மட்டுமே இருக்க வேண்டும், எண்கள் சேர்க்கக்கூடாது! (Full Name must contain letters only, no numbers like 123)',
+    };
+  }
+
+  return { valid: true };
+}
 
 // Helper to extract first matching row safely when multiple rows exist per email
 function extractProfile(row: any): UserProfile {
@@ -45,6 +160,12 @@ export async function signInWithEmailPassword(
 ): Promise<AuthResult> {
   const cleanEmail = email.trim().toLowerCase();
 
+  // Strict Email Validation Check
+  const emailCheck = isValidEmailFormat(cleanEmail);
+  if (!emailCheck.valid) {
+    return { success: false, error: emailCheck.error };
+  }
+
   try {
     // Lookup user profile in `user_profiles` table
     const { data, error: dbError } = await supabase
@@ -69,13 +190,13 @@ export async function signInWithEmailPassword(
 
     // Attempt Supabase auth sign-in if password provided
     if (password) {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password,
-      });
-
-      if (authError && !authError.message.includes('Invalid login credentials')) {
-        console.warn('Supabase auth login note:', authError.message);
+      try {
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
+      } catch (e) {
+        // Silently catch network or 400 response from Supabase auth token REST endpoint
       }
     }
 
@@ -93,6 +214,11 @@ export async function adminSignInWithEmailPassword(
   password?: string
 ): Promise<AuthResult> {
   const cleanEmail = email.trim().toLowerCase();
+
+  const emailCheck = isValidEmailFormat(cleanEmail);
+  if (!emailCheck.valid) {
+    return { success: false, error: emailCheck.error };
+  }
 
   try {
     // Query `user_profiles` table for `role`
@@ -119,13 +245,13 @@ export async function adminSignInWithEmailPassword(
 
     // Attempt Supabase Authentication if password provided
     if (password) {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password,
-      });
-
-      if (authError) {
-        console.warn('Admin Supabase auth note:', authError.message);
+      try {
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
+      } catch (e) {
+        // Silently handle auth exception
       }
     }
 
@@ -151,6 +277,17 @@ export async function signUpWithEmailPassword(
   const cleanName = fullName.trim();
   const cleanEmail = email.trim().toLowerCase();
 
+  // Strict Validation Checks for Name & Email
+  const nameCheck = isValidFullNameFormat(cleanName);
+  if (!nameCheck.valid) {
+    return { success: false, error: nameCheck.error };
+  }
+
+  const emailCheck = isValidEmailFormat(cleanEmail);
+  if (!emailCheck.valid) {
+    return { success: false, error: emailCheck.error };
+  }
+
   try {
     // Check if account already exists
     const { data: existing } = await supabase
@@ -168,16 +305,16 @@ export async function signUpWithEmailPassword(
 
     // Attempt Supabase Auth Sign Up if password provided
     if (password) {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password,
-        options: {
-          data: { full_name: cleanName },
-        },
-      });
-
-      if (signUpError && !signUpError.message.includes('already registered')) {
-        console.warn('Supabase auth signup note:', signUpError.message);
+      try {
+        await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+          options: {
+            data: { full_name: cleanName },
+          },
+        });
+      } catch (e) {
+        // Silently catch auth signup exceptions
       }
     }
 
@@ -229,6 +366,11 @@ export async function signUpWithEmailPassword(
 // 4. Password Reset for Email
 export async function resetPasswordForEmail(email: string): Promise<AuthResult> {
   const cleanEmail = email.trim().toLowerCase();
+
+  const emailCheck = isValidEmailFormat(cleanEmail);
+  if (!emailCheck.valid) {
+    return { success: false, error: emailCheck.error };
+  }
 
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {

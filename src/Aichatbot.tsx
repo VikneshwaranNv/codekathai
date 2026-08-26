@@ -24,6 +24,11 @@ export default function CodeKathaiAIChat() {
                 }
             );
 
+            if (!response.ok) {
+              setReply("Unable to connect to AI Tutor right now. Please try again.");
+              return;
+            }
+
             const data = await response.json();
 
             setReply(

@@ -177,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(() => {
     saveProfile(null);
+    supabase.auth.signOut().catch(() => {});
   }, []);
 
   const isAdmin = profile?.role === 'admin';

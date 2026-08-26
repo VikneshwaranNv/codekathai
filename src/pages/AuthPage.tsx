@@ -24,6 +24,8 @@ import {
   signUpWithEmailPassword,
   resetPasswordForEmail,
   adminSignInWithEmailPassword,
+  isValidEmailFormat,
+  isValidFullNameFormat,
 } from '@/lib/authService';
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'admin';
@@ -134,14 +136,10 @@ export default function AuthPage() {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Common Email Validation
-    if (!cleanEmail) {
-      setError('தயவுசெய்து உங்கள் மின்னஞ்சலை உள்ளிடவும் (Please enter your email address)');
-      return;
-    }
-
-    if (!validateEmail(cleanEmail)) {
-      setError('செல்லுபடியாகும் மின்னஞ்சல் முகவரியை உள்ளிடவும் (Please enter a valid email address)');
+    // 1. Strict Common Email Validation (MUST start with an alphabet letter!)
+    const emailValidation = isValidEmailFormat(cleanEmail);
+    if (!emailValidation.valid) {
+      setError(emailValidation.error || 'Please enter a valid email address.');
       return;
     }
 
@@ -182,12 +180,14 @@ export default function AuthPage() {
       return;
     }
 
-    // 4. Strict Signup Validation (Strong Password Enforced)
+    // 4. Strict Signup Validation (Name & Strong Password Enforced)
     if (mode === 'signup') {
-      if (!fullName.trim()) {
-        setError('தயவுசெய்து உங்கள் முழு பெயரை உள்ளிடவும் (Please enter your full name)');
+      const nameValidation = isValidFullNameFormat(fullName);
+      if (!nameValidation.valid) {
+        setError(nameValidation.error || 'Please enter a valid full name.');
         return;
       }
+
       if (!password) {
         setError('தயவுசெய்து கடவுச்சொல்லை உள்ளிடவும் (Please enter a password)');
         return;
@@ -362,31 +362,33 @@ export default function AuthPage() {
         <div className="flex flex-1 flex-col justify-center p-6 sm:p-10 bg-white dark:bg-ink-900">
           <div className="mx-auto w-full max-w-sm space-y-5">
             
-            {/* PORTAL SELECTOR TAB TOGGLE (Student vs Admin) */}
-            <div className="grid grid-cols-2 rounded-2xl bg-stone-100 p-1 dark:bg-ink-950 border border-bamboo-100 dark:border-bamboo-900/60 text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => switchMode('login')}
-                className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-                  mode !== 'admin'
-                    ? 'bg-white text-bamboo-950 shadow-sm dark:bg-ink-900 dark:text-white'
-                    : 'text-ink-500 hover:text-bamboo-800 dark:text-ink-400'
-                }`}
-              >
-                <User className="h-3.5 w-3.5" /> Student Login
-              </button>
-              <button
-                type="button"
-                onClick={() => switchMode('admin')}
-                className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-                  mode === 'admin'
-                    ? 'bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md'
-                    : 'text-purple-700 hover:text-purple-900 dark:text-purple-400'
-                }`}
-              >
-                <ShieldCheck className="h-3.5 w-3.5 text-golden-400" /> Admin Portal
-              </button>
-            </div>
+            {/* PORTAL SELECTOR TAB TOGGLE (Student vs Admin) - Shown ONLY during Login / Admin Mode, hidden on Account Creation (Signup) */}
+            {mode !== 'signup' && (
+              <div className="grid grid-cols-2 rounded-2xl bg-stone-100 p-1 dark:bg-ink-950 border border-bamboo-100 dark:border-bamboo-900/60 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => switchMode('login')}
+                  className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                    mode !== 'admin'
+                      ? 'bg-white text-bamboo-950 shadow-sm dark:bg-ink-900 dark:text-white'
+                      : 'text-ink-500 hover:text-bamboo-800 dark:text-ink-400'
+                  }`}
+                >
+                  <User className="h-3.5 w-3.5" /> Student Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchMode('admin')}
+                  className={`py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                    mode === 'admin'
+                      ? 'bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md'
+                      : 'text-purple-700 hover:text-purple-900 dark:text-purple-400'
+                  }`}
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 text-golden-400" /> Admin Portal
+                </button>
+              </div>
+            )}
 
             {/* Header Titles */}
             <div>
@@ -629,7 +631,11 @@ export default function AuthPage() {
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Verifying Credentials...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {mode === 'signup' && 'Creating account...'}
+                    {mode === 'login' && 'Signing in...'}
+                    {mode === 'admin' && 'Authenticating Admin...'}
+                    {mode === 'forgot' && 'Sending reset link...'}
                   </>
                 ) : (
                   <>

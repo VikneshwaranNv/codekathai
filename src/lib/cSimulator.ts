@@ -18,45 +18,7 @@ export async function compileAndRunCProgram(code: string, input: string = ''): P
     activeInput = '9';
   }
 
-  // 1. First try dedicated backend C GCC Compiler endpoint (/api/run-c)
-  try {
-    const res = await fetch('/api/run-c', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: trimmed,
-        stdin: activeInput,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      let output = data.output || '';
-      const error = data.error || data.compiler_error || null;
-
-      // Smart Interactive Terminal Formatter:
-      if (activeInput && output) {
-        if (/((?:Enter|Input)[^\n]*?:\s*)([^\n]+)/i.test(output)) {
-          output = output.replace(/((?:Enter|Input)[^\n]*?:\s*)([^\n]+)/i, (_: string, promptText: string, rest: string) => {
-            if (rest.includes(activeInput)) return `${promptText}${rest}`;
-            return `${promptText}${activeInput}\n${rest}`;
-          });
-        } else if (/((?:Enter|Input)[^\n]*?:\s*)/i.test(output)) {
-          output = output.replace(/((?:Enter|Input)[^\n]*?:\s*)/i, `$1${activeInput}\n`);
-        }
-      }
-
-      return {
-        output: output,
-        error: error && error.trim() !== '' ? error : null,
-        passed: data.passed !== false && (!error || error.trim() === ''),
-      };
-    }
-  } catch (err) {
-    console.log('Backend /api/run-c offline, trying Wandbox cloud GCC compiler fallback...');
-  }
-
-  // 2. Second try Wandbox Cloud GCC API
+  // 1. Try Wandbox Cloud GCC Compiler API directly
   try {
     const res = await fetch('https://wandbox.org/api/compile.json', {
       method: 'POST',
@@ -94,7 +56,7 @@ export async function compileAndRunCProgram(code: string, input: string = ''): P
     console.warn('Wandbox API offline, using local C simulator fallback:', err);
   }
 
-  // 3. Third try Local C Simulator fallback
+  // 2. Local C Simulator fallback
   return simulateCProgram(code, activeInput);
 }
 
