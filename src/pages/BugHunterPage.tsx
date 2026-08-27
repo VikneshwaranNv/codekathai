@@ -33,6 +33,7 @@ import { BUG_HUNTER_LEVELS, type BugLevel } from '@/data/bugHunterData';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import { explainLineByLine, explainAsTamilStory, explainError } from '@/data/aiTutor';
 import CCodeEditor from '@/components/CCodeEditor';
+import InteractiveTerminal from '@/components/InteractiveTerminal';
 import {
   isSoundMuted,
   toggleSoundMuted,
@@ -602,31 +603,11 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                 />
 
                 {/* Compiler Output Console */}
-                <div className="rounded-2xl border border-stone-800 bg-ink-950 p-4 font-mono text-xs text-emerald-300 min-h-[160px] space-y-2 shadow-2xl">
-                  <div className="flex items-center justify-between border-b border-stone-800 pb-2 text-[10px] text-stone-400 uppercase font-bold">
-                    <span>GCC Compiler Output</span>
-                    <span>Expected Output: "{activeLevel.expectedOutput}"</span>
-                  </div>
-
-                  {isCompiling ? (
-                    <div className="py-8 text-center text-amber-300 animate-pulse">
-                      Compiling C code with GCC compiler...
-                    </div>
-                  ) : compileError ? (
-                    <div className="text-rose-400 space-y-1">
-                      <p className="font-bold flex items-center gap-1">
-                        <AlertCircle className="h-4 w-4" /> GCC Compiler Error:
-                      </p>
-                      <pre className="whitespace-pre-wrap font-mono text-[11px] text-rose-300">{compileError}</pre>
-                    </div>
-                  ) : compileOutput ? (
-                    <pre className="whitespace-pre-wrap font-mono text-emerald-300">{compileOutput}</pre>
-                  ) : (
-                    <div className="py-8 text-center text-stone-500 italic">
-                      Click "RUN CODE & ATTACK BUG" to compile code and strike the bug!
-                    </div>
-                  )}
-                </div>
+                <InteractiveTerminal
+                  output={compileOutput}
+                  error={compileError}
+                  isRunning={isCompiling}
+                />
 
                 {/* Dedicated Next Level Action Bar under Editor & Console */}
                 <div className="card p-4 bg-white dark:bg-ink-900 border border-bamboo-200 dark:border-bamboo-800 flex items-center justify-between shadow-md">

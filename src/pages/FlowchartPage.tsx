@@ -3,6 +3,7 @@ import { Sparkles, Play, RotateCcw, Code2, Workflow, Copy, Check, ChevronRight, 
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
+import InteractiveTerminal from '@/components/InteractiveTerminal';
 import { parseCToFlowchart, type FlowchartNode, type FlowchartNodeType } from '@/lib/cFlowchartParser';
 import { playButtonClickSound } from '@/lib/soundEffects';
 
@@ -247,28 +248,11 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
           </div>
 
           {/* COMPILER OUTPUT TERMINAL */}
-          <div className="rounded-2xl border border-bamboo-800 bg-ink-950 p-4 font-mono text-xs text-emerald-300 min-h-[140px] space-y-2 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-ink-800 pb-2 text-[11px] text-ink-400">
-              <span className="font-bold flex items-center gap-1.5 text-bamboo-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> GCC Output Console
-              </span>
-              <span>exit code 0</span>
-            </div>
-
-            {isRunning ? (
-              <div className="py-6 text-center text-amber-300 animate-pulse">
-                Compiling C code with GCC compiler...
-              </div>
-            ) : error ? (
-              <div className="text-rose-400 whitespace-pre-wrap">{error}</div>
-            ) : output ? (
-              <pre className="whitespace-pre-wrap text-emerald-300">{output}</pre>
-            ) : (
-              <div className="py-6 text-center text-stone-500 italic">
-                Click "🚀 GENERATE FLOWCHART & RUN CODE" above to see output.
-              </div>
-            )}
-          </div>
+          <InteractiveTerminal
+            output={output}
+            error={error}
+            isRunning={isRunning}
+          />
         </div>
 
         {/* RIGHT COLUMN: INTERACTIVE VISUAL FLOWCHART DIAGRAM CANVAS */}
