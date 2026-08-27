@@ -75,13 +75,8 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-bamboo-600 text-white shadow-soft">
             <BookOpen className="h-5 w-5" strokeWidth={2.4} />
           </span>
-          <span className="flex flex-col leading-none">
-            <span className="font-display text-lg font-bold text-bamboo-950 dark:text-white">
-              Code Kathai
-            </span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-bamboo-600 dark:text-bamboo-400">
-              Code Stories
-            </span>
+          <span className="font-display text-lg font-bold text-bamboo-950 dark:text-white">
+            Code Kathai
           </span>
         </button>
 
