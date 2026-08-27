@@ -194,6 +194,65 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-ink-950 text-ink-900 dark:text-white font-sans py-8">
+      {/* Live Bug Battle Keyframe Animations */}
+      <style>{`
+        @keyframes liveBugFloat {
+          0% { transform: translate(0px, 0px) rotate(0deg); }
+          25% { transform: translate(14px, -12px) rotate(5deg); }
+          50% { transform: translate(-12px, -18px) rotate(-5deg); }
+          75% { transform: translate(-16px, 8px) rotate(3deg); }
+          100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+
+        @keyframes liveBugHit {
+          0% { transform: scale(1) translate(0, 0); filter: brightness(1); }
+          15% { transform: scale(1.4) translate(-25px, -18px) rotate(-15deg); filter: brightness(2.5) drop-shadow(0 0 25px #f59e0b); }
+          30% { transform: scale(1.35) translate(25px, 18px) rotate(15deg); filter: brightness(3) drop-shadow(0 0 30px #ef4444); }
+          45% { transform: scale(1.2) translate(-18px, 12px) rotate(-10deg); filter: brightness(2) drop-shadow(0 0 20px #10b981); }
+          60% { transform: scale(1.1) translate(12px, -10px) rotate(8deg); }
+          100% { transform: scale(1) translate(0, 0); filter: brightness(1); }
+        }
+
+        @keyframes liveBugDodge {
+          0% { transform: translateX(0); }
+          20% { transform: translateX(50px) rotate(22deg); }
+          40% { transform: translateX(-50px) rotate(-22deg); }
+          60% { transform: translateX(30px) rotate(12deg); }
+          100% { transform: translateX(0); }
+        }
+
+        @keyframes compilerBeam {
+          0% { width: 0%; opacity: 1; }
+          50% { width: 100%; opacity: 1; }
+          100% { width: 100%; opacity: 0; }
+        }
+
+        @keyframes floatDamageText {
+          0% { opacity: 0; transform: translateY(0) scale(0.6); }
+          40% { opacity: 1; transform: translateY(-35px) scale(1.3); }
+          100% { opacity: 0; transform: translateY(-70px) scale(1); }
+        }
+
+        .animate-bug-float {
+          animation: liveBugFloat 4.5s ease-in-out infinite;
+        }
+
+        .animate-bug-hit {
+          animation: liveBugHit 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+        }
+
+        .animate-bug-dodge {
+          animation: liveBugDodge 0.6s ease-in-out;
+        }
+
+        .animate-compiler-beam {
+          animation: compilerBeam 0.7s ease-out forwards;
+        }
+
+        .animate-damage-float {
+          animation: floatDamageText 1.2s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+      `}</style>
       <div className="container-page space-y-8">
         
         {/* TOP BAR / NAVIGATION */}
@@ -381,27 +440,78 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                     </span>
                   </div>
 
-                  {/* Boss Avatar & Animated HP Bar */}
-                  <div className="rounded-2xl bg-black/40 p-5 border border-bamboo-800/60 text-center space-y-3 relative overflow-hidden">
-                    <div className={`text-6xl my-2 transition-transform duration-300 ${attackStatus === 'hit' ? 'scale-125 animate-bounce' : ''}`}>
-                      {activeLevel.bugAvatar}
+                  {/* LIVE ANIMATED BATTLE ARENA STAGE */}
+                  <div className="rounded-3xl bg-gradient-to-b from-black/90 via-bamboo-950/70 to-black/95 p-6 border border-bamboo-700/80 text-center space-y-4 relative overflow-hidden shadow-2xl min-h-[270px] flex flex-col justify-between">
+                    
+                    {/* Live Compiler Laser Attack Beam */}
+                    {(isCompiling || attackStatus === 'hit') && (
+                      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-5 bg-gradient-to-r from-transparent via-golden-400 to-emerald-400 blur-sm animate-compiler-beam z-20 pointer-events-none" />
+                    )}
+
+                    {/* Arena Stage Grid Pattern */}
+                    <div className="absolute inset-0 pointer-events-none opacity-25 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]" />
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-bamboo-500/20 rounded-full blur-2xl pointer-events-none" />
+
+                    {/* Floating Damage Text Overlay */}
+                    {attackStatus === 'hit' && (
+                      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-damage-float text-center">
+                        <span className="font-display font-extrabold text-2xl text-golden-300 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] bg-black/80 px-4 py-1.5 rounded-full border border-golden-400">
+                          💥 -{Math.ceil(activeLevel.bossMaxHp * 0.5)} HP! CRITICAL HIT!
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Floating Miss / Dodge Overlay */}
+                    {attackStatus === 'miss' && (
+                      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-damage-float text-center">
+                        <span className="font-display font-extrabold text-sm text-rose-300 bg-black/80 px-3.5 py-1.5 rounded-full border border-rose-500 shadow-lg">
+                          🛡️ DODGED! Fix C Bug!
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Live Moving Boss Character Stage */}
+                    <div className="relative py-4 flex flex-col items-center justify-center min-h-[140px]">
+                      {/* Boss Shadow / Energy Platform */}
+                      <div className="absolute bottom-1 h-5 w-28 rounded-full bg-emerald-500/30 blur-md border border-emerald-500/40 animate-pulse" />
+
+                      {/* Boss Avatar Sprite with Live Motion */}
+                      <div
+                        className={`text-7xl cursor-pointer select-none transition-all duration-300 transform-gpu relative z-10 ${
+                          attackStatus === 'hit'
+                            ? 'animate-bug-hit'
+                            : attackStatus === 'miss'
+                            ? 'animate-bug-dodge'
+                            : 'animate-bug-float'
+                        }`}
+                        title={`${activeLevel.bugName} - Live Boss Visual`}
+                      >
+                        {activeLevel.bugAvatar}
+                      </div>
+
+                      {/* Live Boss Name Tag */}
+                      <h3 className="font-display text-2xl font-bold text-bamboo-200 mt-2 tracking-wide flex items-center justify-center gap-2">
+                        {activeLevel.bugName}
+                      </h3>
                     </div>
 
-                    <h3 className="font-display text-xl font-bold text-bamboo-200">
-                      {activeLevel.bugName}
-                    </h3>
-
                     {/* Health Bar */}
-                    <div className="space-y-1">
+                    <div className="space-y-1 relative z-10">
                       <div className="flex justify-between items-center text-xs font-bold font-mono">
                         <span className="text-rose-400 flex items-center gap-1">
-                          <Heart className="h-3.5 w-3.5 fill-current text-rose-500" /> HP:
+                          <Heart className="h-3.5 w-3.5 fill-current text-rose-500 animate-pulse" /> HP:
                         </span>
-                        <span className="text-bamboo-300">{bossHp} / {activeLevel.bossMaxHp} HP</span>
+                        <span className="text-bamboo-300 font-bold">{bossHp} / {activeLevel.bossMaxHp} HP</span>
                       </div>
-                      <div className="h-3.5 w-full bg-stone-900 rounded-full overflow-hidden p-0.5 border border-bamboo-700/60">
+                      <div className="h-4 w-full bg-stone-900/90 rounded-full overflow-hidden p-0.5 border border-bamboo-700/80 shadow-inner">
                         <div
-                          className="h-full bg-gradient-to-r from-emerald-500 via-bamboo-400 to-golden-400 rounded-full transition-all duration-500"
+                          className={`h-full rounded-full transition-all duration-700 ${
+                            (bossHp / activeLevel.bossMaxHp) > 0.5
+                              ? 'bg-gradient-to-r from-emerald-500 via-bamboo-400 to-golden-400'
+                              : (bossHp / activeLevel.bossMaxHp) > 0.2
+                              ? 'bg-gradient-to-r from-amber-500 to-golden-400'
+                              : 'bg-gradient-to-r from-rose-600 to-rose-400 animate-pulse'
+                          }`}
                           style={{ width: `${Math.max(0, (bossHp / activeLevel.bossMaxHp) * 100)}%` }}
                         />
                       </div>
