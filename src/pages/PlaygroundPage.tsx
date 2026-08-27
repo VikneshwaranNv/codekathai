@@ -185,8 +185,6 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
               onChange={setCode}
               rows={17}
               placeholder="// Write your C code here..."
-              theme={theme}
-              onThemeChange={handleThemeChange}
               typingSoundEnabled={typingSoundEnabled}
               onToggleTypingSound={handleToggleTypingSound}
               fontSize={fontSize}

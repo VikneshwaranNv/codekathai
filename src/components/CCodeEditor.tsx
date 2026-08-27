@@ -324,7 +324,7 @@ export default function CCodeEditor({
   rows = 16,
   className = '',
   errorLineIndex = null,
-  theme = 'bamboo',
+  theme = 'matrix',
   onThemeChange,
   typingSoundEnabled = true,
   onToggleTypingSound,
@@ -336,7 +336,7 @@ export default function CCodeEditor({
 
   const [activeLine, setActiveLine] = useState<number>(1);
 
-  const activeThemeConfig = IDE_THEMES.find((t) => t.id === theme) || IDE_THEMES[0];
+  const activeThemeConfig = IDE_THEMES.find((t) => t.id === 'matrix') || IDE_THEMES[1];
 
   const lines = value.split('\n');
   const lineCount = Math.max(lines.length, 15);
@@ -456,26 +456,13 @@ export default function CCodeEditor({
     <div
       className={`flex flex-col rounded-2xl border border-bamboo-800 ${activeThemeConfig.bg} font-mono text-xs overflow-hidden shadow-2xl transition-colors duration-500 ${className}`}
     >
-      {/* IDE Theme & Color Legend Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-800/80 bg-ink-900/90 px-4 py-2 text-[11px] select-none">
-        {/* Left: Theme Selector Pills */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-xs font-bold text-emerald-400 flex items-center gap-1 mr-1">
-            🎮 IDE Theme:
+      {/* IDE Header with Matrix Hacker Badge & Typing Sound Toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#0a200a] bg-[#020702] px-4 py-2 text-[11px] select-none">
+        {/* Left: Matrix Hacker Badge */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-[#00ff66] flex items-center gap-1.5 bg-[#051505] px-3 py-1 rounded-full border border-[#00ff66]/30 shadow-glow-sm">
+            📟 Matrix Hacker IDE
           </span>
-          {IDE_THEMES.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => onThemeChange?.(t.id)}
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                theme === t.id
-                  ? 'bg-emerald-600 text-white shadow-md scale-105'
-                  : 'bg-ink-800 text-ink-300 hover:bg-ink-700 hover:text-white'
-              }`}
-            >
-              {t.name}
-            </button>
-          ))}
         </div>
 
         {/* Right: Sci-Fi Synth Typing Sound Toggle */}

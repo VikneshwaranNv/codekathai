@@ -226,8 +226,6 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
                 onChange={handleCodeChange}
                 rows={17}
                 placeholder="// Type or paste any C code here..."
-                theme={theme}
-                onThemeChange={handleThemeChange}
                 typingSoundEnabled={typingSoundEnabled}
                 onToggleTypingSound={handleToggleTypingSound}
                 fontSize={fontSize}
