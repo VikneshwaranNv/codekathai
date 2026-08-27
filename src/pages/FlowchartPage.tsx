@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Sparkles, Play, RotateCcw, Code2, Workflow, Copy, Check, ChevronRight, ChevronLeft, Sliders } from 'lucide-react';
+import { Sparkles, Play, RotateCcw, Code2, Workflow, Copy, Check, ChevronRight, ChevronLeft, Sliders, Zap } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
@@ -13,7 +13,7 @@ interface FlowchartPageProps {
 const FLOWCHART_PRESETS = [
   {
     name: 'Factorial of Number',
-    code: `#include <stdio.h>\n\nint main() {\n    int n = 5;\n    unsigned long long fact = 1;\n\n    printf("Enter number: ");\n    if (n < 0) {\n        printf("Invalid input\\n");\n        return 1;\n    }\n\n    for (int i = 1; i <= n; i++) {\n        fact *= i;\n    }\n\n    printf("Factorial = %llu\\n", fact);\n    return 0;\n}`,
+    code: `#include <stdio.h>\n\nint main() {\n    int n = 5;\n    unsigned long long fact = 1;\n\n    printf("Enter number: ");\n    if (n < 0) {\n        printf("Invalid input\\n");\n        return 1;\n    }\n\n    for (int i = 1; i <= n; i++) {\n        fact *= i;\n    }\n\n    printf("Factorial of %d = %llu\\n", n, fact);\n    return 0;\n}`,
     input: '5',
   },
   {
@@ -40,6 +40,10 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
+  // Flowchart Generation Trigger State
+  const [activeCodeForFlowchart, setActiveCodeForFlowchart] = useState<string | null>(FLOWCHART_PRESETS[0].code);
+  const [hasGenerated, setHasGenerated] = useState<boolean>(true);
+
   // Selected Node Index for Step-by-Step Walkthrough
   const [selectedNodeIndex, setSelectedNodeIndex] = useState<number>(0);
   const [copied, setCopied] = useState<boolean>(false);
@@ -56,7 +60,10 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
   const [fontSize, setFontSize] = useState<number>(13);
 
   // Parse active C code into Flowchart AST Graph
-  const graph = useMemo(() => parseCToFlowchart(code), [code]);
+  const graph = useMemo(() => {
+    return parseCToFlowchart(activeCodeForFlowchart || code);
+  }, [activeCodeForFlowchart, code]);
+
   const activeNode: FlowchartNode | undefined = graph.nodes[selectedNodeIndex] || graph.nodes[0];
 
   const handleThemeChange = (newTheme: IdeTheme) => {
@@ -70,8 +77,13 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
     localStorage.setItem('codekathai_typing_sfx', String(next));
   };
 
-  const handleRunCompiler = async () => {
+  // Trigger Flowchart Generation & Compile C Code
+  const handleGenerateAndRun = async () => {
     playButtonClickSound();
+    setActiveCodeForFlowchart(code);
+    setSelectedNodeIndex(0); // RESET TO STEP 1 STARTING!
+    setHasGenerated(true);
+
     setIsRunning(true);
     setError(null);
     setOutput('Compiling and running C program with GCC...');
@@ -86,6 +98,12 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
       setError(null);
     }
     setIsRunning(false);
+  };
+
+  const handleCodeChange = (newVal: string) => {
+    setCode(newVal);
+    // Mark as ungenerated until user clicks "Generate Flowchart & Run Code"
+    setHasGenerated(false);
   };
 
   const handleCopyFlowchartText = () => {
@@ -129,7 +147,7 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
             C Code ➔ Flowchart Studio 📊
           </h1>
           <p className="font-tamil text-xs text-ink-600 dark:text-ink-300">
-            எந்த C நிரலையும் எழுதவும்/ஒட்டவும் (Paste) செய்யலாம். உங்களது C நிரலின் தர்க்கம் உடனடியாக நேரலை வரைபடமாக (Visual Flowchart) மாறும்!
+            எந்த C நிரலையும் ஒட்டி (Paste), "🚀 Generate Flowchart & Run Code" பட்டனை அழுத்தவும். தர்க்க வரைபடம் Step 1-ல் இருந்து தொடங்கும்!
           </p>
         </div>
 
@@ -142,11 +160,13 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
                 playButtonClickSound();
                 setCode(p.code);
                 setProgramInput(p.input);
-                setSelectedNodeIndex(0);
+                setActiveCodeForFlowchart(p.code);
+                setSelectedNodeIndex(0); // START AT STEP 1
+                setHasGenerated(true);
                 setOutput('');
                 setError(null);
               }}
-              className="rounded-full bg-bamboo-100 px-3.5 py-1.5 text-xs font-bold text-bamboo-800 hover:bg-bamboo-200 dark:bg-ink-800 dark:text-bamboo-300 transition-transform active:scale-95"
+              className="rounded-full bg-bamboo-100 px-3.5 py-1.5 text-xs font-bold text-bamboo-800 hover:bg-bamboo-200 dark:bg-ink-800 dark:text-bamboo-300 transition-transform active:scale-95 cursor-pointer"
             >
               {p.name}
             </button>
@@ -160,7 +180,7 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
         {/* LEFT COLUMN: C CODE EDITOR & GCC COMPILER */}
         <div className="space-y-6">
           <div className="card flex flex-col overflow-hidden border border-bamboo-200 dark:border-bamboo-800 shadow-xl">
-            {/* Editor Action Header */}
+            {/* Editor Header */}
             <div className="flex flex-wrap items-center justify-between border-b border-bamboo-100 bg-bamboo-50 px-4 py-3 dark:border-bamboo-800 dark:bg-ink-900 gap-2">
               <span className="flex items-center gap-2 text-xs font-bold text-bamboo-900 dark:text-bamboo-200">
                 <Code2 className="h-4 w-4 text-emerald-500" /> main.c Source Code
@@ -189,18 +209,11 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
                     setCode('');
                     setOutput('');
                     setError(null);
+                    setHasGenerated(false);
                   }}
-                  className="btn-ghost flex items-center gap-1 px-2.5 py-1 text-xs text-ink-600 dark:text-ink-300 hover:text-rose-500"
+                  className="btn-ghost flex items-center gap-1 px-2.5 py-1 text-xs text-ink-600 dark:text-ink-300 hover:text-rose-500 cursor-pointer"
                 >
                   <RotateCcw className="h-3.5 w-3.5" /> Clear
-                </button>
-
-                <button
-                  onClick={handleRunCompiler}
-                  disabled={isRunning}
-                  className="btn-primary flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-600 to-bamboo-600 hover:from-emerald-500 hover:to-bamboo-500 text-white shadow-soft"
-                >
-                  <Play className="h-3.5 w-3.5 fill-current" /> {isRunning ? 'Compiling...' : 'Run Code'}
                 </button>
               </div>
             </div>
@@ -209,8 +222,8 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
             <div className="p-3 bg-ink-950">
               <CCodeEditor
                 value={code}
-                onChange={setCode}
-                rows={18}
+                onChange={handleCodeChange}
+                rows={17}
                 placeholder="// Type or paste any C code here..."
                 theme={theme}
                 onThemeChange={handleThemeChange}
@@ -218,6 +231,18 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
                 onToggleTypingSound={handleToggleTypingSound}
                 fontSize={fontSize}
               />
+            </div>
+
+            {/* MAIN FLOWCHART & COMPILE TRIGGER BUTTON */}
+            <div className="p-4 bg-ink-900 border-t border-bamboo-800 flex justify-center">
+              <button
+                onClick={handleGenerateAndRun}
+                disabled={isRunning}
+                className="w-full py-3.5 px-6 rounded-2xl text-sm font-extrabold bg-gradient-to-r from-emerald-500 via-bamboo-600 to-golden-500 hover:from-emerald-400 hover:to-golden-400 text-white shadow-xl shadow-emerald-950/60 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer"
+              >
+                <Zap className="h-5 w-5 text-amber-300 animate-bounce" />
+                <span>{isRunning ? 'Compiling & Generating Flowchart...' : '🚀 GENERATE FLOWCHART & RUN CODE'}</span>
+              </button>
             </div>
           </div>
 
@@ -232,7 +257,7 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
 
             {isRunning ? (
               <div className="py-6 text-center text-amber-300 animate-pulse">
-                Compiling and executing C code...
+                Compiling C code with GCC compiler...
               </div>
             ) : error ? (
               <div className="text-rose-400 whitespace-pre-wrap">{error}</div>
@@ -240,7 +265,7 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
               <pre className="whitespace-pre-wrap text-emerald-300">{output}</pre>
             ) : (
               <div className="py-6 text-center text-stone-500 italic">
-                Click "Run Code" above to compile & see program output.
+                Click "🚀 GENERATE FLOWCHART & RUN CODE" above to see output.
               </div>
             )}
           </div>
@@ -262,166 +287,198 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
 
             <button
               onClick={handleCopyFlowchartText}
-              className="btn-ghost px-3 py-1.5 text-xs font-bold text-bamboo-300 hover:bg-bamboo-900/60 flex items-center gap-1.5 rounded-xl border border-bamboo-700/50"
+              className="px-3.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 rounded-xl shadow-md transition-all cursor-pointer"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-200" /> : <Copy className="h-3.5 w-3.5 text-white" />}
               {copied ? 'Copied!' : 'Copy Logic'}
             </button>
           </div>
 
-          {/* FLOWCHART SYMBOL SHAPE GUIDE */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-800/60 bg-black/40 px-4 py-2.5 rounded-2xl text-[11px] select-none">
-            <span className="font-bold text-bamboo-400">Shapes:</span>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="flex items-center gap-1">
-                <span className="h-2.5 w-5 rounded-full bg-emerald-500" />
-                <span className="text-emerald-300 font-bold">Start/End</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2.5 w-4 -skew-x-6 bg-sky-500" />
-                <span className="text-sky-300 font-bold">In/Out</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2.5 w-4 rounded bg-amber-500" />
-                <span className="text-amber-300 font-bold">Process</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rotate-45 bg-purple-500" />
-                <span className="text-purple-300 font-bold">Decision</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2.5 w-4 rounded border border-dashed border-indigo-400 bg-indigo-600" />
-                <span className="text-indigo-300 font-bold">Loop</span>
-              </span>
+          {!hasGenerated ? (
+            /* UNGENERATED PLACEHOLDER STATE */
+            <div className="flex flex-col items-center justify-center p-12 text-center space-y-5 border-2 border-dashed border-bamboo-700/60 rounded-3xl bg-black/40 min-h-[420px]">
+              <div className="h-16 w-16 rounded-full bg-emerald-500/20 border border-emerald-500/50 grid place-items-center animate-bounce">
+                <Sparkles className="h-8 w-8 text-golden-400" />
+              </div>
+              <h3 className="font-display text-lg font-bold text-white max-w-sm">
+                👈 Paste or Write Your C Code & Click "🚀 GENERATE FLOWCHART & RUN CODE"
+              </h3>
+              <p className="font-tamil text-xs text-bamboo-300 max-w-md leading-relaxed">
+                உங்கள் C நிரலை இடது பக்க பெட்டியில் எழுதி அல்லது ஒட்டி (Paste), "Generate Flowchart" பட்டனை அழுத்தவும். தர்க்க வரைபடம் Step 1-ல் இருந்து தொடங்கும்!
+              </p>
+              <button
+                onClick={handleGenerateAndRun}
+                className="py-3 px-6 text-xs font-extrabold bg-gradient-to-r from-emerald-500 via-bamboo-600 to-golden-500 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer"
+              >
+                🚀 Generate Flowchart Now
+              </button>
             </div>
-          </div>
+          ) : (
+            /* GENERATED FLOWCHART VIEW */
+            <>
+              {/* FLOWCHART SYMBOL SHAPE GUIDE */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-800/60 bg-black/40 px-4 py-2.5 rounded-2xl text-[11px] select-none">
+                <span className="font-bold text-bamboo-400">Shapes:</span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <span className="h-2.5 w-5 rounded-full bg-emerald-500" />
+                    <span className="text-emerald-300 font-bold">Start/End</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-2.5 w-4 -skew-x-6 bg-sky-500" />
+                    <span className="text-sky-300 font-bold">In/Out</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-2.5 w-4 rounded bg-amber-500" />
+                    <span className="text-amber-300 font-bold">Process</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-2.5 w-2.5 rotate-45 bg-purple-500" />
+                    <span className="text-purple-300 font-bold">Decision</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-2.5 w-4 rounded border border-dashed border-indigo-400 bg-indigo-600" />
+                    <span className="text-indigo-300 font-bold">Loop</span>
+                  </span>
+                </div>
+              </div>
 
-          {/* STEP CONTROLLER BAR */}
-          <div className="flex items-center justify-between bg-black/50 p-3 rounded-2xl border border-bamboo-800/60">
-            <button
-              onClick={() => {
-                playButtonClickSound();
-                setSelectedNodeIndex((prev) => Math.max(0, prev - 1));
-              }}
-              disabled={selectedNodeIndex === 0}
-              className="btn-ghost px-3 py-1.5 text-xs font-bold text-bamboo-200 disabled:opacity-40 flex items-center gap-1 cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" /> Previous Step
-            </button>
+              {/* STEP CONTROLLER BAR - HIGH CONTRAST BUTTONS */}
+              <div className="flex items-center justify-between bg-black/60 p-3 rounded-2xl border border-bamboo-800/80 shadow-md">
+                <button
+                  onClick={() => {
+                    playButtonClickSound();
+                    setSelectedNodeIndex((prev) => Math.max(0, prev - 1));
+                  }}
+                  disabled={selectedNodeIndex === 0}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                    selectedNodeIndex === 0
+                      ? 'bg-ink-800 text-ink-500 border border-ink-700 cursor-not-allowed opacity-50'
+                      : 'bg-bamboo-700 hover:bg-bamboo-600 text-white border border-bamboo-500 shadow-md cursor-pointer'
+                  }`}
+                >
+                  <ChevronLeft className="h-4 w-4" /> Previous Step
+                </button>
 
-            <span className="font-mono text-xs font-bold text-golden-400">
-              Step {selectedNodeIndex + 1} of {graph.nodes.length}
-            </span>
-
-            <button
-              onClick={() => {
-                playButtonClickSound();
-                setSelectedNodeIndex((prev) => Math.min(graph.nodes.length - 1, prev + 1));
-              }}
-              disabled={selectedNodeIndex === graph.nodes.length - 1}
-              className="btn-ghost px-3 py-1.5 text-xs font-bold text-bamboo-200 disabled:opacity-40 flex items-center gap-1 cursor-pointer"
-            >
-              Next Step <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* ACTIVE SELECTED NODE DETAILS DISPLAY */}
-          {activeNode && (
-            <div className="rounded-2xl bg-gradient-to-r from-bamboo-950/90 via-ink-900 to-emerald-950/90 p-5 border border-bamboo-700/80 shadow-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="chip bg-bamboo-600 text-white font-mono font-bold text-xs">
-                  Step #{selectedNodeIndex + 1}: {activeNode.type.toUpperCase()}
+                <span className="font-mono text-xs font-bold text-golden-400 bg-ink-950 px-3 py-1 rounded-full border border-golden-500/30">
+                  Step {selectedNodeIndex + 1} of {graph.nodes.length}
                 </span>
-                <span className="text-xs font-mono text-bamboo-400 font-bold">
-                  {activeNode.lineIndex ? `Line ${activeNode.lineIndex}` : 'Scope Start'}
-                </span>
+
+                <button
+                  onClick={() => {
+                    playButtonClickSound();
+                    setSelectedNodeIndex((prev) => Math.min(graph.nodes.length - 1, prev + 1));
+                  }}
+                  disabled={selectedNodeIndex === graph.nodes.length - 1}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                    selectedNodeIndex === graph.nodes.length - 1
+                      ? 'bg-ink-800 text-ink-500 border border-ink-700 cursor-not-allowed opacity-50'
+                      : 'bg-gradient-to-r from-emerald-600 to-bamboo-600 hover:from-emerald-500 hover:to-bamboo-500 text-white border border-emerald-400 shadow-lg cursor-pointer'
+                  }`}
+                >
+                  Next Step <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
 
-              <div className="space-y-1">
-                <h3 className="font-display text-lg font-bold text-golden-300">
-                  {activeNode.label}
-                </h3>
-                <p className="font-tamil text-xs text-bamboo-200 leading-relaxed">
-                  {activeNode.tamilExplanation}
-                </p>
-                <p className="text-xs text-ink-300 font-sans italic">
-                  En: {activeNode.englishExplanation}
-                </p>
-              </div>
-
-              {/* Code Snippet */}
-              <div className="bg-black/80 rounded-xl p-3 border border-bamboo-900 font-mono text-xs text-emerald-400 overflow-x-auto">
-                <code>{activeNode.codeSnippet}</code>
-              </div>
-            </div>
-          )}
-
-          {/* VISUAL FLOWCHART GRAPH TREE */}
-          <div className="flex flex-col items-center justify-center space-y-4 py-4 relative max-h-[500px] overflow-y-auto pr-2">
-            {graph.nodes.map((node, index) => {
-              const isSelected = index === selectedNodeIndex;
-              const styleConfig = getNodeColor(node.type);
-
-              return (
-                <div key={node.id} className="flex flex-col items-center relative group">
-                  {/* Flow Connection Arrow */}
-                  {index > 0 && (
-                    <div className="flex flex-col items-center my-2 select-none">
-                      <div className="w-0.5 h-6 bg-gradient-to-b from-bamboo-500 to-emerald-400 animate-pulse" />
-                      <span className="text-emerald-400 text-xs font-bold font-mono">↓</span>
-                    </div>
-                  )}
-
-                  {/* Node Container */}
-                  <div
-                    onClick={() => {
-                      playButtonClickSound();
-                      setSelectedNodeIndex(index);
-                    }}
-                    className={`cursor-pointer transition-all duration-300 transform hover:scale-105 ${
-                      isSelected
-                        ? 'ring-4 ring-golden-400 ring-offset-2 ring-offset-ink-950 scale-105 shadow-2xl'
-                        : 'opacity-90 hover:opacity-100'
-                    }`}
-                  >
-                    {node.type === 'decision' ? (
-                      <div className="relative w-44 h-44 flex items-center justify-center my-2">
-                        <div className={`absolute inset-0 ${styleConfig.shape} ${styleConfig.bg} ${styleConfig.border} border-2`} />
-                        <div className="relative z-10 text-center p-3 select-none text-white font-bold text-xs leading-tight">
-                          <span className="block text-[10px] opacity-80 uppercase tracking-wider mb-1">DECISION</span>
-                          {node.label}
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className={`min-w-[220px] max-w-[340px] text-center select-none text-xs ${styleConfig.shape} ${styleConfig.bg} ${styleConfig.border} border`}
-                      >
-                        <span className="block text-[9px] opacity-75 uppercase tracking-wider mb-0.5">
-                          {node.type}
-                        </span>
-                        {node.label}
-                      </div>
-                    )}
+              {/* ACTIVE SELECTED NODE DETAILS DISPLAY */}
+              {activeNode && (
+                <div className="rounded-2xl bg-gradient-to-r from-bamboo-950/90 via-ink-900 to-emerald-950/90 p-5 border border-bamboo-700/80 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="chip bg-bamboo-600 text-white font-mono font-bold text-xs">
+                      Step #{selectedNodeIndex + 1}: {activeNode.type.toUpperCase()}
+                    </span>
+                    <span className="text-xs font-mono text-bamboo-400 font-bold">
+                      {activeNode.lineIndex ? `Line ${activeNode.lineIndex}` : 'Scope Start'}
+                    </span>
                   </div>
 
-                  {/* Branch Labels for Decision & Loop */}
-                  {node.type === 'decision' && (
-                    <div className="flex justify-between w-64 text-[10px] font-bold font-mono text-golden-300 mt-1 select-none">
-                      <span className="bg-emerald-950 px-2 py-0.5 rounded border border-emerald-600">✓ YES → Step {index + 2}</span>
-                      <span className="bg-rose-950 px-2 py-0.5 rounded border border-rose-600">✗ NO → Step {index + 3}</span>
-                    </div>
-                  )}
+                  <div className="space-y-1">
+                    <h3 className="font-display text-lg font-bold text-golden-300">
+                      {activeNode.label}
+                    </h3>
+                    <p className="font-tamil text-xs text-bamboo-200 leading-relaxed">
+                      {activeNode.tamilExplanation}
+                    </p>
+                    <p className="text-xs text-ink-300 font-sans italic">
+                      En: {activeNode.englishExplanation}
+                    </p>
+                  </div>
 
-                  {node.type === 'loop' && (
-                    <div className="flex justify-between w-64 text-[10px] font-bold font-mono text-cyan-300 mt-1 select-none">
-                      <span className="bg-indigo-950 px-2 py-0.5 rounded border border-indigo-600">↺ Loop Body</span>
-                      <span className="bg-stone-900 px-2 py-0.5 rounded border border-stone-600">Exit Loop →</span>
-                    </div>
-                  )}
+                  {/* Code Snippet */}
+                  <div className="bg-black/80 rounded-xl p-3 border border-bamboo-900 font-mono text-xs text-emerald-400 overflow-x-auto">
+                    <code>{activeNode.codeSnippet}</code>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              )}
+
+              {/* VISUAL FLOWCHART GRAPH TREE */}
+              <div className="flex flex-col items-center justify-center space-y-4 py-4 relative max-h-[500px] overflow-y-auto pr-2">
+                {graph.nodes.map((node, index) => {
+                  const isSelected = index === selectedNodeIndex;
+                  const styleConfig = getNodeColor(node.type);
+
+                  return (
+                    <div key={node.id} className="flex flex-col items-center relative group">
+                      {/* Flow Connection Arrow */}
+                      {index > 0 && (
+                        <div className="flex flex-col items-center my-2 select-none">
+                          <div className="w-0.5 h-6 bg-gradient-to-b from-bamboo-500 to-emerald-400 animate-pulse" />
+                          <span className="text-emerald-400 text-xs font-bold font-mono">↓</span>
+                        </div>
+                      )}
+
+                      {/* Node Container */}
+                      <div
+                        onClick={() => {
+                          playButtonClickSound();
+                          setSelectedNodeIndex(index);
+                        }}
+                        className={`cursor-pointer transition-all duration-300 transform hover:scale-105 ${
+                          isSelected
+                            ? 'ring-4 ring-golden-400 ring-offset-2 ring-offset-ink-950 scale-105 shadow-2xl'
+                            : 'opacity-90 hover:opacity-100'
+                        }`}
+                      >
+                        {node.type === 'decision' ? (
+                          <div className="relative w-44 h-44 flex items-center justify-center my-2">
+                            <div className={`absolute inset-0 ${styleConfig.shape} ${styleConfig.bg} ${styleConfig.border} border-2`} />
+                            <div className="relative z-10 text-center p-3 select-none text-white font-bold text-xs leading-tight">
+                              <span className="block text-[10px] opacity-80 uppercase tracking-wider mb-1">DECISION</span>
+                              {node.label}
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            className={`min-w-[220px] max-w-[340px] text-center select-none text-xs ${styleConfig.shape} ${styleConfig.bg} ${styleConfig.border} border`}
+                          >
+                            <span className="block text-[9px] opacity-75 uppercase tracking-wider mb-0.5">
+                              {node.type}
+                            </span>
+                            {node.label}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Branch Labels for Decision & Loop */}
+                      {node.type === 'decision' && (
+                        <div className="flex justify-between w-64 text-[10px] font-bold font-mono text-golden-300 mt-1 select-none">
+                          <span className="bg-emerald-950 px-2 py-0.5 rounded border border-emerald-600">✓ YES → Step {index + 2}</span>
+                          <span className="bg-rose-950 px-2 py-0.5 rounded border border-rose-600">✗ NO → Step {index + 3}</span>
+                        </div>
+                      )}
+
+                      {node.type === 'loop' && (
+                        <div className="flex justify-between w-64 text-[10px] font-bold font-mono text-cyan-300 mt-1 select-none">
+                          <span className="bg-indigo-950 px-2 py-0.5 rounded border border-indigo-600">↺ Loop Body</span>
+                          <span className="bg-stone-900 px-2 py-0.5 rounded border border-stone-600">Exit Loop →</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
         </div>
 

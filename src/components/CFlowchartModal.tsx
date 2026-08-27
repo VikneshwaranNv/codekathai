@@ -69,9 +69,9 @@ export default function CFlowchartModal({ isOpen, onClose, code }: CFlowchartMod
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyFlowchartText}
-              className="btn-ghost px-3 py-1.5 text-xs font-bold text-bamboo-300 hover:bg-bamboo-900/60 flex items-center gap-1.5 rounded-xl border border-bamboo-700/50"
+              className="px-3.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 rounded-xl shadow-md transition-all cursor-pointer"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-200" /> : <Copy className="h-3.5 w-3.5 text-white" />}
               {copied ? 'Copied!' : 'Copy Logic'}
             </button>
             <button
@@ -79,7 +79,7 @@ export default function CFlowchartModal({ isOpen, onClose, code }: CFlowchartMod
                 playButtonClickSound();
                 onClose();
               }}
-              className="rounded-full p-2 text-stone-400 hover:bg-white/10 hover:text-white transition-colors"
+              className="rounded-full p-2 text-stone-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
@@ -119,19 +119,23 @@ export default function CFlowchartModal({ isOpen, onClose, code }: CFlowchartMod
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
           {/* STEP CONTROLLER BAR */}
-          <div className="flex items-center justify-between bg-black/50 p-3 rounded-2xl border border-bamboo-800/60">
+          <div className="flex items-center justify-between bg-black/60 p-3 rounded-2xl border border-bamboo-800/80 shadow-md">
             <button
               onClick={() => {
                 playButtonClickSound();
                 setSelectedNodeIndex((prev) => Math.max(0, prev - 1));
               }}
               disabled={selectedNodeIndex === 0}
-              className="btn-ghost px-3 py-1.5 text-xs font-bold text-bamboo-200 disabled:opacity-40 flex items-center gap-1"
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                selectedNodeIndex === 0
+                  ? 'bg-ink-800 text-ink-500 border border-ink-700 cursor-not-allowed opacity-50'
+                  : 'bg-bamboo-700 hover:bg-bamboo-600 text-white border border-bamboo-500 shadow-md cursor-pointer'
+              }`}
             >
               <ChevronLeft className="h-4 w-4" /> Previous Step
             </button>
 
-            <span className="font-mono text-xs font-bold text-golden-400">
+            <span className="font-mono text-xs font-bold text-golden-400 bg-ink-950 px-3 py-1 rounded-full border border-golden-500/30">
               Step {selectedNodeIndex + 1} of {graph.nodes.length}
             </span>
 
@@ -141,7 +145,11 @@ export default function CFlowchartModal({ isOpen, onClose, code }: CFlowchartMod
                 setSelectedNodeIndex((prev) => Math.min(graph.nodes.length - 1, prev + 1));
               }}
               disabled={selectedNodeIndex === graph.nodes.length - 1}
-              className="btn-ghost px-3 py-1.5 text-xs font-bold text-bamboo-200 disabled:opacity-40 flex items-center gap-1"
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                selectedNodeIndex === graph.nodes.length - 1
+                  ? 'bg-ink-800 text-ink-500 border border-ink-700 cursor-not-allowed opacity-50'
+                  : 'bg-gradient-to-r from-emerald-600 to-bamboo-600 hover:from-emerald-500 hover:to-bamboo-500 text-white border border-emerald-400 shadow-lg cursor-pointer'
+              }`}
             >
               Next Step <ChevronRight className="h-4 w-4" />
             </button>
