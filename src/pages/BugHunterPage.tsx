@@ -513,19 +513,19 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                       {/* Boss Shadow / Energy Platform */}
                       <div className="absolute bottom-1 h-5 w-28 rounded-full bg-emerald-500/30 blur-md border border-emerald-500/40 animate-pulse" />
 
-                      {/* Boss Avatar Sprite (Floats while unsolved, STOPS immediately when error is solved) */}
+                      {/* Boss Avatar Sprite (Moves & floats continuously while working, STOPS ONLY after solving the bug!) */}
                       <div
                         className={`text-7xl cursor-pointer select-none transition-all duration-500 transform-gpu relative z-10 ${
-                          attackStatus === 'hit' || bossHp <= 0 || progress.isBugLevelCompleted(activeLevel.id)
+                          attackStatus === 'hit' || bossHp <= 0
                             ? 'transform-none scale-110 drop-shadow-[0_0_30px_#10b981] opacity-90'
                             : attackStatus === 'miss'
                             ? 'animate-bug-dodge'
                             : 'animate-bug-float'
                         }`}
                         title={
-                          attackStatus === 'hit' || bossHp <= 0 || progress.isBugLevelCompleted(activeLevel.id)
+                          attackStatus === 'hit' || bossHp <= 0
                             ? `${activeLevel.bugName} - BUG SOLVED & FROZEN!`
-                            : `${activeLevel.bugName} - Floatable Bug Boss`
+                            : `${activeLevel.bugName} - Floatable Bug (Fix C code to stop bug!)`
                         }
                       >
                         {activeLevel.bugAvatar}
