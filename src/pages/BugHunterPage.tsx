@@ -143,28 +143,22 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
       const isCorrect = !res.error && actual === expected;
 
       if (isCorrect) {
-        // Calculate Damage
-        const damage = Math.ceil(activeLevel.bossMaxHp * 0.5);
-        const nextHp = Math.max(0, bossHp - damage);
-        setBossHp(nextHp);
+        // 1-CLICK VICTORY: Instantly defeat bug on 1 single correct submission!
+        setBossHp(0);
         setAttackStatus('hit');
         playExplosionSound();
+        playVictoryJingleSound();
 
         const newLog = [
-          `💥 CRITICAL HIT! Fixed C bug!`,
-          `💥 BUG DAMAGED! ${activeLevel.bugName} HP: ${bossHp} → ${nextHp}`,
+          `💥 1-SHOT CRITICAL HIT! Fixed C bug!`,
+          `💥 BUG DEFEATED! ${activeLevel.bugName} HP: ${bossHp} → 0`,
           ...combatLog,
         ];
         setCombatLog(newLog);
 
-        if (nextHp <= 0 || bossHp <= 50) {
-          // Defeated!
-          playVictoryJingleSound();
-          setBossHp(0);
-          setEarnedXp(activeLevel.xpReward);
-          progress.recordCompletedBugLevel(activeLevel.id, activeLevel.xpReward);
-          setShowVictoryModal(true);
-        }
+        setEarnedXp(activeLevel.xpReward);
+        progress.recordCompletedBugLevel(activeLevel.id, activeLevel.xpReward);
+        setShowVictoryModal(true);
       } else {
         playShieldDeflectSound();
         setAttackStatus('miss');
@@ -519,16 +513,20 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                       {/* Boss Shadow / Energy Platform */}
                       <div className="absolute bottom-1 h-5 w-28 rounded-full bg-emerald-500/30 blur-md border border-emerald-500/40 animate-pulse" />
 
-                      {/* Boss Avatar Sprite with Live Floatable Motion */}
+                      {/* Boss Avatar Sprite (Floats while unsolved, STOPS immediately when error is solved) */}
                       <div
-                        className={`text-7xl cursor-pointer select-none transition-all duration-300 transform-gpu relative z-10 ${
-                          attackStatus === 'hit'
-                            ? 'animate-bug-hit'
+                        className={`text-7xl cursor-pointer select-none transition-all duration-500 transform-gpu relative z-10 ${
+                          attackStatus === 'hit' || bossHp <= 0 || progress.isBugLevelCompleted(activeLevel.id)
+                            ? 'transform-none scale-110 drop-shadow-[0_0_30px_#10b981] opacity-90'
                             : attackStatus === 'miss'
                             ? 'animate-bug-dodge'
                             : 'animate-bug-float'
                         }`}
-                        title={`${activeLevel.bugName} - Floatable Bug Boss`}
+                        title={
+                          attackStatus === 'hit' || bossHp <= 0 || progress.isBugLevelCompleted(activeLevel.id)
+                            ? `${activeLevel.bugName} - BUG SOLVED & FROZEN!`
+                            : `${activeLevel.bugName} - Floatable Bug Boss`
+                        }
                       >
                         {activeLevel.bugAvatar}
                       </div>
