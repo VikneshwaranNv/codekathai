@@ -491,7 +491,17 @@ export default function LessonViewer({
 
               {/* Mini Challenge */}
               <div className="rounded-2xl border border-bamboo-200 bg-white p-6 dark:border-bamboo-800 dark:bg-ink-900 shadow-sm">
-                <span className="eyebrow mb-2">Mini Challenge 🚀</span>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase shadow-sm ${
+                    level === 'beginner'
+                      ? 'bg-bamboo-100 text-bamboo-800 border border-bamboo-300 dark:bg-bamboo-950 dark:text-bamboo-300'
+                      : level === 'intermediate'
+                      ? 'bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950 dark:text-amber-300'
+                      : 'bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-950 dark:text-purple-300'
+                  }`}>
+                    {level === 'beginner' ? '🌱 EASY MINI CHALLENGE' : level === 'intermediate' ? '🚀 MEDIUM MINI CHALLENGE' : '🧠 HARD MINI CHALLENGE'}
+                  </span>
+                </div>
                 <h3 className="font-display text-base font-bold text-bamboo-950 dark:text-white">
                   {lesson.challenge.title}
                 </h3>
