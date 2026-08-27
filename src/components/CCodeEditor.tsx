@@ -1,10 +1,5 @@
 import { useRef, useState, type UIEvent, type KeyboardEvent } from 'react';
-import {
-  playMechanicalKeyPressSound,
-  getKeyboardSoundProfile,
-  cycleKeyboardSoundProfile,
-  type KeyboardSoundProfile,
-} from '@/lib/soundEffects';
+import { playMechanicalKeyPressSound } from '@/lib/soundEffects';
 
 export type IdeTheme = 'bamboo' | 'matrix' | 'cyberpunk' | 'dracula' | 'sepia';
 
@@ -340,7 +335,6 @@ export default function CCodeEditor({
   const lineNumbersRef = useRef<HTMLDivElement>(null);
 
   const [activeLine, setActiveLine] = useState<number>(1);
-  const [soundProfile, setSoundProfile] = useState<KeyboardSoundProfile>(() => getKeyboardSoundProfile());
 
   const activeThemeConfig = IDE_THEMES.find((t) => t.id === theme) || IDE_THEMES[0];
 
@@ -484,38 +478,20 @@ export default function CCodeEditor({
           ))}
         </div>
 
-        {/* Right: Typing Sound Toggle & Switch Sound Profile Selector */}
-        <div className="flex items-center gap-1.5">
-          {onToggleTypingSound && (
-            <button
-              onClick={onToggleTypingSound}
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                typingSoundEnabled
-                  ? 'bg-gradient-to-r from-amber-500 to-golden-400 text-ink-950 font-bold shadow-md'
-                  : 'bg-ink-800 text-ink-400 hover:text-white'
-              }`}
-              title={typingSoundEnabled ? 'Mute Typing SFX' : 'Enable Typing SFX'}
-            >
-              {typingSoundEnabled ? '🔊 Typing SFX: ON' : '🔇 Typing SFX: OFF'}
-            </button>
-          )}
-
-          {typingSoundEnabled && (
-            <button
-              onClick={() => {
-                const next = cycleKeyboardSoundProfile();
-                setSoundProfile(next);
-              }}
-              className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-ink-800 text-emerald-300 hover:bg-ink-700 hover:text-white transition-all cursor-pointer border border-emerald-500/30 flex items-center gap-1"
-              title="Click to switch Mechanical Keyboard Sound Profile"
-            >
-              {soundProfile === 'cream' && '🪵 Switch: Creamy Thock'}
-              {soundProfile === 'blue' && '🫐 Switch: MX Blue Clicky'}
-              {soundProfile === 'cyber' && '🎹 Switch: Sci-Fi Synth Melody'}
-              {soundProfile === 'red' && '🍃 Switch: Silent Red'}
-            </button>
-          )}
-        </div>
+        {/* Right: Sci-Fi Synth Typing Sound Toggle */}
+        {onToggleTypingSound && (
+          <button
+            onClick={onToggleTypingSound}
+            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+              typingSoundEnabled
+                ? 'bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400 text-ink-950 font-bold shadow-md'
+                : 'bg-ink-800 text-ink-400 hover:text-white'
+            }`}
+            title={typingSoundEnabled ? 'Mute Sci-Fi Synth SFX' : 'Enable Sci-Fi Synth SFX'}
+          >
+            {typingSoundEnabled ? '🎹 Sci-Fi Synth SFX: ON' : '🔇 Typing SFX: OFF'}
+          </button>
+        )}
       </div>
 
       <div className="relative flex flex-1 overflow-hidden min-h-[280px]">
