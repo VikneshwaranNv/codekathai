@@ -115,6 +115,7 @@ export default function DashboardPage({
           return (
             <div
               key={mod.id}
+              onClick={() => onStartLesson(mod.id, firstLessonId)}
               className="group card flex flex-col justify-between p-6 border border-bamboo-100 dark:border-bamboo-800 hover:-translate-y-2 hover:shadow-2xl hover:border-bamboo-400 dark:hover:border-bamboo-500 hover:ring-4 hover:ring-bamboo-500/10 transition-all duration-300 cursor-pointer bg-gradient-to-b from-white via-white to-bamboo-50/20 dark:from-ink-900 dark:to-ink-900/80"
             >
               <div>
