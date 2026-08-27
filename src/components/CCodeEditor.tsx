@@ -356,8 +356,8 @@ export default function CCodeEditor({
 
   // Handle Tab Indentation, Keypress SFX, and IDE Auto-Closing Pairs
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (typingSoundEnabled && e.key.length === 1) {
-      playMechanicalKeyPressSound();
+    if (typingSoundEnabled) {
+      playMechanicalKeyPressSound(e.key);
     }
 
     const target = e.currentTarget;

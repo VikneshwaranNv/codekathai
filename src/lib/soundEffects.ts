@@ -1,4 +1,5 @@
-// Pure Web Audio API Sound Effects Synthesizer for Code Kathai (Zero external downloads, 100% crisp retro sound)
+// High-Fidelity Web Audio API SFX Engine & Mechanical Keyboard Synthesizer for Code Kathai
+// Zero external downloads, 100% crisp high-definition acoustic sounds
 
 const SOUND_MUTED_KEY = 'codekathai_sfx_muted';
 
@@ -36,48 +37,37 @@ export function toggleSoundMuted(): boolean {
 }
 
 /**
- * ⚡ Laser Zap Sound Effect
- * Oscillating frequency drop for compiler laser attack
+ * ⌨️ Mechanical Keyboard SFX (Cherry MX Blue / Brown / Red Thock Synthesizer)
+ * Creates authentic tactile click + keycap bottom-out thock resonance
  */
-export function playLaserZapSound(): void {
+export function playMechanicalKeyPressSound(key?: string): void {
   if (isSoundMuted()) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
   try {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sawtooth';
     const now = ctx.currentTime;
+    const isSpaceOrEnter = key === 'Enter' || key === ' ' || key === 'Space';
 
-    osc.frequency.setValueAtTime(880, now);
-    osc.frequency.exponentialRampToValueAtTime(110, now + 0.15);
+    // 1. High Frequency Tactile Click (Bump)
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    clickOsc.type = 'sine';
+    const clickFreq = isSpaceOrEnter ? 1400 : 2600 + Math.random() * 500;
+    clickOsc.frequency.setValueAtTime(clickFreq, now);
+    clickOsc.frequency.exponentialRampToValueAtTime(800, now + 0.008);
 
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+    clickGain.gain.setValueAtTime(isSpaceOrEnter ? 0.18 : 0.14, now);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.008);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    clickOsc.connect(clickGain);
+    clickGain.connect(ctx.destination);
 
-    osc.start(now);
-    osc.stop(now + 0.15);
-  } catch (e) {
-    console.error('Audio playback error', e);
-  }
-}
+    clickOsc.start(now);
+    clickOsc.stop(now + 0.008);
 
-/**
- * 💥 Retro Explosion Sound Effect
- * White noise buffer decay when Bug Boss is hit or defeated
- */
-export function playExplosionSound(): void {
-  if (isSoundMuted()) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
-
-  try {
-    const bufferSize = ctx.sampleRate * 0.4; // 0.4 seconds
+    // 2. Keycap Bottom-Out Thock (Resonant Low-Pass Noise & Sub Pulse)
+    const bufferSize = ctx.sampleRate * (isSpaceOrEnter ? 0.05 : 0.035);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
@@ -89,28 +79,127 @@ export function playExplosionSound(): void {
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    const now = ctx.currentTime;
-    filter.frequency.setValueAtTime(1000, now);
-    filter.frequency.linearRampToValueAtTime(100, now + 0.4);
+    const filterCutoff = isSpaceOrEnter ? 350 : 650 + Math.random() * 150;
+    filter.frequency.setValueAtTime(filterCutoff, now);
+    filter.frequency.exponentialRampToValueAtTime(120, now + (isSpaceOrEnter ? 0.05 : 0.035));
 
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.35, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+    const thockGain = ctx.createGain();
+    thockGain.gain.setValueAtTime(isSpaceOrEnter ? 0.25 : 0.16, now);
+    thockGain.gain.exponentialRampToValueAtTime(0.001, now + (isSpaceOrEnter ? 0.05 : 0.035));
 
     noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
+    filter.connect(thockGain);
+    thockGain.connect(ctx.destination);
 
     noise.start(now);
-    noise.stop(now + 0.4);
+    noise.stop(now + (isSpaceOrEnter ? 0.05 : 0.035));
+  } catch (e) {
+    // Ignore audio context errors
+  }
+}
+
+/**
+ * ⚡ Bug Hunter High-Power Laser Cannon Sound
+ */
+export function playLaserZapSound(): void {
+  if (isSoundMuted()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+
+    // Dual Oscillator Laser (Sawtooth + Square for thick synth punch)
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.type = 'sawtooth';
+    osc2.type = 'square';
+
+    osc1.frequency.setValueAtTime(1100, now);
+    osc1.frequency.exponentialRampToValueAtTime(140, now + 0.16);
+
+    osc2.frequency.setValueAtTime(550, now);
+    osc2.frequency.exponentialRampToValueAtTime(70, now + 0.16);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.005, now + 0.16);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.16);
+    osc2.stop(now + 0.16);
   } catch (e) {
     console.error('Audio playback error', e);
   }
 }
 
 /**
- * 🛡️ Shield Deflect / Dodge Sound Effect
- * Quick metallic pitch sweep for bug dodge
+ * 💥 Bug Hunter High-Fidelity Explosion & Boss Defeat SFX
+ */
+export function playExplosionSound(): void {
+  if (isSoundMuted()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+    const duration = 0.45;
+
+    // 1. Sub-Bass Impact Boom
+    const subOsc = ctx.createOscillator();
+    const subGain = ctx.createGain();
+    subOsc.type = 'triangle';
+    subOsc.frequency.setValueAtTime(160, now);
+    subOsc.frequency.exponentialRampToValueAtTime(30, now + duration);
+
+    subGain.gain.setValueAtTime(0.5, now);
+    subGain.gain.exponentialRampToValueAtTime(0.005, now + duration);
+
+    subOsc.connect(subGain);
+    subGain.connect(ctx.destination);
+
+    subOsc.start(now);
+    subOsc.stop(now + duration);
+
+    // 2. Heavy White Noise Crunch
+    const bufferSize = ctx.sampleRate * duration;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1800, now);
+    filter.frequency.exponentialRampToValueAtTime(90, now + duration);
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.4, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.005, now + duration);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+
+    noise.start(now);
+    noise.stop(now + duration);
+  } catch (e) {
+    console.error('Audio playback error', e);
+  }
+}
+
+/**
+ * 🛡️ Metallic Shield Deflect / Dodge Sound Effect
  */
 export function playShieldDeflectSound(): void {
   if (isSoundMuted()) return;
@@ -118,31 +207,39 @@ export function playShieldDeflectSound(): void {
   if (!ctx) return;
 
   try {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'triangle';
     const now = ctx.currentTime;
 
-    osc.frequency.setValueAtTime(450, now);
-    osc.frequency.exponentialRampToValueAtTime(150, now + 0.18);
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
 
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+    osc1.type = 'sine';
+    osc2.type = 'triangle';
 
-    osc.connect(gain);
+    osc1.frequency.setValueAtTime(1200, now);
+    osc1.frequency.exponentialRampToValueAtTime(400, now + 0.18);
+
+    osc2.frequency.setValueAtTime(1800, now);
+    osc2.frequency.exponentialRampToValueAtTime(600, now + 0.18);
+
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.005, now + 0.18);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
     gain.connect(ctx.destination);
 
-    osc.start(now);
-    osc.stop(now + 0.18);
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.18);
+    osc2.stop(now + 0.18);
   } catch (e) {
     console.error('Audio playback error', e);
   }
 }
 
 /**
- * 🎺 Victory Fanfare Jingle Sound Effect
- * Upbeat 4-note retro arpeggio sequence (C5 -> E5 -> G5 -> C6)
+ * 🎺 Bug Hunter Victory Fanfare Jingle (HD Arcade Chord)
  */
 export function playVictoryJingleSound(): void {
   if (isSoundMuted()) return;
@@ -150,19 +247,19 @@ export function playVictoryJingleSound(): void {
   if (!ctx) return;
 
   try {
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-    const durations = [0.12, 0.12, 0.12, 0.35];
+    const notes = [523.25, 659.25, 783.99, 1046.5, 1318.51]; // C5, E5, G5, C6, E6
+    const durations = [0.1, 0.1, 0.1, 0.1, 0.4];
     let timeOffset = ctx.currentTime;
 
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'sine';
+      osc.type = 'triangle';
       osc.frequency.setValueAtTime(freq, timeOffset);
 
-      gain.gain.setValueAtTime(0.25, timeOffset);
-      gain.gain.exponentialRampToValueAtTime(0.01, timeOffset + durations[idx]);
+      gain.gain.setValueAtTime(0.35, timeOffset);
+      gain.gain.exponentialRampToValueAtTime(0.005, timeOffset + durations[idx]);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -170,7 +267,7 @@ export function playVictoryJingleSound(): void {
       osc.start(timeOffset);
       osc.stop(timeOffset + durations[idx]);
 
-      timeOffset += durations[idx];
+      timeOffset += durations[idx] * 0.9;
     });
   } catch (e) {
     console.error('Audio playback error', e);
@@ -178,7 +275,7 @@ export function playVictoryJingleSound(): void {
 }
 
 /**
- * 🖱️ Soft Retro Button Click SFX
+ * 🖱️ High-Quality Button Click SFX
  */
 export function playButtonClickSound(): void {
   if (isSoundMuted()) return;
@@ -186,58 +283,23 @@ export function playButtonClickSound(): void {
   if (!ctx) return;
 
   try {
+    const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = 'sine';
-    const now = ctx.currentTime;
+    osc.frequency.setValueAtTime(750, now);
+    osc.frequency.exponentialRampToValueAtTime(350, now + 0.04);
 
-    osc.frequency.setValueAtTime(600, now);
-    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
-
-    gain.gain.setValueAtTime(0.12, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.005, now + 0.04);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start(now);
-    osc.stop(now + 0.05);
+    osc.stop(now + 0.04);
   } catch (e) {
     console.error('Audio playback error', e);
-  }
-}
-
-/**
- * ⌨️ Mechanical Keypress Click Sound Effect
- * Crisp tactile click synthesized on keypress in editor
- */
-export function playMechanicalKeyPressSound(): void {
-  if (isSoundMuted()) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
-
-  try {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'triangle';
-    const now = ctx.currentTime;
-
-    // Slight random pitch variation for authentic mechanical keyboard feel!
-    const randomFreq = 1800 + Math.random() * 400;
-    osc.frequency.setValueAtTime(randomFreq, now);
-    osc.frequency.exponentialRampToValueAtTime(300, now + 0.03);
-
-    gain.gain.setValueAtTime(0.08, now);
-    gain.gain.exponentialRampToValueAtTime(0.005, now + 0.03);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.03);
-  } catch (e) {
-    // Ignore audio context errors
   }
 }
