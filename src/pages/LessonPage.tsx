@@ -58,21 +58,25 @@ export default function LessonPage({
     );
   }
 
-  // Find prev/next lesson index across ALL lessons in order!
-  const currentGlobalIndex = allLessons.findIndex((l) => l.id === lessonId);
-  const prevLesson = currentGlobalIndex > 0 ? allLessons[currentGlobalIndex - 1] : undefined;
-  const nextLesson =
-    currentGlobalIndex >= 0 && currentGlobalIndex < allLessons.length - 1
-      ? allLessons[currentGlobalIndex + 1]
+  // Find ordered list of all topic items across modules in course order
+  const allTopicItems = modules.flatMap((m) =>
+    m.topics.map((t) => ({ moduleId: m.id, topicId: t.id }))
+  );
+
+  const currentTopicIdx = allTopicItems.findIndex((t) => t.topicId === lessonId);
+
+  const prevItem = currentTopicIdx > 0 ? allTopicItems[currentTopicIdx - 1] : undefined;
+  const nextItem =
+    currentTopicIdx >= 0 && currentTopicIdx < allTopicItems.length - 1
+      ? allTopicItems[currentTopicIdx + 1]
       : undefined;
 
+  const prevLesson = prevItem ? getLessonForLevel(prevItem.topicId, level) : undefined;
+  const nextLesson = nextItem ? getLessonForLevel(nextItem.topicId, level) : undefined;
+
   const handleSelectLesson = (targetLessonId: string) => {
-    const target = allLessons.find((l) => l.id === targetLessonId);
-    if (target) {
-      onStartLesson(target.moduleId, target.id);
-    } else {
-      onStartLesson(moduleId, targetLessonId);
-    }
+    const target = getLessonForLevel(targetLessonId, level);
+    onStartLesson(target.moduleId, target.id);
   };
 
   return (
