@@ -225,11 +225,12 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
       {/* Live Bug Battle Keyframe Animations */}
       <style>{`
         @keyframes liveBugFloat {
-          0% { transform: translate(0px, 0px) rotate(0deg); }
-          25% { transform: translate(25px, -18px) rotate(6deg); }
-          50% { transform: translate(-20px, -28px) rotate(-6deg); }
-          75% { transform: translate(-28px, 12px) rotate(4deg); }
-          100% { transform: translate(0px, 0px) rotate(0deg); }
+          0% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+          20% { transform: translate(75px, -35px) rotate(10deg) scale(1.12); }
+          40% { transform: translate(-70px, 28px) rotate(-10deg) scale(0.9); }
+          60% { transform: translate(65px, 35px) rotate(12deg) scale(1.08); }
+          80% { transform: translate(-65px, -32px) rotate(-12deg) scale(0.94); }
+          100% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
         }
 
         @keyframes liveBugHit {
