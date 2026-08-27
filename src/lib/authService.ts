@@ -318,25 +318,37 @@ export async function signUpWithEmailPassword(
       }
     }
 
-    // Insert user into `user_profiles` database table with role = 'student'
+    // Check if account already exists by email in user_profiles
+    const { data: existingProfiles } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('email', cleanEmail)
+      .limit(1);
+
     const validUuid =
       typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0');
 
-    const payload = {
-      id: validUuid,
-      full_name: cleanName,
-      email: cleanEmail,
-      role: 'student', // Default to student for public signups
-      learning_level: 'beginner',
-    };
-
-    const { error: dbError } = await supabase
-      .from('user_profiles')
-      .upsert([payload], { onConflict: 'email' });
-    if (dbError) {
-      console.warn('Database upsert note:', dbError.message);
+    if (existingProfiles && existingProfiles.length > 0) {
+      // Record exists -> update
+      await supabase
+        .from('user_profiles')
+        .update({
+          full_name: cleanName,
+          last_active_at: new Date().toISOString(),
+        })
+        .eq('id', existingProfiles[0].id);
+    } else {
+      // Record does not exist -> insert
+      const payload = {
+        id: validUuid,
+        full_name: cleanName,
+        email: cleanEmail,
+        role: 'student', // Default to student for public signups
+        learning_level: 'beginner',
+      };
+      await supabase.from('user_profiles').insert([payload]);
     }
 
     const newProfile: UserProfile = {

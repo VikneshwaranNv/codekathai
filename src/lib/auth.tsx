@@ -44,30 +44,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Sync profile directly into your exact Supabase `user_profiles` table
   const syncToSupabase = async (p: UserProfile) => {
     try {
+      if (!p) return;
+      const cleanEmail = p.email?.trim().toLowerCase() || null;
+
+      let existingId: string | null = null;
+
+      if (cleanEmail) {
+        const { data: existing } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .eq('email', cleanEmail)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          existingId = existing[0].id;
+        }
+      }
+
+      if (!existingId && p.id && p.id.includes('-')) {
+        const { data: existing } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .eq('id', p.id)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          existingId = existing[0].id;
+        }
+      }
+
       const validUuid =
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
           : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0');
 
       const payload: Record<string, any> = {
-        id: p.id && p.id.includes('-') ? p.id : validUuid,
         full_name: p.name,
-        email: p.email || null,
+        email: cleanEmail,
         role: p.role || 'student',
         learning_level: p.currentLevel || 'beginner',
+        last_active_at: new Date().toISOString(),
       };
 
-      const { data, error } = p.email
-        ? await supabase.from('user_profiles').upsert([payload], { onConflict: 'email' }).select()
-        : await supabase.from('user_profiles').upsert([payload], { onConflict: 'id' }).select();
-
-      if (error) {
-        console.warn('Supabase user_profiles upsert note:', error.message);
+      if (existingId) {
+        await supabase.from('user_profiles').update(payload).eq('id', existingId);
       } else {
-        console.log('Successfully synced user profile into Supabase:', data);
+        payload.id = p.id && p.id.includes('-') ? p.id : validUuid;
+        await supabase.from('user_profiles').insert([payload]);
       }
     } catch (err) {
-      console.error('Supabase user_profiles sync catch error:', err);
+      // Quietly ignore sync errors
     }
   };
 
