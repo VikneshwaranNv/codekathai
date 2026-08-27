@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Play, RotateCcw, Code2, Sliders } from 'lucide-react';
+import { Play, RotateCcw, Code2, Sliders, Sparkles } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
+import CFlowchartModal from '@/components/CFlowchartModal';
+import { playButtonClickSound } from '@/lib/soundEffects';
 
 interface PlaygroundPageProps {
   onNavigate: (page: Page) => void;
@@ -48,6 +50,9 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
   const [output, setOutput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+
+  // Flowchart Generator Modal State
+  const [showFlowchartModal, setShowFlowchartModal] = useState<boolean>(false);
 
   // IDE Studio Customization State
   const [theme, setTheme] = useState<IdeTheme>(() => {
@@ -165,6 +170,18 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
               >
                 <RotateCcw className="h-3.5 w-3.5" /> Clear
               </button>
+
+              <button
+                onClick={() => {
+                  playButtonClickSound();
+                  setShowFlowchartModal(true);
+                }}
+                className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-md rounded-xl cursor-pointer"
+                title="Convert C Code to Interactive Flowchart Diagram"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Flowchart 📊
+              </button>
+
               <button
                 onClick={() => handleRun()}
                 disabled={isRunning}
@@ -202,6 +219,13 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
           />
         </div>
       </div>
+
+      {/* FLOWCHART DIAGRAM MODAL */}
+      <CFlowchartModal
+        isOpen={showFlowchartModal}
+        onClose={() => setShowFlowchartModal(false)}
+        code={code}
+      />
     </div>
   );
 }
