@@ -1241,3 +1241,57 @@ export const allLessons: Lesson[] = [
   ...intermediateLessons,
   ...advancedLessons,
 ];
+
+export function getLessonForLevel(lessonId: string, level: 'beginner' | 'intermediate' | 'advanced'): Lesson {
+  // 1. Exact match for (lessonId, level)
+  const exactMatch = allLessons.find((l) => l.id === lessonId && l.level === level);
+  if (exactMatch) return exactMatch;
+
+  // 2. Base beginner lesson
+  const base = allLessons.find((l) => l.id === lessonId && l.level === 'beginner') || beginnerLessons[0];
+
+  if (level === 'beginner') {
+    return {
+      ...base,
+      challenge: {
+        ...base.challenge,
+        title: base.challenge.title.startsWith('Easy Challenge') ? base.challenge.title : `Easy Challenge: ${base.challenge.title}`,
+      },
+    };
+  }
+
+  if (level === 'intermediate') {
+    return {
+      ...base,
+      level: 'intermediate',
+      title: `${base.title} (Intermediate)`,
+      xp: base.xp + 25,
+      duration: base.duration + 3,
+      concept: `[Intermediate Level Concept]: Deep dive into ${base.title}. ${base.concept}`,
+      challenge: {
+        title: `Medium Challenge: ${base.title} Intermediate Implementation`,
+        prompt: `Write intermediate C syntax for ${base.title} logic.`,
+        starter: base.challenge.starter,
+        hint: base.challenge.hint,
+        expected: base.challenge.expected,
+      },
+    };
+  }
+
+  // Advanced level fallback
+  return {
+    ...base,
+    level: 'advanced',
+    title: `${base.title} (Advanced)`,
+    xp: base.xp + 50,
+    duration: base.duration + 5,
+    concept: `[Advanced Memory Concept]: Memory architecture and performance optimization for ${base.title}. ${base.concept}`,
+    challenge: {
+      title: `Hard Challenge: ${base.title} Advanced Pointer Memory Logic`,
+      prompt: `Write advanced pointer/memory C code for ${base.title}.`,
+      starter: base.challenge.starter,
+      hint: base.challenge.hint,
+      expected: base.challenge.expected,
+    },
+  };
+}

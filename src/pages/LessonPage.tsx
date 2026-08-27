@@ -1,7 +1,7 @@
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import type { ModuleId, Level } from '@/types';
 import { modules } from '@/data/course';
-import { allLessons } from '@/data/levelLessons';
+import { allLessons, getLessonForLevel } from '@/data/levelLessons';
 import LessonViewer from '@/components/LessonViewer';
 import type { Page } from '@/components/Navbar';
 
@@ -26,10 +26,8 @@ export default function LessonPage({
 }: LessonPageProps) {
   const mod = modules.find((m) => m.id === moduleId) ?? modules[0];
 
-  // Match lesson strictly by id and level (or level fallback to beginner if level matches)
-  const matchedLesson = allLessons.find(
-    (l) => l.id === lessonId && (l.level === level || l.level === 'beginner'),
-  );
+  // Dynamically resolve exact level-specific lesson & unique level challenge
+  const matchedLesson = getLessonForLevel(lessonId, level);
 
   // NO SILENT FALLBACK to lessons[0]!
   if (!matchedLesson) {

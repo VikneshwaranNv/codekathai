@@ -23,7 +23,7 @@ export const intermediateLessons: Lesson[] = [
     visualExplanation: {
       title: 'Compilation Flowchart',
       description: 'main.c -> main.i -> main.s -> main.o -> main.exe',
-      diagramType: 'generic',
+      diagramType: 'code',
     },
     code: {
       snippet: '#include <stdio.h>\n#define MAX 100\n\nint main() {\n    printf("Max Limit: %d\\n", MAX);\n    return 0;\n}',
@@ -62,8 +62,8 @@ export const intermediateLessons: Lesson[] = [
       explanation: '🎉 அருமை! Preprocessor நிலை Macros மற்றும் Header கோப்புகளை விரிவாக்குகிறது.',
     },
     challenge: {
-      title: 'Define constant macro',
-      prompt: '#define SPEED 80 என வரையறுக்கவும்.',
+      title: 'Medium Challenge: Define Macro Constant',
+      prompt: '#define SPEED 80 என Macro வரையறுக்கவும்.',
       starter: '',
       hint: '#define SPEED 80',
       expected: '#define SPEED 80',
@@ -128,8 +128,8 @@ export const intermediateLessons: Lesson[] = [
       explanation: '🎉 மிகச் சிறப்பு! static storage class மதிப்பைத் தக்கவைக்கும்.',
     },
     challenge: {
-      title: 'Declare static counter',
-      prompt: 'static int total = 0; என எழுதவும்.',
+      title: 'Medium Challenge: Declare Static Counter',
+      prompt: 'static int total = 0; என static மாறியை வரையறுக்கவும்.',
       starter: '',
       hint: 'static int total = 0;',
       expected: 'static int total = 0;',
@@ -158,7 +158,7 @@ export const intermediateLessons: Lesson[] = [
     visualExplanation: {
       title: 'Unsigned vs Signed Range',
       description: 'unsigned char: 0 to 255. signed char: -128 to 127.',
-      diagramType: 'generic',
+      diagramType: 'containers',
     },
     code: {
       snippet: 'unsigned int score = 4294967295U;\nprintf("Score: %u\\n", score);',
@@ -194,7 +194,7 @@ export const intermediateLessons: Lesson[] = [
       explanation: '🎉 அருமை! unsigned மாறிகள் எப்போதும் 0-லிருந்தே தொடங்குகின்றன.',
     },
     challenge: {
-      title: 'Declare unsigned long',
+      title: 'Medium Challenge: Unsigned Long Variable',
       prompt: 'unsigned long limit = 100000UL; என எழுதவும்.',
       starter: '',
       hint: 'unsigned long limit = 100000UL;',
@@ -224,7 +224,7 @@ export const intermediateLessons: Lesson[] = [
     visualExplanation: {
       title: 'Bit Shift Left (a << 1)',
       description: '5 (0101) << 1 = 10 (1010).',
-      diagramType: 'generic',
+      diagramType: 'calculator',
     },
     code: {
       snippet: 'int a = 5; // 0101\nint b = a << 1; // 1010 = 10\nprintf("Result: %d\\n", b);',
@@ -259,7 +259,7 @@ export const intermediateLessons: Lesson[] = [
       explanation: '🎉 அருமை! இடதுபுற பிட் நகர்வு (5 << 1) மதிப்பை 2-ஆல் பெருக்கி 10 ஆக்குகிறது.',
     },
     challenge: {
-      title: 'Write Bitwise Shift',
+      title: 'Medium Challenge: Bitwise Left Shift',
       prompt: 'int y = x << 2; என எழுதவும்.',
       starter: '',
       hint: 'int y = x << 2;',
@@ -289,7 +289,7 @@ export const intermediateLessons: Lesson[] = [
     visualExplanation: {
       title: 'Formatted Width %8.2f',
       description: '  123.45 (மொத்தம் 8 இடங்கள் ஒதுக்கப்படுகிறது)',
-      diagramType: 'generic',
+      diagramType: 'code',
     },
     code: {
       snippet: 'float price = 99.50;\nint chars = printf("Price: %8.2f\\n", price);\nprintf("Printed %d chars\\n", chars);',
@@ -324,7 +324,7 @@ export const intermediateLessons: Lesson[] = [
       explanation: '🎉 மிகச் சிறப்பு! printf அச்சிடப்பட்ட மொத்த எழுத்துக்களின் எண்ணிக்கையைத் தரும்.',
     },
     challenge: {
-      title: 'Format float precision',
+      title: 'Medium Challenge: Precision Float Formatting',
       prompt: 'printf("%.2f", 3.14159); என எழுதவும்.',
       starter: '',
       hint: 'printf("%.2f", 3.14159);',
@@ -334,27 +334,26 @@ export const intermediateLessons: Lesson[] = [
 
   /* ==================== 6. IFELSE (INTERMEDIATE) ==================== */
   {
-    id: 'ifelse-if',
+    id: 'ifelse-if-statement',
     moduleId: 'ifelse',
     level: 'intermediate',
-    title: 'Ternary Operator (?:) & Switch Case',
-    tamilTitle: 'முக்கணி செயற்குறி மற்றும் Switch Case',
+    title: 'Ternary Operator (?:) & Conditional Logic',
+    tamilTitle: 'முக்கணி செயற்குறி (Ternary Operator)',
     duration: 8,
     xp: 75,
-    concept: 'Ternary operator condition ? true_val : false_val simplifies if-else. Switch case provides multi-way branching efficiently.',
-    tamilExplanation: 'Ternary operator ஒரே வரியில் if-else எழுத உதவுகிறது. Switch case பல முடிவுகளை வேகமாகத் தேர்ந்தெடுக்கிறது.',
+    concept: 'Ternary operator condition ? true_val : false_val simplifies if-else into a single line statement.',
+    tamilExplanation: 'Ternary operator ஒரே வரியில் if-else எழுத உதவுகிறது.',
     englishTerms: [
       { term: 'Ternary Operator', meaning: 'முக்கணி செயற்குறி (?:)' },
-      { term: 'Switch Case', meaning: 'தேர்வு கிளை அமைப்புகள்' },
     ],
     realLife: {
-      title: 'Vending Machine Buttons',
-      body: '1 அழுத்தினால் காபி, 2 அழுத்தினால் டீ வருவது போன்ற சுவிட்ச் அமைப்புகள்.',
+      title: 'Traffic Signal Green Check',
+      body: 'பச்சை விளக்கு எறிந்தால் செல், இல்லையேல் நில்.',
     },
     visualExplanation: {
       title: 'Ternary Decision Flow',
       description: '(age >= 18) ? Eligible : Not Eligible',
-      diagramType: 'traffic',
+      diagramType: 'signal',
     },
     code: {
       snippet: 'int age = 20;\nchar* status = (age >= 18) ? "Adult" : "Minor";\nprintf("Status: %s\\n", status);',
@@ -389,7 +388,7 @@ export const intermediateLessons: Lesson[] = [
       explanation: '🎉 அருமை! ?: என்பது Ternary Operator ஆகும்.',
     },
     challenge: {
-      title: 'Write Ternary Check',
+      title: 'Medium Challenge: Ternary Max Expression',
       prompt: 'int max = (a > b) ? a : b; என எழுதவும்.',
       starter: '',
       hint: 'int max = (a > b) ? a : b;',
@@ -399,7 +398,7 @@ export const intermediateLessons: Lesson[] = [
 
   /* ==================== 7. LOOPS (INTERMEDIATE) ==================== */
   {
-    id: 'loops-for',
+    id: 'loops-for-loop',
     moduleId: 'loops',
     level: 'intermediate',
     title: 'Nested Loops & Break / Continue Control',
@@ -419,7 +418,7 @@ export const intermediateLessons: Lesson[] = [
     visualExplanation: {
       title: 'Nested Loop Iteration Matrix',
       description: 'Outer loop i=1 -> Inner loop j=1, 2, 3.',
-      diagramType: 'generic',
+      diagramType: 'repeat',
     },
     code: {
       snippet: 'for (int i = 1; i <= 3; i++) {\n    for (int j = 1; j <= 2; j++) {\n        printf("(%d,%d) ", i, j);\n    }\n}',
@@ -454,7 +453,7 @@ export const intermediateLessons: Lesson[] = [
       explanation: '🎉 அருமை! break கட்டளை சுற்றை முழுமையாக நிறுத்தும்.',
     },
     challenge: {
-      title: 'Write break statement',
+      title: 'Medium Challenge: Break Statement',
       prompt: 'if (i == 5) break; என எழுதவும்.',
       starter: '',
       hint: 'if (i == 5) break;',
@@ -464,15 +463,15 @@ export const intermediateLessons: Lesson[] = [
 
   /* ==================== 8. STACK (INTERMEDIATE) ==================== */
   {
-    id: 'stack-push-pop',
+    id: 'stack-concept',
     moduleId: 'stack',
     level: 'intermediate',
-    title: 'Stack Array Implementation & Expression Evaluation',
-    tamilTitle: 'அணிகள் வழி Stack செயல்படுத்தல் மற்றும் பிரயோகங்கள்',
+    title: 'Stack Memory & Top Pointer Management',
+    tamilTitle: 'Stack நினைவகம் மற்றும் Top சுட்டி மேலாண்மை',
     duration: 8,
     xp: 75,
-    concept: 'Implementing Stack data structure using C arrays, handling top pointer, push, pop operations, and infix-to-postfix evaluation.',
-    tamilExplanation: 'C மொழியில் Arrays பயன்படுத்தி Stack உருவாக்குவது மற்றும் Push, Pop வழிமுறைகள்.',
+    concept: 'Implementing Stack data structure using C arrays with dynamic top pointer tracking LIFO bounds.',
+    tamilExplanation: 'C மொழியில் Arrays பயன்படுத்தி Stack உருவாக்குவது மற்றும் top சுட்டி மேலாண்மை.',
     englishTerms: [
       { term: 'LIFO', meaning: 'கடைசியில் நுழைந்தது முதலில் வெளியேறும்' },
       { term: 'Top Pointer', meaning: 'உச்சியைக் குறிக்கும் சுட்டி' },
@@ -487,7 +486,7 @@ export const intermediateLessons: Lesson[] = [
       diagramType: 'stack',
     },
     code: {
-      snippet: 'int stack[5];\nint top = -1;\n\nvoid push(int val) {\n    if (top < 4) stack[++top] = val;\n}\nint pop() {\n    return (top >= 0) ? stack[top--] : -1;\n}',
+      snippet: 'int stack[100];\nint top = -1;\n\nvoid push(int val) {\n    if (top < 99) stack[++top] = val;\n}',
       parts: [
         { text: 'stack[++top] = val;', tone: 'plain' },
       ],
@@ -513,26 +512,90 @@ export const intermediateLessons: Lesson[] = [
       },
     ],
     practice: {
-      question: 'Stack காலி நிலையை குறிக்கும் top மதிப்பு எது?',
+      question: 'Stack காலி நிலையைக் குறிக்கும் top மதிப்பு எது?',
       options: ['0', '1', '-1', '100'],
       answerIndex: 2,
       explanation: '🎉 அருமை! top == -1 என்பது Stack Empty நிலையைக் குறிக்கும்.',
     },
     challenge: {
-      title: 'Write push expression',
-      prompt: 'stack[++top] = value; என எழுதவும்.',
+      title: 'Medium Challenge: Stack Array Allocation',
+      prompt: 'int stack[100]; int top = -1; என 100 அளவுள்ள Stack மற்றும் Top சுட்டியை வரையறுக்கவும்.',
       starter: '',
-      hint: 'stack[++top] = value;',
-      expected: 'stack[++top] = value;',
+      hint: 'int stack[100]; int top = -1;',
+      expected: 'int stack[100]; int top = -1;',
+    },
+  },
+
+  {
+    id: 'stack-operations',
+    moduleId: 'stack',
+    level: 'intermediate',
+    title: 'Stack Push & Pop Boundary Operations',
+    tamilTitle: 'Stack Push மற்றும் Pop எல்லைக் கணக்கீடுகள்',
+    duration: 8,
+    xp: 75,
+    concept: 'Executing Push (stack[++top] = val) and Pop (val = stack[top--]) with array index safety.',
+    tamilExplanation: 'Stack-ல் தரவைச் சேமிக்கும் Push மற்றும் தரவை எடுக்கும் Pop செயல்பாடுகள்.',
+    englishTerms: [
+      { term: 'Push', meaning: 'உள்ளே தள்ளுதல்' },
+      { term: 'Pop', meaning: 'வெளியே எடுத்தல்' },
+    ],
+    realLife: {
+      title: 'Coin Tube Dispenser',
+      body: 'நாணயக் குழாயில் நாணயங்களை மேல் நோக்கி அடுக்கவதும் எடுப்பதும்.',
+    },
+    visualExplanation: {
+      title: 'Push and Pop Array Indexing',
+      description: 'top increment before push; top decrement after pop.',
+      diagramType: 'stack',
+    },
+    code: {
+      snippet: 'int pop() {\n    if (top >= 0) {\n        return stack[top--];\n    }\n    return -1;\n}',
+      parts: [
+        { text: 'return stack[top--];', tone: 'plain' },
+      ],
+      explanation: [
+        { token: 'top--', meaning: 'தற்போதைய மதிப்பைத் தந்து பின் சுட்டியைக் குறைக்கும்' },
+      ],
+    },
+    outputExplanation: 'Stack-லிருந்து மேலிருந்த மதிப்பு வெளியேற்றப்படும்.',
+    story: [
+      {
+        id: 1,
+        speaker: 'kavi',
+        emotion: 'curious',
+        visual: 'stack',
+        dialogue: 'Pop செய்யும் போது top-- ஏன் பயன்படுகிறது?',
+      },
+      {
+        id: 2,
+        speaker: 'buddy',
+        emotion: 'explain',
+        visual: 'stack',
+        dialogue: 'மேலிருக்கும் மதிப்பைத் தந்த பிறகு சுட்டி கீழே இறங்க வேண்டும் என்பதால்!',
+      },
+    ],
+    practice: {
+      question: 'Pop செயல்பாட்டின் போது top சுட்டி எவ்வாறு மாறும்?',
+      options: ['1 அதிகரிக்கும் (top++)', '1 குறையும் (top--)', 'மாறாது', '0 ஆகும்'],
+      answerIndex: 1,
+      explanation: '🎉 அருமை! Pop செய்யும் போது top சுட்டி 1 குறையும்.',
+    },
+    challenge: {
+      title: 'Medium Challenge: Stack Pop Decrement Expression',
+      prompt: 'int val = stack[top--]; என எழுதவும்.',
+      starter: '',
+      hint: 'int val = stack[top--];',
+      expected: 'int val = stack[top--];',
     },
   },
 
   /* ==================== 9. QUEUE (INTERMEDIATE) ==================== */
   {
-    id: 'queue-enqueue-dequeue',
+    id: 'queue-concept',
     moduleId: 'queue',
     level: 'intermediate',
-    title: 'Circular Queue Implementation & Boundary Handling',
+    title: 'Circular Queue Implementation & Ring Buffer',
     tamilTitle: 'வட்ட வரிசை (Circular Queue) மற்றும் நினைவக சிறப்பாக்கம்',
     duration: 8,
     xp: 75,
@@ -584,11 +647,74 @@ export const intermediateLessons: Lesson[] = [
       explanation: '🎉 அருமை! (rear + 1) % SIZE சமன்பாடு சுழற்சியை சாத்தியமாக்குகிறது.',
     },
     challenge: {
-      title: 'Write circular increment',
+      title: 'Medium Challenge: Circular Queue Ring Wrap',
       prompt: 'rear = (rear + 1) % SIZE; என எழுதவும்.',
       starter: '',
       hint: 'rear = (rear + 1) % SIZE;',
       expected: 'rear = (rear + 1) % SIZE;',
+    },
+  },
+
+  {
+    id: 'queue-operations',
+    moduleId: 'queue',
+    level: 'intermediate',
+    title: 'Queue Front Dequeue & Boundary Logic',
+    tamilTitle: 'Queue Dequeue மற்றும் Front சுட்டி நகர்வு',
+    duration: 8,
+    xp: 75,
+    concept: 'Executing Dequeue operation by returning queue[front] and incrementing front pointer.',
+    tamilExplanation: 'Queue-ன் முன்புறத்திலிருந்து உறுப்பை எடுத்து front சுட்டியை நகர்த்தும் Dequeue முறை.',
+    englishTerms: [
+      { term: 'Dequeue', meaning: 'முன்புறத்திலிருந்து உறுப்பை நீக்குதல்' },
+    ],
+    realLife: {
+      title: 'Ticket Counter Service',
+      body: 'வரிசையின் முதலில் இருப்பவருக்கு சேவை அளித்த பின் அவர் வெளியேறுவது.',
+    },
+    visualExplanation: {
+      title: 'Dequeue Operation Front Shift',
+      description: 'val = queue[front++];',
+      diagramType: 'queue',
+    },
+    code: {
+      snippet: 'int dequeue() {\n    if (front != -1) {\n        return queue[front++];\n    }\n    return -1;\n}',
+      parts: [
+        { text: 'return queue[front++];', tone: 'plain' },
+      ],
+      explanation: [
+        { token: 'front++', meaning: 'முன்புறச் சுட்டியை அடுத்த நபருக்கு நகர்த்தும்' },
+      ],
+    },
+    outputExplanation: 'வரிசையின் முதலிலிருந்த எண் வெளியேறும்.',
+    story: [
+      {
+        id: 1,
+        speaker: 'kavi',
+        emotion: 'curious',
+        visual: 'queue',
+        dialogue: 'Dequeue செய்யும் போது front சுட்டி என்னவாகும்?',
+      },
+      {
+        id: 2,
+        speaker: 'buddy',
+        emotion: 'explain',
+        visual: 'queue',
+        dialogue: 'front++ செய்யப்பட்டு அடுத்த நபருக்கு வரிசை நகரும்!',
+      },
+    ],
+    practice: {
+      question: 'Queue-லிருந்து உறுப்பை நீக்கும் போது எந்த சுட்டி நகரும்?',
+      options: ['rear', 'front', 'top', 'bottom'],
+      answerIndex: 1,
+      explanation: '🎉 அருமை! Dequeue செய்யும் போது front சுட்டியே நகரும்.',
+    },
+    challenge: {
+      title: 'Medium Challenge: Queue Dequeue Increment Expression',
+      prompt: 'int val = queue[front++]; என எழுதவும்.',
+      starter: '',
+      hint: 'int val = queue[front++];',
+      expected: 'int val = queue[front++];',
     },
   },
 ];
@@ -620,7 +746,7 @@ export const advancedLessons: Lesson[] = [
     visualExplanation: {
       title: 'Process Memory Map',
       description: 'High Address [Stack ↓] <---> [Heap ↑] [BSS] [Data] [Text] Low Address',
-      diagramType: 'generic',
+      diagramType: 'memory',
     },
     code: {
       snippet: '#include <stdio.h>\n#include <stdlib.h>\n\nint global_var = 10; // Data Segment\nint uninit_var; // BSS Segment\n\nint main() {\n    int local_var = 5; // Stack Segment\n    int *ptr = (int*)malloc(sizeof(int)); // Heap Segment\n    free(ptr);\n    return 0;\n}',
@@ -656,8 +782,8 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அற்புதம்! malloc() எப்போதும் Heap நினைவகப் பகுதியையேப் பயன்படுத்தும்.',
     },
     challenge: {
-      title: 'Write malloc allocation',
-      prompt: 'int *p = (int*)malloc(sizeof(int)); என எழுதவும்.',
+      title: 'Hard Challenge: Dynamic Heap Memory Allocation',
+      prompt: 'int *p = (int*)malloc(sizeof(int)); என Heap நினைவகத்தில் இடம் ஒதுக்கவும்.',
       starter: '',
       hint: 'int *p = (int*)malloc(sizeof(int));',
       expected: 'int *p = (int*)malloc(sizeof(int));',
@@ -686,7 +812,7 @@ export const advancedLessons: Lesson[] = [
     visualExplanation: {
       title: 'Pointer Reference (ptr -> &val)',
       description: 'int val = 100; int *ptr = &val;',
-      diagramType: 'memory',
+      diagramType: 'address',
     },
     code: {
       snippet: 'int num = 50;\nint *ptr = &num;\nprintf("Address: %p, Value: %d\\n", (void*)ptr, *ptr);',
@@ -722,8 +848,8 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அருமை! & (Address-of) குறியீடு முகவரியைத் தரும்.',
     },
     challenge: {
-      title: 'Declare pointer variable',
-      prompt: 'int *ptr = &val; என எழுதவும்.',
+      title: 'Hard Challenge: Pointer Address Dereferencing',
+      prompt: 'int *ptr = &val; என Pointer மாறியை வரையறுக்கவும்.',
       starter: '',
       hint: 'int *ptr = &val;',
       expected: 'int *ptr = &val;',
@@ -752,7 +878,7 @@ export const advancedLessons: Lesson[] = [
     visualExplanation: {
       title: 'Aligned vs Packed Struct Memory',
       description: 'struct Data { char c; int i; }; // Size is 8 bytes (3 padding bytes added)',
-      diagramType: 'generic',
+      diagramType: 'lockers',
     },
     code: {
       snippet: '#pragma pack(1)\nstruct Student {\n    char grade;\n    int age;\n};\nprintf("Size: %lu bytes\\n", sizeof(struct Student));',
@@ -787,7 +913,7 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அருமை! #pragma pack(1) நினைவகப் பயன்பாட்டைக் குறைக்கிறது.',
     },
     challenge: {
-      title: 'Write pragma pack',
+      title: 'Hard Challenge: Disable Struct Padding',
       prompt: '#pragma pack(1) என எழுதவும்.',
       starter: '',
       hint: '#pragma pack(1)',
@@ -817,7 +943,7 @@ export const advancedLessons: Lesson[] = [
     visualExplanation: {
       title: 'Set 3rd Bit (val |= (1 << 3))',
       description: '00000000 | 00001000 = 00001000',
-      diagramType: 'generic',
+      diagramType: 'calculator',
     },
     code: {
       snippet: 'int flags = 0;\nflags |= (1 << 3); // Set 3rd bit\nprintf("Flags: %d\\n", flags);',
@@ -852,7 +978,7 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அருமை! Bitwise OR (|) செயற்குறி பிட்டை 1 ஆக்கும்.',
     },
     challenge: {
-      title: 'Write Set Bit expression',
+      title: 'Hard Challenge: Bitwise Masking Set Bit',
       prompt: 'reg |= (1 << n); என எழுதவும்.',
       starter: '',
       hint: 'reg |= (1 << n);',
@@ -882,7 +1008,7 @@ export const advancedLessons: Lesson[] = [
     visualExplanation: {
       title: 'va_list Argument Extraction',
       description: 'va_start -> va_arg -> va_end',
-      diagramType: 'generic',
+      diagramType: 'machine',
     },
     code: {
       snippet: '#include <stdarg.h>\nvoid customLog(int count, ...) {\n    va_list args;\n    va_start(args, count);\n    for (int i=0; i<count; i++) printf("%d ", va_arg(args, int));\n    va_end(args);\n}',
@@ -917,7 +1043,7 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அருமை! stdarg.h கோப்பில் va_list, va_start வரையறுக்கப்பட்டுள்ளன.',
     },
     challenge: {
-      title: 'Write va_start initialization',
+      title: 'Hard Challenge: Variadic List Start',
       prompt: 'va_start(args, count); என எழுதவும்.',
       starter: '',
       hint: 'va_start(args, count);',
@@ -927,11 +1053,11 @@ export const advancedLessons: Lesson[] = [
 
   /* ==================== 6. IFELSE (ADVANCED) ==================== */
   {
-    id: 'ifelse-if',
+    id: 'ifelse-if-statement',
     moduleId: 'ifelse',
     level: 'advanced',
     title: 'Branch Prediction & Jump Tables Optimization',
-    tamilTitle: 'கணினியின் வேகமான கிளை கணிப்புகள் (Branch Prediction & Jump Tables)',
+    tamilTitle: 'கணினியின் வேகமான கிளை கணிப்புகள் (Jump Tables)',
     duration: 10,
     xp: 100,
     concept: 'Compilers convert dense switch statements into Jump Tables (O(1) lookup). Branch Prediction predicts condition outcomes for CPU pipeline speed.',
@@ -947,7 +1073,7 @@ export const advancedLessons: Lesson[] = [
     visualExplanation: {
       title: 'Jump Table Indexing',
       description: 'switch(val) -> JumpTable[val]() -> O(1) Time',
-      diagramType: 'traffic',
+      diagramType: 'signal',
     },
     code: {
       snippet: 'int code = 2;\nswitch(code) {\n    case 1: printf("One\\n"); break;\n    case 2: printf("Two\\n"); break;\n    default: printf("Other\\n");\n}',
@@ -982,7 +1108,7 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அருமை! Jump Table நேரடித் தாவல் மூலம் O(1) வேகத்தை அளிக்கிறது.',
     },
     challenge: {
-      title: 'Write switch header',
+      title: 'Hard Challenge: Switch Jump Table Header',
       prompt: 'switch (option) என எழுதவும்.',
       starter: '',
       hint: 'switch (option)',
@@ -992,7 +1118,7 @@ export const advancedLessons: Lesson[] = [
 
   /* ==================== 7. LOOPS (ADVANCED) ==================== */
   {
-    id: 'loops-for',
+    id: 'loops-for-loop',
     moduleId: 'loops',
     level: 'advanced',
     title: 'Loop Unrolling & Cache Locality Optimizations',
@@ -1012,7 +1138,7 @@ export const advancedLessons: Lesson[] = [
     visualExplanation: {
       title: 'Unrolled Loop Iteration',
       description: 'for(i=0; i<N; i+=4) { arr[i]; arr[i+1]; arr[i+2]; arr[i+3]; }',
-      diagramType: 'generic',
+      diagramType: 'repeat',
     },
     code: {
       snippet: 'int arr[4] = {1, 2, 3, 4};\n// Unrolled Loop\narr[0] += 5;\narr[1] += 5;\narr[2] += 5;\narr[3] += 5;',
@@ -1047,7 +1173,7 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அருமை! Branch Overhead குறைந்து வேகம் அதிகரிக்கும்.',
     },
     challenge: {
-      title: 'Write unrolled step',
+      title: 'Hard Challenge: Unrolled Loop Increment',
       prompt: 'for (int i = 0; i < N; i += 2) என எழுதவும்.',
       starter: '',
       hint: 'for (int i = 0; i < N; i += 2)',
@@ -1057,35 +1183,34 @@ export const advancedLessons: Lesson[] = [
 
   /* ==================== 8. STACK (ADVANCED) ==================== */
   {
-    id: 'stack-push-pop',
+    id: 'stack-concept',
     moduleId: 'stack',
     level: 'advanced',
-    title: 'Linked List Dynamic Stack & Call Stack Frame (EBP/ESP)',
-    tamilTitle: 'இணைக்கப்பட்ட பட்டியல் Stack மற்றும் Call Stack Frame',
+    title: 'Dynamic Linked List Stack & Memory Frame',
+    tamilTitle: 'இணைக்கப்பட்ட பட்டியல் Stack (Linked List Stack)',
     duration: 10,
     xp: 100,
-    concept: 'Dynamic Stack using Linked List allows unlimited stack growth. CPU uses Stack Frames (ESP/EBP) for function arguments and return addresses.',
-    tamilExplanation: 'Linked List பயன்படுத்தி எல்லையற்ற Dynamic Stack உருவாக்குதல் மற்றும் CPU Function Call Stack இயக்கம்.',
+    concept: 'Dynamic Stack using Linked List allows unlimited stack growth via heap memory pointers.',
+    tamilExplanation: 'Linked List பயன்படுத்தி எல்லையற்ற Dynamic Stack உருவாக்குதல்.',
     englishTerms: [
       { term: 'Linked List Stack', meaning: 'வரம்பற்ற நினைவக Stack' },
-      { term: 'Stack Frame', meaning: 'சார்பு அழைப்பு நினைவகப் பெட்டி' },
     ],
     realLife: {
       title: 'Chain of Bookmarks',
       body: 'புத்தகத்தில் பல பக்கங்களில் குறிப்புகள் வைத்து ஒன்றிலிருந்து ஒன்றுக்குச் செல்வது போன்ற அமைப்பு.',
     },
     visualExplanation: {
-      title: 'Linked List Node Stack (top -> Node3 -> Node2 -> NULL)',
+      title: 'Linked List Node Stack',
       description: 'struct Node { int data; struct Node *next; };',
       diagramType: 'stack',
     },
     code: {
       snippet: 'struct Node {\n    int data;\n    struct Node *next;\n} *top = NULL;\n\nvoid push(int val) {\n    struct Node *newNode = (struct Node*)malloc(sizeof(struct Node));\n    newNode->data = val;\n    newNode->next = top;\n    top = newNode;\n}',
       parts: [
-        { text: 'newNode->next = top;', tone: 'type' },
+        { text: 'struct Node *top = NULL;', tone: 'type' },
       ],
       explanation: [
-        { token: 'malloc', meaning: 'Dynamic ஆக நினைவகத்தைப் பெறும்' },
+        { token: 'top', meaning: 'Head Node Pointer - Stack உச்சியைக் குறிக்கும்' },
       ],
     },
     outputExplanation: 'நினைவகம் இருக்கும் வரை Stack எல்லையின்றி வளரும்.',
@@ -1112,20 +1237,83 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அற்புதம்! malloc() மூலம் Heap நினைவகத்தில் இடம் பெறுகிறது.',
     },
     challenge: {
-      title: 'Write struct Node pointer',
-      prompt: 'struct Node *next; என எழுதவும்.',
+      title: 'Hard Challenge: Dynamic Stack Head Pointer',
+      prompt: 'struct Node *top = NULL; என Stack Head Node Pointer உருவாக்கவும்.',
       starter: '',
-      hint: 'struct Node *next;',
-      expected: 'struct Node *next;',
+      hint: 'struct Node *top = NULL;',
+      expected: 'struct Node *top = NULL;',
+    },
+  },
+
+  {
+    id: 'stack-operations',
+    moduleId: 'stack',
+    level: 'advanced',
+    title: 'Stack Overflow Guard & Call Frame Pointer',
+    tamilTitle: 'Stack Overflow பாதுகாப்பு மற்றும் Call Stack Frame',
+    duration: 10,
+    xp: 100,
+    concept: 'Handling Stack Overflow boundary guards and CPU call stack frame pointer logic.',
+    tamilExplanation: 'Stack-ன் கொள்ளளவை மீறாமல் தடுக்க Overflow Guard எழுதப்படும்.',
+    englishTerms: [
+      { term: 'Stack Overflow', meaning: 'அடுக்கு வரம்பு மீறல்' },
+    ],
+    realLife: {
+      title: 'Glass Water Spill',
+      body: 'டம்ளரில் நீர் நிரம்பி வழிவது போல Stack எல்லை மீறுவது.',
+    },
+    visualExplanation: {
+      title: 'Stack Overflow Safety Inspection',
+      description: 'if (top >= MAX - 1) return Error;',
+      diagramType: 'stack',
+    },
+    code: {
+      snippet: 'void push(int val) {\n    if (top >= MAX - 1) {\n        printf("Stack Overflow!\\n");\n        return;\n    }\n    stack[++top] = val;\n}',
+      parts: [
+        { text: 'if (top >= MAX - 1)', tone: 'keyword' },
+      ],
+      explanation: [
+        { token: 'Overflow Guard', meaning: 'Stack முழுமையாக நிரம்பிவிட்டதா எனச் சரிபார்க்கும்' },
+      ],
+    },
+    outputExplanation: 'Stack நிரம்பினால் பிழை செய்தி காட்டப்படும்.',
+    story: [
+      {
+        id: 1,
+        speaker: 'kavi',
+        emotion: 'curious',
+        visual: 'stack',
+        dialogue: 'Stack Overflow எப்போது நிகழும்?',
+      },
+      {
+        id: 2,
+        speaker: 'buddy',
+        emotion: 'explain',
+        visual: 'stack',
+        dialogue: 'Stack கொள்ளளவு MAX-ஐ அடையும் போது மேலும் Push செய்தால் Overflow ஏற்படும்!',
+      },
+    ],
+    practice: {
+      question: 'Stack நிரம்பி மேலும் Push செய்ய முடியாத நிலை எவ்வாறு அழைக்கப்படும்?',
+      options: ['Underflow', 'Overflow', 'NullPointer', 'Memory Leak'],
+      answerIndex: 1,
+      explanation: '🎉 அருமை! அது Stack Overflow எனப்படும்.',
+    },
+    challenge: {
+      title: 'Hard Challenge: Stack Overflow Guard Condition',
+      prompt: 'if (top >= MAX - 1) return -1; என Overflow தடுப்பு நிபந்தனையை எழுதவும்.',
+      starter: '',
+      hint: 'if (top >= MAX - 1) return -1;',
+      expected: 'if (top >= MAX - 1) return -1;',
     },
   },
 
   /* ==================== 9. QUEUE (ADVANCED) ==================== */
   {
-    id: 'queue-enqueue-dequeue',
+    id: 'queue-concept',
     moduleId: 'queue',
     level: 'advanced',
-    title: 'Priority Queue & Double-Ended Queue (Deque)',
+    title: 'Priority Queue & Deque Memory Models',
     tamilTitle: 'முன்னுரிமை வரிசை (Priority Queue) மற்றும் Deque',
     duration: 10,
     xp: 100,
@@ -1177,11 +1365,74 @@ export const advancedLessons: Lesson[] = [
       explanation: '🎉 அருமை! Priority Queue முன்னுரிமைக்கேற்ப செயலாக்கும்.',
     },
     challenge: {
-      title: 'Write Priority struct field',
-      prompt: 'int priority; என எழுதவும்.',
+      title: 'Hard Challenge: Priority Queue Struct Field',
+      prompt: 'int priority; என Priority struct புலத்தை எழுதவும்.',
       starter: '',
       hint: 'int priority;',
       expected: 'int priority;',
+    },
+  },
+
+  {
+    id: 'queue-operations',
+    moduleId: 'queue',
+    level: 'advanced',
+    title: 'Circular Queue Full Guard Condition',
+    tamilTitle: 'Circular Queue Full பாதுகாப்பு நிபந்தனை',
+    duration: 10,
+    xp: 100,
+    concept: 'Checking Circular Queue full state using modulo formula: ((rear + 1) % MAX == front).',
+    tamilExplanation: 'Circular Queue முற்றிலும் நிரம்பிவிட்டதா எனச் சரிபார்க்கும் பாதுகாப்பு நிபந்தனை.',
+    englishTerms: [
+      { term: 'Queue Full', meaning: 'வரிசை நிரம்பிய நிலை' },
+    ],
+    realLife: {
+      title: 'Full Parking Lot Gate',
+      body: 'வாகன நிறுத்துமிடம் நிரம்பியவுடன் மேலும் வாகனங்களை அனுமதிக்காமல் தடுப்பது.',
+    },
+    visualExplanation: {
+      title: 'Circular Queue Full Check Formula',
+      description: '(rear + 1) % MAX == front',
+      diagramType: 'queue',
+    },
+    code: {
+      snippet: 'void enqueue(int val) {\n    if ((rear + 1) % MAX == front) {\n        printf("Queue Full!\\n");\n        return;\n    }\n}',
+      parts: [
+        { text: 'if ((rear + 1) % MAX == front)', tone: 'keyword' },
+      ],
+      explanation: [
+        { token: 'Queue Full', meaning: 'Rear+1 Front-ஐ தொட்டால் வரிசை நிரம்பிவிட்டது' },
+      ],
+    },
+    outputExplanation: 'வரிசை நிரம்பினால் Enqueue தடுக்கப்படும்.',
+    story: [
+      {
+        id: 1,
+        speaker: 'kavi',
+        emotion: 'curious',
+        visual: 'queue',
+        dialogue: 'Circular Queue எப்போது Full ஆகும்?',
+      },
+      {
+        id: 2,
+        speaker: 'buddy',
+        emotion: 'explain',
+        visual: 'queue',
+        dialogue: 'Rear சுட்டியின் அடுத்த இடம் Front சுட்டியைத் தொடும் போது Full ஆகும்!',
+      },
+    ],
+    practice: {
+      question: 'Circular Queue நிரம்பிவிட்டதைக் குறிக்கும் சமன்பாடு எது?',
+      options: ['front == rear', '(rear + 1) % MAX == front', 'front == -1', 'rear == 0'],
+      answerIndex: 1,
+      explanation: '🎉 அருமை! (rear + 1) % MAX == front என்பது Full நிலையாகும்.',
+    },
+    challenge: {
+      title: 'Hard Challenge: Circular Queue Full Guard Condition',
+      prompt: 'if ((rear + 1) % MAX == front) return; என எழுதவும்.',
+      starter: '',
+      hint: 'if ((rear + 1) % MAX == front) return;',
+      expected: 'if ((rear + 1) % MAX == front)',
     },
   },
 ];
