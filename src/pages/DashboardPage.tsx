@@ -87,33 +87,6 @@ export default function DashboardPage({
         <SectionProgressTracker progress={progress} />
       </div>
 
-      {/* 🐛 BUG HUNTER FEATURE BANNER */}
-      <div className="card mb-8 p-6 bg-gradient-to-r from-rose-950 via-ink-950 to-emerald-950 text-white border border-rose-900/50 shadow-2xl hover:scale-[1.01] transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="chip bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-400/30">
-              🐛 Standalone Game Feature
-            </span>
-            <span className="chip bg-golden-500/20 text-golden-300 text-xs font-bold">
-              10 Bug Bosses
-            </span>
-          </div>
-          <h2 className="font-display text-2xl font-bold flex items-center gap-2">
-            🐛 BUG HUNTER
-          </h2>
-          <p className="font-tamil text-xs text-rose-200">
-            Fix C code. Defeat bugs. Conquer all 10 bug bosses! (Progress: {progress.completedBugLevelsCount}/10 Levels)
-          </p>
-        </div>
-
-        <button
-          onClick={() => onNavigate('bughunter')}
-          className="btn-primary py-3 px-6 text-xs font-bold bg-gradient-to-r from-rose-500 via-amber-500 to-golden-500 text-ink-950 hover:from-rose-400 hover:to-amber-400 shadow-lg rounded-2xl shrink-0"
-        >
-          {progress.completedBugLevelsCount > 0 ? 'CONTINUE HUNT →' : 'START HUNT →'}
-        </button>
-      </div>
-
       {/* Modules Section Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
