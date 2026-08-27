@@ -12,6 +12,7 @@ import {
   LogOut,
   ShieldCheck,
   Bug,
+  Workflow,
 } from 'lucide-react';
 import { useState } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -26,6 +27,7 @@ export type Page =
   | 'profile'
   | 'story'
   | 'playground'
+  | 'flowchart'
   | 'practice'
   | 'patterns'
   | 'tutor'
@@ -42,6 +44,7 @@ const baseLinks: { id: Page; label: string; icon: typeof BookOpen }[] = [
   { id: 'levels', label: 'Levels', icon: GraduationCap },
   { id: 'dashboard', label: 'Courses', icon: LayoutGrid },
   { id: 'bughunter', label: '🐛 Bug Hunter', icon: Bug },
+  { id: 'flowchart', label: '📊 C Flowchart', icon: Workflow },
   { id: 'playground', label: 'Playground', icon: Code2 },
   { id: 'practice', label: 'Practice', icon: Sparkles },
   { id: 'patterns', label: 'Patterns', icon: Grid3x3 },

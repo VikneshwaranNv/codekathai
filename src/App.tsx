@@ -8,6 +8,7 @@ import QuizPage from '@/pages/QuizPage';
 import ProfilePage from '@/pages/ProfilePage';
 import VariablesStoryPage from '@/pages/VariablesStoryPage';
 import PlaygroundPage from '@/pages/PlaygroundPage';
+import FlowchartPage from '@/pages/FlowchartPage';
 import PracticePage from '@/pages/PracticePage';
 import PatternsPage from '@/pages/PatternsPage';
 import AITutorPage from '@/pages/AITutorPage';
@@ -105,6 +106,7 @@ function MainApp() {
         {page === 'profile' && <ProfilePage onNavigate={navigate} progress={progress} />}
         {page === 'story' && <VariablesStoryPage onNavigate={navigate} />}
         {page === 'playground' && <PlaygroundPage onNavigate={navigate} />}
+        {page === 'flowchart' && <FlowchartPage onNavigate={navigate} />}
         {page === 'practice' && <PracticePage onNavigate={navigate} />}
         {page === 'patterns' && <PatternsPage onNavigate={navigate} />}
         {page === 'tutor' && <AITutorPage onNavigate={navigate} />}
