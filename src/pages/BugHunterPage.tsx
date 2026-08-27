@@ -196,6 +196,14 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
     <div className="min-h-screen bg-stone-50 dark:bg-ink-950 text-ink-900 dark:text-white font-sans py-8">
       {/* Live Bug Battle Keyframe Animations */}
       <style>{`
+        @keyframes liveBugOrbit {
+          0% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+          25% { transform: translate(75px, -30px) rotate(90deg) scale(1.15); }
+          50% { transform: translate(0px, -55px) rotate(180deg) scale(1); }
+          75% { transform: translate(-75px, -30px) rotate(270deg) scale(0.9); }
+          100% { transform: translate(0px, 0px) rotate(360deg) scale(1); }
+        }
+
         @keyframes liveBugFloat {
           0% { transform: translate(0px, 0px) rotate(0deg); }
           25% { transform: translate(14px, -12px) rotate(5deg); }
@@ -231,6 +239,10 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
           0% { opacity: 0; transform: translateY(0) scale(0.6); }
           40% { opacity: 1; transform: translateY(-35px) scale(1.3); }
           100% { opacity: 0; transform: translateY(-70px) scale(1); }
+        }
+
+        .animate-bug-orbit {
+          animation: liveBugOrbit 3.8s ease-in-out infinite;
         }
 
         .animate-bug-float {
@@ -475,16 +487,20 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                       {/* Boss Shadow / Energy Platform */}
                       <div className="absolute bottom-1 h-5 w-28 rounded-full bg-emerald-500/30 blur-md border border-emerald-500/40 animate-pulse" />
 
-                      {/* Boss Avatar Sprite with Live Motion */}
+                      {/* Boss Avatar Sprite with Live Motion (Orbits screen while working, STOPS when error is solved) */}
                       <div
-                        className={`text-7xl cursor-pointer select-none transition-all duration-300 transform-gpu relative z-10 ${
-                          attackStatus === 'hit'
-                            ? 'animate-bug-hit'
+                        className={`text-7xl cursor-pointer select-none transition-all duration-500 transform-gpu relative z-10 ${
+                          attackStatus === 'hit' || bossHp <= 0 || progress.isBugLevelCompleted(activeLevel.id)
+                            ? 'transform-none scale-110 drop-shadow-[0_0_30px_#10b981] opacity-90'
                             : attackStatus === 'miss'
                             ? 'animate-bug-dodge'
-                            : 'animate-bug-float'
+                            : 'animate-bug-orbit'
                         }`}
-                        title={`${activeLevel.bugName} - Live Boss Visual`}
+                        title={
+                          attackStatus === 'hit' || bossHp <= 0 || progress.isBugLevelCompleted(activeLevel.id)
+                            ? `${activeLevel.bugName} - BUG SOLVED & FROZEN!`
+                            : `${activeLevel.bugName} - Orbiting Bug (Fix C code to stop bug!)`
+                        }
                       >
                         {activeLevel.bugAvatar}
                       </div>
