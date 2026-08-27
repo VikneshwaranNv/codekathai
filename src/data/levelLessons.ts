@@ -1,5 +1,6 @@
 import type { Lesson } from '@/types';
 import { intermediateLessons, advancedLessons } from './intermediateAdvancedLessons';
+import { modules } from './course';
 
 export const beginnerLessons: Lesson[] = [
   /* ==================== 1. INTRO ==================== */
@@ -1126,15 +1127,101 @@ export function getLessonForLevel(lessonId: string, level: 'beginner' | 'interme
   const exactMatch = allLessons.find((l) => l.id === lessonId && l.level === level);
   if (exactMatch) return exactMatch;
 
-  // 2. Base beginner lesson
-  const base = allLessons.find((l) => l.id === lessonId && l.level === 'beginner') || beginnerLessons[0];
+  // 2. Match for (lessonId, 'beginner')
+  const baseMatch = allLessons.find((l) => l.id === lessonId && l.level === 'beginner');
 
+  // 3. Find topic info from course.ts modules if baseMatch not found
+  let base: Lesson;
+  if (baseMatch) {
+    base = baseMatch;
+  } else {
+    // Look up topic in course.ts modules
+    let foundTopic: { id: string; title: string; tamilTitle: string } | undefined;
+    let foundModuleId = 'intro';
+
+    for (const m of modules) {
+      const t = m.topics.find((tp) => tp.id === lessonId);
+      if (t) {
+        foundTopic = t;
+        foundModuleId = m.id;
+        break;
+      }
+    }
+
+    const topicTitle = foundTopic?.title ?? lessonId;
+    const topicTamil = foundTopic?.tamilTitle ?? lessonId;
+
+    base = {
+      id: lessonId,
+      moduleId: foundModuleId as any,
+      level: 'beginner',
+      title: topicTitle,
+      tamilTitle: topicTamil,
+      duration: 5,
+      xp: 50,
+      concept: `${topicTitle} covers fundamental rules and execution syntax in C programming.`,
+      tamilExplanation: `${topicTamil} பற்றிய எளிய மற்றும் தெளிவான விளக்கம்.`,
+      englishTerms: [{ term: topicTitle, meaning: topicTamil }],
+      realLife: {
+        title: `${topicTitle} Real Life Concept`,
+        body: `தினசரி வாழ்க்கையில் ${topicTamil} எவ்வாறு பயன்படுகிறது என்பதற்கான எளிய உவமை.`,
+      },
+      visualExplanation: {
+        title: `${topicTitle} Visual Diagram`,
+        description: `Visual model for ${topicTitle}.`,
+        diagramType: 'code',
+      },
+      code: {
+        snippet: `#include <stdio.h>\n\nint main() {\n    // ${topicTitle}\n    printf("${topicTitle} Output\\n");\n    return 0;\n}`,
+        parts: [
+          { text: `#include <stdio.h>\n\nint main() {\n    printf("`, tone: 'plain' },
+          { text: topicTitle, tone: 'value' },
+          { text: `\\n");\n    return 0;\n}`, tone: 'plain' },
+        ],
+        explanation: [{ token: topicTitle, meaning: topicTamil }],
+      },
+      outputExplanation: `${topicTitle} Output என திரையில் அச்சிடப்படும்.`,
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'curious',
+          visual: 'code',
+          dialogue: `Buddy, ${topicTamil} பற்றி எனக்கு விளக்குங்கள்!`,
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: `${topicTitle} என்பது C மொழியில் மிக முக்கியமான கருத்தாகும்!`,
+        },
+      ],
+      practice: {
+        question: `${topicTamil} தொடர்பான சரியான கூற்று எது?`,
+        options: [topicTitle, 'Incorrect option A', 'Incorrect option B', 'Incorrect option C'],
+        answerIndex: 0,
+        explanation: `🎉 அருமை! ${topicTitle} சரியான தேர்வாகும்.`,
+      },
+      challenge: {
+        title: `Declare ${topicTitle}`,
+        prompt: `${topicTitle} தொடர்பான கட்டளையை எழுதவும்.`,
+        starter: '',
+        hint: `printf("${topicTitle}");`,
+        expected: `printf("${topicTitle}");`,
+      },
+    };
+  }
+
+  // Level-specific dynamic upgrade
   if (level === 'beginner') {
     return {
       ...base,
       challenge: {
         ...base.challenge,
-        title: base.challenge.title.startsWith('Easy Challenge') ? base.challenge.title : `Easy Challenge: ${base.challenge.title}`,
+        title: base.challenge.title.startsWith('Easy Challenge')
+          ? base.challenge.title
+          : `Easy Challenge: ${base.challenge.title}`,
       },
     };
   }
@@ -1143,13 +1230,13 @@ export function getLessonForLevel(lessonId: string, level: 'beginner' | 'interme
     return {
       ...base,
       level: 'intermediate',
-      title: `${base.title} (Intermediate)`,
+      title: base.title.includes('Intermediate') ? base.title : `${base.title} (Intermediate)`,
       xp: base.xp + 25,
       duration: base.duration + 3,
       concept: `[Intermediate Level Concept]: Deep dive into ${base.title}. ${base.concept}`,
       challenge: {
         title: `Medium Challenge: ${base.title} Intermediate Implementation`,
-        prompt: `Write intermediate C syntax for ${base.title} logic.`,
+        prompt: `[Medium Level Challenge]: Write intermediate C syntax for ${base.title}.`,
         starter: base.challenge.starter,
         hint: base.challenge.hint,
         expected: base.challenge.expected,
@@ -1161,13 +1248,13 @@ export function getLessonForLevel(lessonId: string, level: 'beginner' | 'interme
   return {
     ...base,
     level: 'advanced',
-    title: `${base.title} (Advanced)`,
+    title: base.title.includes('Advanced') ? base.title : `${base.title} (Advanced)`,
     xp: base.xp + 50,
     duration: base.duration + 5,
     concept: `[Advanced Memory Concept]: Memory architecture and performance optimization for ${base.title}. ${base.concept}`,
     challenge: {
-      title: `Hard Challenge: ${base.title} Advanced Pointer Memory Logic`,
-      prompt: `Write advanced pointer/memory C code for ${base.title}.`,
+      title: `Hard Challenge: ${base.title} Advanced Memory Pointer Logic`,
+      prompt: `[Hard Level Challenge]: Write advanced pointer/memory C code for ${base.title}.`,
       starter: base.challenge.starter,
       hint: base.challenge.hint,
       expected: base.challenge.expected,
