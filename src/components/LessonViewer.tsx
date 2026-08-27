@@ -177,14 +177,25 @@ export default function LessonViewer({
 
       {/* Main Card Header */}
       <div className="card mb-6 overflow-hidden border border-bamboo-100 dark:border-bamboo-800">
-        <div className="bg-gradient-to-r from-bamboo-600 via-bamboo-700 to-bamboo-800 p-6 text-white sm:p-8">
+        <div className={`p-6 text-white sm:p-8 ${
+          level === 'beginner'
+            ? 'bg-gradient-to-r from-bamboo-600 via-bamboo-700 to-emerald-800'
+            : level === 'intermediate'
+            ? 'bg-gradient-to-r from-amber-600 via-golden-600 to-bamboo-800'
+            : 'bg-gradient-to-r from-purple-700 via-indigo-800 to-ink-950'
+        }`}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-bamboo-200">
-                Module {module.index} · Lesson
-              </p>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-white/80">
+                  Module {module.index} · Lesson
+                </span>
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase shadow-sm ${levelBadgeColor}`}>
+                  {levelBadgeLabel}
+                </span>
+              </div>
               <h1 className="font-display text-2xl font-bold sm:text-3xl">{lesson.title}</h1>
-              <p className="font-tamil mt-1 text-sm text-bamboo-100">{lesson.tamilTitle}</p>
+              <p className="font-tamil mt-1 text-sm text-white/90">{lesson.tamilTitle}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 text-xs font-semibold backdrop-blur-md">
