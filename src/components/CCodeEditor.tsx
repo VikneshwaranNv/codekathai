@@ -1,4 +1,83 @@
 import { useRef, useState, type UIEvent, type KeyboardEvent } from 'react';
+import { playMechanicalKeyPressSound } from '@/lib/soundEffects';
+
+export type IdeTheme = 'bamboo' | 'matrix' | 'cyberpunk' | 'dracula' | 'sepia';
+
+export interface ThemeConfig {
+  id: IdeTheme;
+  name: string;
+  icon: string;
+  bg: string;
+  lineBg: string;
+  text: string;
+  caret: string;
+  keywordColor: string;
+  dataTypeColor: string;
+  stringColor: string;
+}
+
+export const IDE_THEMES: ThemeConfig[] = [
+  {
+    id: 'bamboo',
+    name: '🎋 Bamboo Minimal',
+    icon: '🎋',
+    bg: 'bg-ink-950',
+    lineBg: 'bg-ink-900/60 border-ink-800 text-ink-500',
+    text: 'text-gray-100',
+    caret: 'caret-emerald-400',
+    keywordColor: 'text-pink-400',
+    dataTypeColor: 'text-sky-400',
+    stringColor: 'text-emerald-400',
+  },
+  {
+    id: 'matrix',
+    name: '📟 Matrix Hacker',
+    icon: '📟',
+    bg: 'bg-[#050e05]',
+    lineBg: 'bg-[#020702] border-[#0a200a] text-[#00aa44]',
+    text: 'text-[#00ff66]',
+    caret: 'caret-[#00ff66]',
+    keywordColor: 'text-[#00f0ff]',
+    dataTypeColor: 'text-[#00ff66]',
+    stringColor: 'text-[#ffea00]',
+  },
+  {
+    id: 'cyberpunk',
+    name: '🌆 Cyberpunk Neon',
+    icon: '🌆',
+    bg: 'bg-[#0d0221]',
+    lineBg: 'bg-[#080117] border-[#2a0845] text-[#7b2cbf]',
+    text: 'text-[#e2f1ff]',
+    caret: 'caret-[#ff007f]',
+    keywordColor: 'text-[#ff007f]',
+    dataTypeColor: 'text-[#00f0ff]',
+    stringColor: 'text-[#00ff99]',
+  },
+  {
+    id: 'dracula',
+    name: '🧛 Dracula Midnight',
+    icon: '🧛',
+    bg: 'bg-[#1e1e2e]',
+    lineBg: 'bg-[#181825] border-[#313244] text-[#6c7086]',
+    text: 'text-[#cdd6f4]',
+    caret: 'caret-[#cba6f7]',
+    keywordColor: 'text-[#f38ba8]',
+    dataTypeColor: 'text-[#cba6f7]',
+    stringColor: 'text-[#a6e3a1]',
+  },
+  {
+    id: 'sepia',
+    name: '📜 Tamil Sepia',
+    icon: '📜',
+    bg: 'bg-[#fdf6e3]',
+    lineBg: 'bg-[#eee8d5] border-[#d33682]/20 text-[#93a1a1]',
+    text: 'text-[#433422]',
+    caret: 'caret-[#b58900]',
+    keywordColor: 'text-[#d33682]',
+    dataTypeColor: 'text-[#268bd2]',
+    stringColor: 'text-[#2aa198]',
+  },
+];
 
 interface CCodeEditorProps {
   value: string;
@@ -7,6 +86,11 @@ interface CCodeEditorProps {
   rows?: number;
   className?: string;
   errorLineIndex?: number | null;
+  theme?: IdeTheme;
+  onThemeChange?: (theme: IdeTheme) => void;
+  typingSoundEnabled?: boolean;
+  onToggleTypingSound?: () => void;
+  fontSize?: number;
 }
 
 /**
@@ -240,12 +324,19 @@ export default function CCodeEditor({
   rows = 16,
   className = '',
   errorLineIndex = null,
+  theme = 'bamboo',
+  onThemeChange,
+  typingSoundEnabled = true,
+  onToggleTypingSound,
+  fontSize = 12,
 }: CCodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
 
   const [activeLine, setActiveLine] = useState<number>(1);
+
+  const activeThemeConfig = IDE_THEMES.find((t) => t.id === theme) || IDE_THEMES[0];
 
   const lines = value.split('\n');
   const lineCount = Math.max(lines.length, 15);
@@ -263,8 +354,12 @@ export default function CCodeEditor({
     }
   };
 
-  // Handle Tab Indentation and IDE Auto-Closing Pairs: {}, (), [], "", ''
+  // Handle Tab Indentation, Keypress SFX, and IDE Auto-Closing Pairs
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (typingSoundEnabled && e.key.length === 1) {
+      playMechanicalKeyPressSound();
+    }
+
     const target = e.currentTarget;
     const start = target.selectionStart;
     const end = target.selectionEnd;
@@ -293,7 +388,6 @@ export default function CCodeEditor({
     if (pairMap[e.key]) {
       const closing = pairMap[e.key];
 
-      // If text selected, wrap selected text in quotes/brackets!
       if (start !== end) {
         e.preventDefault();
         const selectedText = value.substring(start, end);
@@ -306,7 +400,6 @@ export default function CCodeEditor({
         return;
       }
 
-      // If typing quote and character right after cursor is already the quote, skip over it!
       if ((e.key === '"' || e.key === "'") && value[start] === e.key) {
         e.preventDefault();
         setTimeout(() => {
@@ -315,7 +408,6 @@ export default function CCodeEditor({
         return;
       }
 
-      // Auto-insert pair and place cursor inside
       e.preventDefault();
       const newValue = value.substring(0, start) + e.key + closing + value.substring(end);
       onChange(newValue);
@@ -335,7 +427,7 @@ export default function CCodeEditor({
       return;
     }
 
-    // 4. Smart Backspace: Delete matching empty pair if cursor is in between (e.g. {|} or "|" or (|))
+    // 4. Smart Backspace: Delete matching empty pair
     if (e.key === 'Backspace' && start === end && start > 0) {
       const charBefore = value[start - 1];
       const charAfter = value[start];
@@ -351,7 +443,6 @@ export default function CCodeEditor({
     }
   };
 
-  // Track current active line for line highlighting
   const handleSelect = (e: UIEvent<HTMLTextAreaElement>) => {
     const target = e.currentTarget;
     const cursorPos = target.selectionStart;
@@ -362,50 +453,52 @@ export default function CCodeEditor({
   const highlightedHtml = highlightCSyntax(value);
 
   return (
-    <div className={`flex flex-col rounded-2xl border border-bamboo-800 bg-ink-950 font-mono text-xs overflow-hidden shadow-2xl ${className}`}>
-      {/* C Compiler Syntax Color Legend Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-800 bg-ink-900/90 px-4 py-2 text-[11px] select-none">
-        <div className="flex items-center gap-1.5 font-bold text-emerald-400">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>C Syntax Color Guide:</span>
+    <div
+      className={`flex flex-col rounded-2xl border border-bamboo-800 ${activeThemeConfig.bg} font-mono text-xs overflow-hidden shadow-2xl transition-colors duration-500 ${className}`}
+    >
+      {/* IDE Theme & Color Legend Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-800/80 bg-ink-900/90 px-4 py-2 text-[11px] select-none">
+        {/* Left: Theme Selector Pills */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-bold text-emerald-400 flex items-center gap-1 mr-1">
+            🎮 IDE Theme:
+          </span>
+          {IDE_THEMES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => onThemeChange?.(t.id)}
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                theme === t.id
+                  ? 'bg-emerald-600 text-white shadow-md scale-105'
+                  : 'bg-ink-800 text-ink-300 hover:bg-ink-700 hover:text-white'
+              }`}
+            >
+              {t.name}
+            </button>
+          ))}
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-sky-400" />
-            <span className="text-sky-400 font-bold">Data Type</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-pink-400" />
-            <span className="text-pink-400 font-bold">Keyword / Return</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-amber-300" />
-            <span className="text-amber-300 font-bold">Function</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-gray-100" />
-            <span className="text-gray-100 font-medium">Variable</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="text-emerald-400 font-semibold">String</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-orange-400" />
-            <span className="text-orange-400 font-bold">Number</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-rose-400" />
-            <span className="text-rose-400 font-bold">Operator</span>
-          </span>
-        </div>
+
+        {/* Right: Typing Sound Toggle */}
+        {onToggleTypingSound && (
+          <button
+            onClick={onToggleTypingSound}
+            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+              typingSoundEnabled
+                ? 'bg-gradient-to-r from-amber-500 to-golden-400 text-ink-950 font-bold shadow-md'
+                : 'bg-ink-800 text-ink-400 hover:text-white'
+            }`}
+            title={typingSoundEnabled ? 'Mute Typing SFX' : 'Enable Typing SFX'}
+          >
+            {typingSoundEnabled ? '🔊 Typing SFX: ON' : '🔇 Typing SFX: OFF'}
+          </button>
+        )}
       </div>
 
       <div className="relative flex flex-1 overflow-hidden min-h-[280px]">
-        {/* Line Numbers Sidebar with Active Line & Error Highlights */}
+        {/* Line Numbers Sidebar */}
         <div
           ref={lineNumbersRef}
-          className="select-none bg-ink-900/60 px-3 py-4 text-right font-mono text-[11px] text-ink-500 border-r border-ink-800 leading-6 overflow-hidden min-w-[40px]"
+          className={`select-none ${activeThemeConfig.lineBg} px-3 py-4 text-right font-mono text-[11px] leading-6 overflow-hidden min-w-[40px]`}
         >
           {lineNumbers.map((num) => {
             const isActive = num === activeLine;
@@ -417,7 +510,7 @@ export default function CCodeEditor({
                   isError
                     ? 'bg-red-900/80 text-white font-bold animate-pulse'
                     : isActive
-                    ? 'text-emerald-400 font-bold bg-ink-800/80'
+                    ? 'text-emerald-400 font-bold bg-emerald-500/20'
                     : ''
                 }`}
               >
@@ -433,7 +526,8 @@ export default function CCodeEditor({
           <div
             ref={overlayRef}
             aria-hidden="true"
-            className="absolute inset-0 p-4 font-mono text-xs leading-6 pointer-events-none overflow-auto whitespace-pre tab-4"
+            className={`absolute inset-0 p-4 font-mono text-xs leading-6 pointer-events-none overflow-auto whitespace-pre tab-4 ${activeThemeConfig.text}`}
+            style={{ fontSize: `${fontSize}px` }}
             dangerouslySetInnerHTML={{ __html: highlightedHtml + '<br/>' }}
           />
 
@@ -450,7 +544,8 @@ export default function CCodeEditor({
             rows={rows}
             placeholder={placeholder}
             spellCheck={false}
-            className="absolute inset-0 w-full h-full p-4 bg-transparent font-mono text-xs leading-6 text-transparent caret-emerald-400 focus:outline-none resize-none whitespace-pre overflow-auto tab-4 selection:bg-emerald-500/30 selection:text-transparent"
+            style={{ fontSize: `${fontSize}px` }}
+            className={`absolute inset-0 w-full h-full p-4 bg-transparent font-mono text-xs leading-6 text-transparent ${activeThemeConfig.caret} focus:outline-none resize-none whitespace-pre overflow-auto tab-4 selection:bg-emerald-500/30 selection:text-transparent`}
           />
         </div>
       </div>

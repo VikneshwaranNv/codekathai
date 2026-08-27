@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Play, RotateCcw, Code2 } from 'lucide-react';
+import { Play, RotateCcw, Code2, Sliders } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
-import CCodeEditor from '@/components/CCodeEditor';
+import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
 
 interface PlaygroundPageProps {
@@ -48,6 +48,28 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
   const [output, setOutput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+
+  // IDE Studio Customization State
+  const [theme, setTheme] = useState<IdeTheme>(() => {
+    return (localStorage.getItem('codekathai_ide_theme') as IdeTheme) || 'bamboo';
+  });
+
+  const [typingSoundEnabled, setTypingSoundEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('codekathai_typing_sfx') !== 'false';
+  });
+
+  const [fontSize, setFontSize] = useState<number>(13);
+
+  const handleThemeChange = (newTheme: IdeTheme) => {
+    setTheme(newTheme);
+    localStorage.setItem('codekathai_ide_theme', newTheme);
+  };
+
+  const handleToggleTypingSound = () => {
+    const next = !typingSoundEnabled;
+    setTypingSoundEnabled(next);
+    localStorage.setItem('codekathai_typing_sfx', String(next));
+  };
 
   const handleRun = async (overrideInput?: string) => {
     setIsRunning(true);
@@ -116,31 +138,54 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
         <div className="card flex flex-col overflow-hidden border border-bamboo-200 dark:border-bamboo-800">
           <div className="flex items-center justify-between border-b border-bamboo-100 bg-bamboo-50 px-4 py-3 dark:border-bamboo-800 dark:bg-ink-900">
             <span className="flex items-center gap-2 text-xs font-bold text-bamboo-900 dark:text-bamboo-200">
-              <Code2 className="h-4 w-4" /> main.c Editor
+              <Code2 className="h-4 w-4 text-emerald-500" /> main.c Editor
             </span>
-            <div className="flex gap-2">
+
+            {/* Editor Action Controls: Font Size, Clear, Run */}
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-1 bg-ink-800/80 px-2 py-0.5 rounded-full text-[10px] text-ink-300">
+                <Sliders className="h-3 w-3 text-emerald-400" />
+                <span>Font:</span>
+                {[12, 14, 16].map((sz) => (
+                  <button
+                    key={sz}
+                    onClick={() => setFontSize(sz)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                      fontSize === sz ? 'bg-emerald-600 text-white' : 'hover:text-white'
+                    }`}
+                  >
+                    {sz}px
+                  </button>
+                ))}
+              </div>
+
               <button
                 onClick={handleClear}
-                className="btn-ghost flex items-center gap-1 px-3 py-1 text-xs text-ink-600 hover:text-red-600"
+                className="btn-ghost flex items-center gap-1 px-2.5 py-1 text-xs text-ink-600 dark:text-ink-300 hover:text-rose-500"
               >
                 <RotateCcw className="h-3.5 w-3.5" /> Clear
               </button>
               <button
                 onClick={() => handleRun()}
                 disabled={isRunning}
-                className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-soft"
+                className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-600 to-bamboo-600 hover:from-emerald-500 hover:to-bamboo-500 text-white shadow-soft"
               >
                 <Play className="h-3.5 w-3.5 fill-current" /> {isRunning ? 'Running...' : 'Run Code'}
               </button>
             </div>
           </div>
 
-          <div className="p-4 bg-ink-950 flex-1">
+          <div className="p-3 bg-ink-950 flex-1">
             <CCodeEditor
               value={code}
               onChange={setCode}
-              rows={16}
+              rows={17}
               placeholder="// Write your C code here..."
+              theme={theme}
+              onThemeChange={handleThemeChange}
+              typingSoundEnabled={typingSoundEnabled}
+              onToggleTypingSound={handleToggleTypingSound}
+              fontSize={fontSize}
             />
           </div>
         </div>

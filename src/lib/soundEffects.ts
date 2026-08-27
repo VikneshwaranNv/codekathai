@@ -207,3 +207,37 @@ export function playButtonClickSound(): void {
     console.error('Audio playback error', e);
   }
 }
+
+/**
+ * ⌨️ Mechanical Keypress Click Sound Effect
+ * Crisp tactile click synthesized on keypress in editor
+ */
+export function playMechanicalKeyPressSound(): void {
+  if (isSoundMuted()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    const now = ctx.currentTime;
+
+    // Slight random pitch variation for authentic mechanical keyboard feel!
+    const randomFreq = 1800 + Math.random() * 400;
+    osc.frequency.setValueAtTime(randomFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(300, now + 0.03);
+
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.005, now + 0.03);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.03);
+  } catch (e) {
+    // Ignore audio context errors
+  }
+}
