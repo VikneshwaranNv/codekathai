@@ -36,9 +36,37 @@ export function toggleSoundMuted(): boolean {
   return next;
 }
 
+export type KeyboardSoundProfile = 'cream' | 'blue' | 'cyber' | 'red';
+const SOUND_PROFILE_KEY = 'codekathai_sfx_keyboard_profile';
+
+export function getKeyboardSoundProfile(): KeyboardSoundProfile {
+  if (typeof window === 'undefined') return 'cream';
+  const saved = localStorage.getItem(SOUND_PROFILE_KEY);
+  if (saved === 'blue' || saved === 'cyber' || saved === 'red' || saved === 'cream') {
+    return saved;
+  }
+  return 'cream'; // Default to deep creamy thock
+}
+
+export function setKeyboardSoundProfile(profile: KeyboardSoundProfile): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(SOUND_PROFILE_KEY, profile);
+}
+
+export function cycleKeyboardSoundProfile(): KeyboardSoundProfile {
+  const profiles: KeyboardSoundProfile[] = ['cream', 'blue', 'cyber', 'red'];
+  const current = getKeyboardSoundProfile();
+  const nextIdx = (profiles.indexOf(current) + 1) % profiles.length;
+  const next = profiles[nextIdx];
+  setKeyboardSoundProfile(next);
+  return next;
+}
+
+// Pentatonic Synth Scale frequencies for Sci-Fi Cyber keyboard mode
+const CYBER_PENTATONIC_SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25];
+
 /**
- * ⌨️ Mechanical Keyboard SFX (Cherry MX Blue / Brown / Red Thock Synthesizer)
- * Creates authentic tactile click + keycap bottom-out thock resonance
+ * ⌨️ Mechanical Keyboard SFX (Supports 4 Unique Profiles: Creamy Thock, MX Blue, Cyber Synth, Silent Red)
  */
 export function playMechanicalKeyPressSound(key?: string): void {
   if (isSoundMuted()) return;
@@ -47,9 +75,72 @@ export function playMechanicalKeyPressSound(key?: string): void {
 
   try {
     const now = ctx.currentTime;
+    const profile = getKeyboardSoundProfile();
     const isSpaceOrEnter = key === 'Enter' || key === ' ' || key === 'Space';
 
-    // 1. High Frequency Tactile Click (Bump)
+    // 1. SCI-FI CYBER SYNTH MELODIC MODE 🎹
+    if (profile === 'cyber') {
+      const charCode = key ? key.charCodeAt(0) : Math.floor(Math.random() * 10);
+      const noteFreq = CYBER_PENTATONIC_SCALE[charCode % CYBER_PENTATONIC_SCALE.length];
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(noteFreq, now);
+
+      gain.gain.setValueAtTime(isSpaceOrEnter ? 0.22 : 0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + (isSpaceOrEnter ? 0.25 : 0.15));
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + (isSpaceOrEnter ? 0.25 : 0.15));
+      return;
+    }
+
+    // 2. CHERRY MX BLUE CLICKY MODE 🫐
+    if (profile === 'blue') {
+      const clickOsc = ctx.createOscillator();
+      const clickGain = ctx.createGain();
+      clickOsc.type = 'sawtooth';
+      const clickFreq = isSpaceOrEnter ? 1800 : 3400 + Math.random() * 600;
+      clickOsc.frequency.setValueAtTime(clickFreq, now);
+      clickOsc.frequency.exponentialRampToValueAtTime(1000, now + 0.012);
+
+      clickGain.gain.setValueAtTime(isSpaceOrEnter ? 0.25 : 0.2, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.012);
+
+      clickOsc.connect(clickGain);
+      clickGain.connect(ctx.destination);
+
+      clickOsc.start(now);
+      clickOsc.stop(now + 0.012);
+      return;
+    }
+
+    // 3. SILENT LINEAR RED MODE 🍃
+    if (profile === 'red') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(200, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.025);
+
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.025);
+      return;
+    }
+
+    // 4. CREAMY THOCK MODE 🪵 (Default - Deep Wooden/Creamy Resonance)
+    // High Frequency Tactile Click (Bump)
     const clickOsc = ctx.createOscillator();
     const clickGain = ctx.createGain();
     clickOsc.type = 'sine';
@@ -66,7 +157,7 @@ export function playMechanicalKeyPressSound(key?: string): void {
     clickOsc.start(now);
     clickOsc.stop(now + 0.008);
 
-    // 2. Keycap Bottom-Out Thock (Resonant Low-Pass Noise & Sub Pulse)
+    // Keycap Bottom-Out Thock
     const bufferSize = ctx.sampleRate * (isSpaceOrEnter ? 0.05 : 0.035);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
