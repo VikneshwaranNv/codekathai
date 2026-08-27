@@ -57,15 +57,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         learning_level: p.currentLevel || 'beginner',
       };
 
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .insert([payload])
-        .select();
+      const { data, error } = p.email
+        ? await supabase.from('user_profiles').upsert([payload], { onConflict: 'email' }).select()
+        : await supabase.from('user_profiles').upsert([payload], { onConflict: 'id' }).select();
 
       if (error) {
-        console.warn('Supabase user_profiles insert note:', error.message);
+        console.warn('Supabase user_profiles upsert note:', error.message);
       } else {
-        console.log('Successfully inserted user profile into Supabase:', data);
+        console.log('Successfully synced user profile into Supabase:', data);
       }
     } catch (err) {
       console.error('Supabase user_profiles sync catch error:', err);

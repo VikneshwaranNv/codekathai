@@ -332,10 +332,11 @@ export async function signUpWithEmailPassword(
       learning_level: 'beginner',
     };
 
-    const { error: dbError } = await supabase.from('user_profiles').insert([payload]);
+    const { error: dbError } = await supabase
+      .from('user_profiles')
+      .upsert([payload], { onConflict: 'email' });
     if (dbError) {
-      console.warn('Database insert warning (trying upsert):', dbError.message);
-      await supabase.from('user_profiles').upsert([payload]);
+      console.warn('Database upsert note:', dbError.message);
     }
 
     const newProfile: UserProfile = {
