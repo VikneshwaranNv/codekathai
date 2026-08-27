@@ -262,6 +262,13 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
           100% { opacity: 0; transform: translateY(-70px) scale(1); }
         }
 
+        @keyframes jailSlam {
+          0% { transform: translateY(-120%) scale(1.4); opacity: 0; }
+          60% { transform: translateY(12px) scale(0.95); opacity: 1; }
+          80% { transform: translateY(-6px) scale(1.02); }
+          100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
         .animate-bug-float {
           animation: liveBugFloat 4.5s ease-in-out infinite;
         }
@@ -280,6 +287,10 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
 
         .animate-damage-float {
           animation: floatDamageText 1.2s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+
+        .animate-jail-slam {
+          animation: jailSlam 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
       `}</style>
       <div className="container-page space-y-8">
@@ -511,6 +522,36 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                         <span className="font-display font-extrabold text-sm text-rose-300 bg-black/80 px-3.5 py-1.5 rounded-full border border-rose-500 shadow-lg">
                           🛡️ DODGED! Fix C Bug!
                         </span>
+                      </div>
+                    )}
+
+                    {/* ARRESTED BUG JAIL CAGE OVERLAY (Slams down when error is solved / HP <= 0) */}
+                    {(bossHp <= 0 || attackStatus === 'hit' || progress.isBugLevelCompleted(activeLevel.id)) && (
+                      <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center animate-jail-slam p-3">
+                        <div className="relative w-48 h-48 rounded-2xl border-4 border-stone-400 bg-stone-950/90 shadow-2xl flex flex-col items-center justify-between p-3 overflow-hidden">
+                          {/* Vertical Metallic Jail Steel Bars */}
+                          <div className="absolute inset-0 flex justify-between pointer-events-none px-4 z-20">
+                            <div className="w-2.5 h-full bg-gradient-to-r from-stone-400 via-stone-200 to-stone-600 shadow-md border-r border-black/40" />
+                            <div className="w-2.5 h-full bg-gradient-to-r from-stone-400 via-stone-200 to-stone-600 shadow-md border-r border-black/40" />
+                            <div className="w-2.5 h-full bg-gradient-to-r from-stone-400 via-stone-200 to-stone-600 shadow-md border-r border-black/40" />
+                            <div className="w-2.5 h-full bg-gradient-to-r from-stone-400 via-stone-200 to-stone-600 shadow-md border-r border-black/40" />
+                          </div>
+
+                          {/* Top Jail Lock Badge */}
+                          <div className="z-30 flex items-center gap-1 bg-rose-950/90 text-rose-200 px-3 py-1 rounded-full border border-rose-600 text-[10px] font-mono font-bold shadow-md">
+                            <Lock className="h-3.5 w-3.5 text-golden-400 animate-pulse" /> JAIL LOCKED 🔒
+                          </div>
+
+                          {/* Imprisoned Bug Character Trapped Behind Bars */}
+                          <div className="text-6xl filter grayscale brightness-90 relative z-10 my-1 animate-pulse">
+                            {activeLevel.bugAvatar}
+                          </div>
+
+                          {/* Bottom Arrest Status Banner */}
+                          <div className="z-30 bg-gradient-to-r from-emerald-600 to-bamboo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md">
+                            🚨 BUG ARRESTED & DEFEATED!
+                          </div>
+                        </div>
                       </div>
                     )}
 
