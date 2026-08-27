@@ -23,6 +23,8 @@ import {
   Swords,
   Heart,
   Skull,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { useAuth } from '@/lib/auth';
@@ -31,6 +33,15 @@ import { BUG_HUNTER_LEVELS, type BugLevel } from '@/data/bugHunterData';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import { explainLineByLine, explainAsTamilStory, explainError } from '@/data/aiTutor';
 import CCodeEditor from '@/components/CCodeEditor';
+import {
+  isSoundMuted,
+  toggleSoundMuted,
+  playLaserZapSound,
+  playExplosionSound,
+  playShieldDeflectSound,
+  playVictoryJingleSound,
+  playButtonClickSound,
+} from '@/lib/soundEffects';
 
 interface BugHunterPageProps {
   onNavigate: (page: Page) => void;
@@ -62,6 +73,17 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
   const [showVictoryModal, setShowVictoryModal] = useState<boolean>(false);
   const [earnedXp, setEarnedXp] = useState<number>(100);
 
+  // Arcade Sound Effects State
+  const [muted, setMuted] = useState<boolean>(() => isSoundMuted());
+
+  const handleToggleSound = () => {
+    const next = toggleSoundMuted();
+    setMuted(next);
+    if (!next) {
+      playButtonClickSound();
+    }
+  };
+
   // Compute Unlocked / Completed State for 10 Levels (ALL UNLOCKED BY DEFAULT)
   const levelStates = useMemo(() => {
     const states: Record<string, { unlocked: boolean; completed: boolean }> = {};
@@ -87,6 +109,7 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
 
   // Start Bug Hunt Game
   const startHunt = (level: BugLevel) => {
+    playButtonClickSound();
     setActiveLevel(level);
     setUserCode(level.brokenCode);
     setBossHp(level.bossMaxHp);
@@ -102,6 +125,7 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
   // Run C Code & Verify Solution against Bug Boss
   const handleRunCode = async () => {
     if (!activeLevel) return;
+    playLaserZapSound();
     setIsCompiling(true);
     setCompileOutput('');
     setCompileError(null);
@@ -124,6 +148,7 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
         const nextHp = Math.max(0, bossHp - damage);
         setBossHp(nextHp);
         setAttackStatus('hit');
+        playExplosionSound();
 
         const newLog = [
           `💥 CRITICAL HIT! Fixed C bug!`,
@@ -134,12 +159,14 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
 
         if (nextHp <= 0 || bossHp <= 50) {
           // Defeated!
+          playVictoryJingleSound();
           setBossHp(0);
           setEarnedXp(activeLevel.xpReward);
           progress.recordCompletedBugLevel(activeLevel.id, activeLevel.xpReward);
           setShowVictoryModal(true);
         }
       } else {
+        playShieldDeflectSound();
         setAttackStatus('miss');
         setCombatLog([
           `❌ ATTACK MISSED! The bug is still alive. Check compiler output for syntax errors!`,
@@ -147,6 +174,7 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
         ]);
       }
     } catch (err: any) {
+      playShieldDeflectSound();
       setCompileError(err?.message || 'Execution error during bug validation.');
       setAttackStatus('miss');
     } finally {
@@ -276,9 +304,24 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
             <ArrowLeft className="h-4 w-4" /> Back to Courses
           </button>
 
-          <span className="chip bg-bamboo-600 text-white font-bold text-xs shadow-soft flex items-center gap-1.5">
-            <Bug className="h-3.5 w-3.5 text-golden-300" /> Code Kathai Bug Hunter
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleToggleSound}
+              className={`chip py-1.5 px-3 font-bold text-xs shadow-soft flex items-center gap-1.5 transition-all cursor-pointer ${
+                muted
+                  ? 'bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-300'
+                  : 'bg-gradient-to-r from-golden-400 to-amber-500 text-ink-950 shadow-md'
+              }`}
+              title={muted ? 'Unmute Arcade Sound FX' : 'Mute Arcade Sound FX'}
+            >
+              {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5 animate-pulse" />}
+              {muted ? 'SFX Muted' : '🔊 Arcade SFX ON'}
+            </button>
+
+            <span className="chip bg-bamboo-600 text-white font-bold text-xs shadow-soft flex items-center gap-1.5">
+              <Bug className="h-3.5 w-3.5 text-golden-300" /> Code Kathai Bug Hunter
+            </span>
+          </div>
         </div>
 
         {/* BAMBOO GREEN HEADER & PLAYER STATS BANNER */}
