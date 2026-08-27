@@ -226,9 +226,9 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
       <style>{`
         @keyframes liveBugFloat {
           0% { transform: translate(0px, 0px) rotate(0deg); }
-          25% { transform: translate(14px, -12px) rotate(5deg); }
-          50% { transform: translate(-12px, -18px) rotate(-5deg); }
-          75% { transform: translate(-16px, 8px) rotate(3deg); }
+          25% { transform: translate(25px, -18px) rotate(6deg); }
+          50% { transform: translate(-20px, -28px) rotate(-6deg); }
+          75% { transform: translate(-28px, 12px) rotate(4deg); }
           100% { transform: translate(0px, 0px) rotate(0deg); }
         }
 
@@ -518,16 +518,16 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                       {/* Boss Shadow / Energy Platform */}
                       <div className="absolute bottom-1 h-5 w-28 rounded-full bg-emerald-500/30 blur-md border border-emerald-500/40 animate-pulse" />
 
-                      {/* Boss Avatar Sprite */}
+                      {/* Boss Avatar Sprite with Live Floatable Motion */}
                       <div
                         className={`text-7xl cursor-pointer select-none transition-all duration-300 transform-gpu relative z-10 ${
                           attackStatus === 'hit'
                             ? 'animate-bug-hit'
                             : attackStatus === 'miss'
                             ? 'animate-bug-dodge'
-                            : 'hover:scale-105 transition-transform'
+                            : 'animate-bug-float'
                         }`}
-                        title={`${activeLevel.bugName}`}
+                        title={`${activeLevel.bugName} - Floatable Bug Boss`}
                       >
                         {activeLevel.bugAvatar}
                       </div>
