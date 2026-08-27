@@ -1,6 +1,7 @@
 import type { Lesson } from '@/types';
+import { intermediateLessons, advancedLessons } from './intermediateAdvancedLessons';
 
-export const allLessons: Lesson[] = [
+export const beginnerLessons: Lesson[] = [
   /* ==================== 1. INTRO ==================== */
   {
     id: 'intro-what-is-c',
@@ -1233,4 +1234,10 @@ export const allLessons: Lesson[] = [
       expected: 'enqueue(100);',
     },
   },
+];
+
+export const allLessons: Lesson[] = [
+  ...beginnerLessons,
+  ...intermediateLessons,
+  ...advancedLessons,
 ];
