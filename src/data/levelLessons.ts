@@ -1122,6 +1122,130 @@ export const allLessons: Lesson[] = [
   ...advancedLessons,
 ];
 
+function getDiagramTypeForTopic(lessonId: string): string {
+  if (lessonId.includes('datatypes-float') || lessonId.includes('datatypes-char') || lessonId.includes('datatypes-int') || lessonId.includes('containers')) {
+    return 'containers';
+  }
+  if (lessonId.includes('memory') || lessonId.includes('bss') || lessonId.includes('heap') || lessonId.includes('stack-frame')) {
+    return 'memory';
+  }
+  if (lessonId.includes('pointer') || lessonId.includes('address') || lessonId.includes('dereferencing')) {
+    return 'address';
+  }
+  if (lessonId.includes('array') || lessonId.includes('lockers') || lessonId.includes('struct') || lessonId.includes('index')) {
+    return 'lockers';
+  }
+  if (lessonId.includes('if') || lessonId.includes('signal') || lessonId.includes('switch') || lessonId.includes('condition') || lessonId.includes('branch')) {
+    return 'signal';
+  }
+  if (lessonId.includes('loop') || lessonId.includes('for') || lessonId.includes('while') || lessonId.includes('repeat')) {
+    return 'repeat';
+  }
+  if (lessonId.includes('function') || lessonId.includes('machine') || lessonId.includes('file') || lessonId.includes('scanf')) {
+    return 'machine';
+  }
+  if (lessonId.includes('operator') || lessonId.includes('arithmetic') || lessonId.includes('calculator') || lessonId.includes('bitwise')) {
+    return 'calculator';
+  }
+  if (lessonId.includes('stack')) {
+    return 'stack';
+  }
+  if (lessonId.includes('queue')) {
+    return 'queue';
+  }
+  if (lessonId.includes('var') || lessonId.includes('lunchbox')) {
+    return 'lunchbox';
+  }
+  return 'code';
+}
+
+function getTopicSnippet(lessonId: string, topicTitle: string, topicTamil: string): Lesson['code'] {
+  let res: { snippet: string; parts: { text: string; tone: string }[] };
+
+  if (lessonId.includes('datatypes-float')) {
+    res = {
+      snippet: 'float temp = 98.6f;\ndouble pi = 3.14159265;',
+      parts: [
+        { text: 'float temp = ', tone: 'type' },
+        { text: '98.6f;\n', tone: 'value' },
+        { text: 'double pi = ', tone: 'type' },
+        { text: '3.14159265;', tone: 'value' },
+      ],
+    };
+  } else if (lessonId.includes('datatypes-char')) {
+    res = {
+      snippet: "char grade = 'A';\nprintf(\"Grade: %c\\n\", grade);",
+      parts: [
+        { text: 'char grade = ', tone: 'type' },
+        { text: "'A';\n", tone: 'value' },
+        { text: 'printf("Grade: %c\\n", grade);', tone: 'plain' },
+      ],
+    };
+  } else if (lessonId.includes('datatypes-void')) {
+    res = {
+      snippet: 'void printHello() {\n    printf("Hello Void!\\n");\n}',
+      parts: [
+        { text: 'void printHello() {\n', tone: 'keyword' },
+        { text: '    printf("Hello Void!\\n");\n}', tone: 'plain' },
+      ],
+    };
+  } else if (lessonId.includes('arrays')) {
+    res = {
+      snippet: 'int marks[3] = {90, 85, 92};\nprintf("First: %d\\n", marks[0]);',
+      parts: [
+        { text: 'int marks[3] = {90, 85, 92};\n', tone: 'type' },
+        { text: 'printf("First: %d\\n", marks[0]);', tone: 'plain' },
+      ],
+    };
+  } else if (lessonId.includes('pointers')) {
+    res = {
+      snippet: 'int val = 50;\nint *ptr = &val;\nprintf("Value at ptr: %d\\n", *ptr);',
+      parts: [
+        { text: 'int *ptr = &val;\n', tone: 'type' },
+        { text: 'printf("Value at ptr: %d\\n", *ptr);', tone: 'plain' },
+      ],
+    };
+  } else if (lessonId.includes('strings')) {
+    res = {
+      snippet: 'char str[] = "Kathai";\nprintf("String: %s\\n", str);',
+      parts: [
+        { text: 'char str[] = "Kathai";\n', tone: 'type' },
+        { text: 'printf("String: %s\\n", str);', tone: 'plain' },
+      ],
+    };
+  } else if (lessonId.includes('structures')) {
+    res = {
+      snippet: 'struct Student {\n    int id;\n    float mark;\n} s1 = {1, 95.0f};',
+      parts: [
+        { text: 'struct Student {\n    int id;\n    float mark;\n};', tone: 'type' },
+      ],
+    };
+  } else if (lessonId.includes('filehandling')) {
+    res = {
+      snippet: 'FILE *fp = fopen("data.txt", "r");\nfclose(fp);',
+      parts: [
+        { text: 'FILE *fp = fopen("data.txt", "r");\n', tone: 'keyword' },
+        { text: 'fclose(fp);', tone: 'plain' },
+      ],
+    };
+  } else {
+    res = {
+      snippet: `#include <stdio.h>\n\nint main() {\n    // ${topicTitle}\n    printf("${topicTitle} Output\\n");\n    return 0;\n}`,
+      parts: [
+        { text: `#include <stdio.h>\n\nint main() {\n    printf("`, tone: 'plain' },
+        { text: topicTitle, tone: 'value' },
+        { text: `\\n");\n    return 0;\n}`, tone: 'plain' },
+      ],
+    };
+  }
+
+  return {
+    ...res,
+    parts: res.parts as any,
+    explanation: [{ token: topicTitle, meaning: topicTamil }],
+  };
+}
+
 export function getLessonForLevel(lessonId: string, level: 'beginner' | 'intermediate' | 'advanced'): Lesson {
   // 1. Exact match for (lessonId, level)
   const exactMatch = allLessons.find((l) => l.id === lessonId && l.level === level);
@@ -1150,6 +1274,8 @@ export function getLessonForLevel(lessonId: string, level: 'beginner' | 'interme
 
     const topicTitle = foundTopic?.title ?? lessonId;
     const topicTamil = foundTopic?.tamilTitle ?? lessonId;
+    const topicDiagram = getDiagramTypeForTopic(lessonId);
+    const topicCodeInfo = getTopicSnippet(lessonId, topicTitle, topicTamil);
 
     base = {
       id: lessonId,
@@ -1169,31 +1295,23 @@ export function getLessonForLevel(lessonId: string, level: 'beginner' | 'interme
       visualExplanation: {
         title: `${topicTitle} Visual Diagram`,
         description: `Visual model for ${topicTitle}.`,
-        diagramType: 'code',
+        diagramType: topicDiagram as any,
       },
-      code: {
-        snippet: `#include <stdio.h>\n\nint main() {\n    // ${topicTitle}\n    printf("${topicTitle} Output\\n");\n    return 0;\n}`,
-        parts: [
-          { text: `#include <stdio.h>\n\nint main() {\n    printf("`, tone: 'plain' },
-          { text: topicTitle, tone: 'value' },
-          { text: `\\n");\n    return 0;\n}`, tone: 'plain' },
-        ],
-        explanation: [{ token: topicTitle, meaning: topicTamil }],
-      },
+      code: topicCodeInfo,
       outputExplanation: `${topicTitle} Output என திரையில் அச்சிடப்படும்.`,
       story: [
         {
           id: 1,
           speaker: 'kavi',
           emotion: 'curious',
-          visual: 'code',
+          visual: topicDiagram as any,
           dialogue: `Buddy, ${topicTamil} பற்றி எனக்கு விளக்குங்கள்!`,
         },
         {
           id: 2,
           speaker: 'buddy',
           emotion: 'explain',
-          visual: 'code',
+          visual: topicDiagram as any,
           dialogue: `${topicTitle} என்பது C மொழியில் மிக முக்கியமான கருத்தாகும்!`,
         },
       ],
