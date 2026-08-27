@@ -226,10 +226,11 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
       <style>{`
         @keyframes liveBugOrbit {
           0% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
-          25% { transform: translate(75px, -30px) rotate(90deg) scale(1.15); }
-          50% { transform: translate(0px, -55px) rotate(180deg) scale(1); }
-          75% { transform: translate(-75px, -30px) rotate(270deg) scale(0.9); }
-          100% { transform: translate(0px, 0px) rotate(360deg) scale(1); }
+          20% { transform: translate(140px, -45px) rotate(45deg) scale(1.15); }
+          40% { transform: translate(-140px, 35px) rotate(-45deg) scale(0.88); }
+          60% { transform: translate(130px, 45px) rotate(90deg) scale(1.12); }
+          80% { transform: translate(-130px, -45px) rotate(-90deg) scale(0.92); }
+          100% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
         }
 
         @keyframes liveBugFloat {
