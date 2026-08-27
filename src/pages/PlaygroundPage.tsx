@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { Play, RotateCcw, Code2, Sliders, Sparkles } from 'lucide-react';
+import { Play, RotateCcw, Code2, Sliders } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
-import CFlowchartModal from '@/components/CFlowchartModal';
-import { playButtonClickSound } from '@/lib/soundEffects';
 
 interface PlaygroundPageProps {
   onNavigate: (page: Page) => void;
@@ -166,26 +164,15 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
 
               <button
                 onClick={handleClear}
-                className="btn-ghost flex items-center gap-1 px-2.5 py-1 text-xs text-ink-600 dark:text-ink-300 hover:text-rose-500"
+                className="btn-ghost flex items-center gap-1 px-2.5 py-1 text-xs text-ink-600 dark:text-ink-300 hover:text-rose-500 cursor-pointer"
               >
                 <RotateCcw className="h-3.5 w-3.5" /> Clear
               </button>
 
               <button
-                onClick={() => {
-                  playButtonClickSound();
-                  setShowFlowchartModal(true);
-                }}
-                className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-md rounded-xl cursor-pointer"
-                title="Convert C Code to Interactive Flowchart Diagram"
-              >
-                <Sparkles className="h-3.5 w-3.5" /> Flowchart 📊
-              </button>
-
-              <button
                 onClick={() => handleRun()}
                 disabled={isRunning}
-                className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-600 to-bamboo-600 hover:from-emerald-500 hover:to-bamboo-500 text-white shadow-soft"
+                className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-600 to-bamboo-600 hover:from-emerald-500 hover:to-bamboo-500 text-white shadow-soft cursor-pointer"
               >
                 <Play className="h-3.5 w-3.5 fill-current" /> {isRunning ? 'Running...' : 'Run Code'}
               </button>
@@ -213,19 +200,9 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
             output={output}
             error={error}
             isRunning={isRunning}
-            onRun={handleRun}
-            initialInput={programInput}
-            placeholder="Type number here (e.g. 9) & press Enter..."
           />
         </div>
       </div>
-
-      {/* FLOWCHART DIAGRAM MODAL */}
-      <CFlowchartModal
-        isOpen={showFlowchartModal}
-        onClose={() => setShowFlowchartModal(false)}
-        code={code}
-      />
     </div>
   );
 }
