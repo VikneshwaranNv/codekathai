@@ -123,7 +123,7 @@ export const modules: Module[] = [
   {
     id: 'stack',
     index: 8,
-    title: '8. Stack Data Structure ⭐',
+    title: '8. Stack ⭐',
     tamilTitle: 'ஸ்டாக் - அடுக்கு',
     icon: 'Layers',
     description: 'Stack LIFO (Last In First Out) concept, Push, Pop, and Plate Stack visual story.',
@@ -138,7 +138,7 @@ export const modules: Module[] = [
   {
     id: 'queue',
     index: 9,
-    title: '9. Queue Data Structure ⭐',
+    title: '9. Queue ⭐',
     tamilTitle: 'க்யூ - வரிசை',
     icon: 'Users',
     description: 'Queue FIFO (First In First Out) concept, Enqueue, Dequeue, and Ticket Line visual story.',
