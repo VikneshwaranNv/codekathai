@@ -1,5 +1,4 @@
 import { useRef, useState, type UIEvent, type KeyboardEvent } from 'react';
-import { playMechanicalKeyPressSound } from '@/lib/soundEffects';
 
 export type IdeTheme = 'bamboo' | 'matrix' | 'cyberpunk' | 'dracula' | 'sepia';
 
@@ -354,12 +353,8 @@ export default function CCodeEditor({
     }
   };
 
-  // Handle Tab Indentation, Keypress SFX, and IDE Auto-Closing Pairs
+  // Handle Tab Indentation and IDE Auto-Closing Pairs
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (typingSoundEnabled) {
-      playMechanicalKeyPressSound(e.key);
-    }
-
     const target = e.currentTarget;
     const start = target.selectionStart;
     const end = target.selectionEnd;
@@ -456,29 +451,14 @@ export default function CCodeEditor({
     <div
       className={`flex flex-col rounded-2xl border border-bamboo-800 ${activeThemeConfig.bg} font-mono text-xs overflow-hidden shadow-2xl transition-colors duration-500 ${className}`}
     >
-      {/* IDE Header with Matrix Hacker Badge & Typing Sound Toggle */}
+      {/* IDE Header with Matrix Hacker Badge */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#0a200a] bg-[#020702] px-4 py-2 text-[11px] select-none">
-        {/* Left: Matrix Hacker Badge */}
+        {/* Matrix Hacker Badge */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-[#00ff66] flex items-center gap-1.5 bg-[#051505] px-3 py-1 rounded-full border border-[#00ff66]/30 shadow-glow-sm">
             📟 Matrix Hacker IDE
           </span>
         </div>
-
-        {/* Right: Sci-Fi Synth Typing Sound Toggle */}
-        {onToggleTypingSound && (
-          <button
-            onClick={onToggleTypingSound}
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
-              typingSoundEnabled
-                ? 'bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400 text-ink-950 font-bold shadow-md'
-                : 'bg-ink-800 text-ink-400 hover:text-white'
-            }`}
-            title={typingSoundEnabled ? 'Mute Sci-Fi Synth SFX' : 'Enable Sci-Fi Synth SFX'}
-          >
-            {typingSoundEnabled ? '🎹 Sci-Fi Synth SFX: ON' : '🔇 Typing SFX: OFF'}
-          </button>
-        )}
       </div>
 
       <div className="relative flex flex-1 overflow-hidden min-h-[280px]">

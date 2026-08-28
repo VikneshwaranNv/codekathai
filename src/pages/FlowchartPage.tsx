@@ -54,10 +54,6 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
     return (localStorage.getItem('codekathai_ide_theme') as IdeTheme) || 'bamboo';
   });
 
-  const [typingSoundEnabled, setTypingSoundEnabled] = useState<boolean>(() => {
-    return localStorage.getItem('codekathai_typing_sfx') !== 'false';
-  });
-
   const [fontSize, setFontSize] = useState<number>(13);
 
   // Parse active C code into Flowchart AST Graph
@@ -70,12 +66,6 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
   const handleThemeChange = (newTheme: IdeTheme) => {
     setTheme(newTheme);
     localStorage.setItem('codekathai_ide_theme', newTheme);
-  };
-
-  const handleToggleTypingSound = () => {
-    const next = !typingSoundEnabled;
-    setTypingSoundEnabled(next);
-    localStorage.setItem('codekathai_typing_sfx', String(next));
   };
 
   // Trigger Flowchart Generation & Compile C Code
@@ -226,8 +216,6 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
                 onChange={handleCodeChange}
                 rows={17}
                 placeholder="// Type or paste any C code here..."
-                typingSoundEnabled={typingSoundEnabled}
-                onToggleTypingSound={handleToggleTypingSound}
                 fontSize={fontSize}
               />
             </div>

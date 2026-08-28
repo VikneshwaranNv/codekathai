@@ -57,21 +57,11 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
     return (localStorage.getItem('codekathai_ide_theme') as IdeTheme) || 'bamboo';
   });
 
-  const [typingSoundEnabled, setTypingSoundEnabled] = useState<boolean>(() => {
-    return localStorage.getItem('codekathai_typing_sfx') !== 'false';
-  });
-
   const [fontSize, setFontSize] = useState<number>(13);
 
   const handleThemeChange = (newTheme: IdeTheme) => {
     setTheme(newTheme);
     localStorage.setItem('codekathai_ide_theme', newTheme);
-  };
-
-  const handleToggleTypingSound = () => {
-    const next = !typingSoundEnabled;
-    setTypingSoundEnabled(next);
-    localStorage.setItem('codekathai_typing_sfx', String(next));
   };
 
   const handleRun = async (overrideInput?: string) => {
@@ -185,8 +175,6 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
               onChange={setCode}
               rows={17}
               placeholder="// Write your C code here..."
-              typingSoundEnabled={typingSoundEnabled}
-              onToggleTypingSound={handleToggleTypingSound}
               fontSize={fontSize}
             />
           </div>
