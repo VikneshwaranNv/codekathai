@@ -1,21 +1,47 @@
-// High-Fidelity Web Audio API SFX Engine & Mechanical Keyboard Synthesizer for Code Kathai
-// Zero external downloads, 100% crisp high-definition acoustic sounds
+// High-Fidelity Web Audio API SFX Engine & Sci-Fi Keyboard Synthesizer for Code Kathai
+// 100% laptop & browser compatibility with automatic Web Audio unlocker
 
 const SOUND_MUTED_KEY = 'codekathai_sfx_muted';
 
 let audioCtx: AudioContext | null = null;
+let isUnlocked = false;
 
-function getAudioContext(): AudioContext | null {
-  if (typeof window === 'undefined') return null;
+function unlockAudio(): void {
+  if (isUnlocked && audioCtx && audioCtx.state === 'running') return;
+
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (AudioContextClass) {
       audioCtx = new AudioContextClass();
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => {});
+
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().then(() => {
+        isUnlocked = true;
+      }).catch(() => {});
+    } else if (audioCtx.state === 'running') {
+      isUnlocked = true;
+    }
   }
+}
+
+// Auto-register global event listeners so Web Audio is unlocked on ANY laptop interaction
+if (typeof window !== 'undefined') {
+  const unlockEvents = ['click', 'keydown', 'pointerdown', 'touchstart', 'focus'];
+  const handleUserInteraction = () => {
+    unlockAudio();
+    if (isUnlocked) {
+      unlockEvents.forEach((evt) => window.removeEventListener(evt, handleUserInteraction));
+    }
+  };
+  unlockEvents.forEach((evt) => window.addEventListener(evt, handleUserInteraction, { passive: true }));
+}
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  unlockAudio();
   return audioCtx;
 }
 
@@ -41,7 +67,7 @@ const CYBER_PENTATONIC_SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 58
 
 /**
  * 🎹 Sci-Fi Cyber Synth Melody Mechanical Keyboard SFX
- * Synthesizes crisp melodic pentatonic notes on typing keypresses
+ * Synthesizes loud, crisp, melodic pentatonic notes on typing keypresses
  */
 export function playMechanicalKeyPressSound(key?: string): void {
   if (isSoundMuted()) return;
@@ -55,20 +81,32 @@ export function playMechanicalKeyPressSound(key?: string): void {
     const charCode = key ? key.charCodeAt(0) : Math.floor(Math.random() * 10);
     const noteFreq = CYBER_PENTATONIC_SCALE[charCode % CYBER_PENTATONIC_SCALE.length];
 
-    const osc = ctx.createOscillator();
+    // Primary Melodic Synth Oscillator
+    const osc1 = ctx.createOscillator();
+    // Harmonic Layer Oscillator (Adds warmth & projection on laptop speakers)
+    const osc2 = ctx.createOscillator();
+
     const gain = ctx.createGain();
 
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(noteFreq, now);
+    osc1.type = 'triangle';
+    osc2.type = 'sine';
 
-    gain.gain.setValueAtTime(isSpaceOrEnter ? 0.22 : 0.15, now);
+    osc1.frequency.setValueAtTime(noteFreq, now);
+    osc2.frequency.setValueAtTime(noteFreq * 2, now); // 1 Octave higher harmonic for laptop speaker projection
+
+    // Boosted volume gain for loud laptop audio output
+    const peakGain = isSpaceOrEnter ? 0.38 : 0.28;
+    gain.gain.setValueAtTime(peakGain, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + (isSpaceOrEnter ? 0.25 : 0.15));
 
-    osc.connect(gain);
+    osc1.connect(gain);
+    osc2.connect(gain);
     gain.connect(ctx.destination);
 
-    osc.start(now);
-    osc.stop(now + (isSpaceOrEnter ? 0.25 : 0.15));
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + (isSpaceOrEnter ? 0.25 : 0.15));
+    osc2.stop(now + (isSpaceOrEnter ? 0.25 : 0.15));
   } catch (e) {
     // Ignore audio context errors
   }
