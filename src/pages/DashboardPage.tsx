@@ -66,7 +66,9 @@ export default function DashboardPage({
             </div>
             <h1 className="font-display text-2xl font-bold sm:text-4xl">Hi {name} 👋</h1>
             <p className="font-tamil mt-1 text-sm text-bamboo-100">
-              உங்கள் C Programming கற்றல் பயணத்தைத் தொடருங்கள்! (Current Level: {currentLevel})
+              {language === 'java'
+              ? 'உங்கள் Java Programming கற்றல் பயணத்தைத் தொடருங்கள்! (Current Level: ' + currentLevel + ')'
+              : 'உங்கள் C Programming கற்றல் பயணத்தைத் தொடருங்கள்! (Current Level: ' + currentLevel + ')'}
             </p>
           </div>
 
@@ -96,7 +98,7 @@ export default function DashboardPage({
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="font-display text-xl font-bold text-bamboo-950 dark:text-white sm:text-2xl">
-            C Programming Course Modules
+            {language === 'java' ? 'Java Programming Course Modules' : 'C Programming Course Modules'}
           </h2>
           <p className="font-tamil text-xs text-ink-600 dark:text-ink-400">
             ஒவ்வொரு module-ஐயும் தேர்வு செய்து தமிழ் கதைகள் வழியே பயிலுங்கள்.

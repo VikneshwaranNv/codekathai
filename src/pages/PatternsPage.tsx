@@ -19,13 +19,23 @@ import { patternCategories, patternProblems } from '@/data/patterns';
 import type { PatternProblem } from '@/types';
 import { useProgress } from '@/lib/useProgress';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
+import { compileAndRunJavaProgram } from '@/lib/javaSimulator';
+import { useLanguage } from '@/lib/languageContext';
 import CCodeEditor from '@/components/CCodeEditor';
 
 interface PatternsPageProps {
   onNavigate: (page: Page) => void;
 }
 
+const DEFAULT_JAVA_CODE = `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Vanakkam Code Kathai!");
+        System.out.println("Welcome to Java Programming in Tamil!");
+    }
+}`;
+
 export default function PatternsPage({ onNavigate }: PatternsPageProps) {
+  const { language, setLanguage } = useLanguage();
   const [activeCat, setActiveCat] = useState<string>('all');
   const [activePattern, setActivePattern] = useState<PatternProblem | null>(null);
 
@@ -47,7 +57,7 @@ export default function PatternsPage({ onNavigate }: PatternsPageProps) {
 
   const openPatternWorkspace = (p: PatternProblem) => {
     setActivePattern(p);
-    setCode(p.starterCode);
+    setCode(language === 'java' ? DEFAULT_JAVA_CODE : p.starterCode);
     setOutput('');
     setCompilerError(null);
     setEvalResult('idle');
@@ -55,12 +65,28 @@ export default function PatternsPage({ onNavigate }: PatternsPageProps) {
     setMobileTab('practice');
   };
 
+  const handleLanguageChange = (newLang: 'c' | 'java') => {
+    setLanguage(newLang);
+    if (newLang === 'java') {
+      if (!code.includes('class Main') && !code.includes('public class')) {
+        setCode(DEFAULT_JAVA_CODE);
+      }
+    } else {
+      if (activePattern && (!code.includes('#include') || code.includes('public class'))) {
+        setCode(activePattern.starterCode);
+      }
+    }
+    setOutput('');
+    setCompilerError(null);
+    setEvalResult('idle');
+  };
+
   const handleRunCode = async () => {
     if (!activePattern) return;
 
     if (!code.trim()) {
       setOutput('');
-      setCompilerError('Error: Please write C code before running.');
+      setCompilerError(`Error: Please write ${language === 'java' ? 'Java' : 'C'} code before running.`);
       setEvalResult('fail');
       return;
     }
@@ -68,10 +94,11 @@ export default function PatternsPage({ onNavigate }: PatternsPageProps) {
     setCompiling(true);
     setEvalResult('idle');
     setCompilerError(null);
-    setOutput('Compiling C code with GCC...');
+    setOutput(`Compiling ${language === 'java' ? 'Java code with OpenJDK 21...' : 'C code with GCC...'}`);
 
-    // Call real GCC compiler API
-    const simResult = await compileAndRunCProgram(code, '');
+    const simResult = language === 'java'
+      ? await compileAndRunJavaProgram(code, '')
+      : await compileAndRunCProgram(code, '');
 
     if (simResult.error) {
       setCompilerError(simResult.error);
@@ -99,7 +126,7 @@ export default function PatternsPage({ onNavigate }: PatternsPageProps) {
 
   const handleReset = () => {
     if (activePattern) {
-      setCode(activePattern.starterCode);
+      setCode(language === 'java' ? DEFAULT_JAVA_CODE : activePattern.starterCode);
       setOutput('');
       setCompilerError(null);
       setEvalResult('idle');
@@ -226,7 +253,9 @@ export default function PatternsPage({ onNavigate }: PatternsPageProps) {
             {/* Code Editor */}
             <div className="flex-1 flex flex-col bg-ink-950 p-4">
               <div className="mb-2 flex items-center justify-between">
-                <span className="font-mono text-[11px] text-ink-400">pattern.c</span>
+                <span className="font-mono text-[11px] text-ink-400">
+                  {language === 'java' ? 'Main.java' : 'pattern.c'}
+                </span>
                 <button onClick={handleClear} className="text-[10px] text-ink-500 hover:text-red-400">
                   Clear Editor
                 </button>
@@ -235,12 +264,14 @@ export default function PatternsPage({ onNavigate }: PatternsPageProps) {
                 value={code}
                 onChange={setCode}
                 rows={12}
-                placeholder="// Write C loops to print the pattern..."
+                language={language}
+                onLanguageChange={handleLanguageChange}
+                placeholder={language === 'java' ? '// Write Java code...' : '// Write C loops to print the pattern...'}
               />
             </div>
           </div>
 
-          {/* RIGHT PANEL — C COMPILER & EVALUATION */}
+          {/* RIGHT PANEL — COMPILER & EVALUATION */}
           <div
             className={`card flex flex-col overflow-hidden border border-bamboo-200 dark:border-bamboo-800 bg-ink-950 text-white ${
               mobileTab === 'practice' ? 'hidden lg:flex' : 'flex'
@@ -249,9 +280,11 @@ export default function PatternsPage({ onNavigate }: PatternsPageProps) {
             {/* Terminal Header */}
             <div className="flex items-center justify-between border-b border-ink-800 bg-ink-900 p-4">
               <span className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                <Terminal className="h-4 w-4" /> 💻 C Compiler Output
+                <Terminal className="h-4 w-4" /> {language === 'java' ? '💻 Java Compiler Output' : '💻 C Compiler Output'}
               </span>
-              <span className="text-[10px] font-mono uppercase text-ink-400">GCC Compiler</span>
+              <span className="text-[10px] font-mono uppercase text-ink-400">
+                {language === 'java' ? 'OpenJDK 21 Compiler' : 'GCC Compiler'}
+              </span>
             </div>
 
             {/* Expected vs Actual */}

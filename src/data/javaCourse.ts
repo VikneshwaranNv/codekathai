@@ -141,7 +141,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Java Platform Independence',
         description: 'Java Code (.java) -> Compiler (javac) -> Bytecode (.class) -> JVM -> OS Hardware.',
-        diagramType: 'generic',
+        diagramType: 'wora',
       },
       code: {
         snippet: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Java is Platform Independent!");\n    }\n}`,
@@ -289,7 +289,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Java Main Entry Point Execution',
         description: 'JVM -> Main Class -> main() Method -> Code Execution.',
-        diagramType: 'flowchart',
+        diagramType: 'method-stack',
       },
       code: {
         snippet: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello CodeKathai!");\n    }\n}`,
@@ -361,7 +361,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'System.out.println Stream Pipeline',
         description: 'Java Code -> PrintStream Buffer -> Console Screen.',
-        diagramType: 'generic',
+        diagramType: 'scanner-input',
       },
       code: {
         snippet: `public class Main {\n    public static void main(String[] args) {\n        System.out.print("Line 1 ");\n        System.out.println("Line 2");\n        System.out.println("Line 3");\n    }\n}`,
@@ -646,7 +646,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Operator Precedence & Evaluation',
         description: 'Parentheses () -> Multiplication/Division (*, /) -> Addition/Subtraction (+, -).',
-        diagramType: 'flowchart',
+        diagramType: 'method-stack',
       },
       code: {
         snippet: `public class Main {\n    public static void main(String[] args) {\n        int a = 15, b = 4;\n        System.out.println("Sum: " + (a + b));\n        System.out.println("Remainder: " + (a % b));\n    }\n}`,
@@ -1061,7 +1061,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Data Flow Into and Out of Method',
         description: 'add(5, 10) -> computes 15 -> returns 15 to main().',
-        diagramType: 'flowchart',
+        diagramType: 'method-stack',
       },
       code: {
         snippet: `public class Main {\n    static int add(int x, int y) {\n        return x + y;\n    }\n\n    public static void main(String[] args) {\n        int sum = add(10, 20);\n        System.out.println("Sum: " + sum);\n    }\n}`,
@@ -1130,7 +1130,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Compiler Method Matching Pipeline',
         description: 'add(5, 10) matches add(int, int). add(2.5, 3.5) matches add(double, double).',
-        diagramType: 'generic',
+        diagramType: 'method-stack',
       },
       code: {
         snippet: `public class Main {\n    static int add(int a, int b) {\n        return a + b;\n    }\n    static double add(double a, double b) {\n        return a + b;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(add(5, 10));\n        System.out.println(add(2.5, 3.5));\n    }\n}`,

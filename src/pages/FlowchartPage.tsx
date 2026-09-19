@@ -41,7 +41,7 @@ const JAVA_FLOWCHART_PRESETS = [
 ];
 
 export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const presets = language === 'java' ? JAVA_FLOWCHART_PRESETS : C_FLOWCHART_PRESETS;
 
   const [code, setCode] = useState<string>(presets[0].code);
@@ -222,13 +222,15 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
               </div>
             </div>
 
-            {/* C Editor */}
+            {/* Code Editor */}
             <div className="p-3 bg-ink-950">
               <CCodeEditor
                 value={code}
                 onChange={handleCodeChange}
                 rows={17}
-                placeholder="// Type or paste any C code here..."
+                language={language}
+                onLanguageChange={setLanguage}
+                placeholder={language === 'java' ? '// Type or paste any Java code here...' : '// Type or paste any C code here...'}
                 fontSize={fontSize}
               />
             </div>

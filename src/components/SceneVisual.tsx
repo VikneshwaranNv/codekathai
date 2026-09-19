@@ -13,7 +13,7 @@ export default function SceneVisual({ visual, className = '' }: SceneVisualProps
   );
 }
 
-function renderVisual(visual: StoryScene['visual']) {
+function renderVisual(visual: StoryScene['visual'] | string) {
   switch (visual) {
     /* ==================== JAVA DEDICATED VISUAL DIAGRAMS ==================== */
 
@@ -568,11 +568,35 @@ function renderVisual(visual: StoryScene['visual']) {
         </svg>
       );
 
+    case 'flowchart':
+    case 'generic':
     default:
       return (
-        <svg viewBox="0 0 200 140" className="h-full w-full max-w-[240px]">
-          <rect x="40" y="30" width="120" height="80" rx="12" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
-          <circle cx="100" cy="70" r="20" fill="#6bb684" />
+        <svg viewBox="0 0 320 160" className="h-full w-full max-w-[360px]">
+          <rect x="20" y="15" width="280" height="130" rx="12" fill="#1f412c" stroke="#479a63" strokeWidth="2" />
+          {/* Mac window control buttons */}
+          <circle cx="40" cy="32" r="4" fill="#ef4444" />
+          <circle cx="54" cy="32" r="4" fill="#f59e0b" />
+          <circle cx="68" cy="32" r="4" fill="#10b981" />
+          
+          <text x="160" y="36" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            ⚡ CodeKathai Visual Execution Engine
+          </text>
+
+          <rect x="35" y="52" width="250" height="75" rx="8" fill="#0f2918" stroke="#347d4d" strokeWidth="1.5" />
+          
+          <text x="50" y="74" fontSize="11" fontFamily="JetBrains Mono" fontWeight="700" fill="#479a63">1</text>
+          <text x="70" y="74" fontSize="11" fontFamily="JetBrains Mono" fontWeight="700" fill="#f59e0b">public class</text>
+          <text x="155" y="74" fontSize="11" fontFamily="JetBrains Mono" fontWeight="700" fill="#fff">Main &#123;</text>
+
+          <text x="50" y="94" fontSize="11" fontFamily="JetBrains Mono" fontWeight="700" fill="#479a63">2</text>
+          <text x="80" y="94" fontSize="11" fontFamily="JetBrains Mono" fontWeight="700" fill="#60a5fa">  System.out.println</text>
+          <text x="210" y="94" fontSize="11" fontFamily="JetBrains Mono" fontWeight="700" fill="#ffd24a">("Success");</text>
+
+          <text x="50" y="114" fontSize="11" fontFamily="JetBrains Mono" fontWeight="700" fill="#479a63">3</text>
+          <text x="70" y="114" fontSize="11" fontFamily="JetBrains Mono" fontWeight="700" fill="#fff">&#125;</text>
+
+          <path d="M260 80 L275 80 L275 105 L260 105" stroke="#10b981" strokeWidth="2" fill="none" className="animate-pulse" />
         </svg>
       );
   }

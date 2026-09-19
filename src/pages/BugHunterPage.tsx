@@ -31,6 +31,7 @@ import { useAuth } from '@/lib/auth';
 import { useProgress } from '@/lib/useProgress';
 import { BUG_HUNTER_LEVELS, type BugLevel } from '@/data/bugHunterData';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
+import { useLanguage } from '@/lib/languageContext';
 import { explainLineByLine, explainAsTamilStory, explainError } from '@/data/aiTutor';
 import CCodeEditor from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
@@ -51,6 +52,7 @@ interface BugHunterPageProps {
 export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
   const { profile } = useAuth();
   const progress = useProgress();
+  const { language, setLanguage } = useLanguage();
 
   // Selected Active Level State
   const [activeLevel, setActiveLevel] = useState<BugLevel | null>(null);
@@ -595,11 +597,13 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                   </button>
                 </div>
 
-                {/* Real C Code Editor */}
+                {/* Code Editor */}
                 <CCodeEditor
                   value={userCode}
                   onChange={setUserCode}
                   rows={13}
+                  language={language}
+                  onLanguageChange={setLanguage}
                 />
 
                 {/* Compiler Output Console */}
