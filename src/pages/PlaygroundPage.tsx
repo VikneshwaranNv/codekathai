@@ -1,9 +1,12 @@
-import { useState } from 'react';
-import { Play, RotateCcw, Code2, Sliders } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Play, RotateCcw, Code2, Sliders, Bug, FileText } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
+import CDebuggerPanel from '@/components/CDebuggerPanel';
+import CheatSheetModal from '@/components/CheatSheetModal';
+import { parseCExecutionSteps } from '@/lib/cDebuggerEngine';
 
 interface PlaygroundPageProps {
   onNavigate: (page: Page) => void;
@@ -51,6 +54,18 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
 
   // Flowchart Generator Modal State
   const [showFlowchartModal, setShowFlowchartModal] = useState<boolean>(false);
+
+  // Debugger & Cheat Sheet State
+  const [showDebugger, setShowDebugger] = useState<boolean>(false);
+  const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
+  const [showCheatSheet, setShowCheatSheet] = useState<boolean>(false);
+
+  // Compute debug execution steps for active code
+  const debugSteps = useMemo(() => {
+    return parseCExecutionSteps(code);
+  }, [code]);
+
+  const activeDebugStep = debugSteps[activeStepIndex] || debugSteps[0];
 
   // IDE Studio Customization State
   const [theme, setTheme] = useState<IdeTheme>(() => {
@@ -134,8 +149,8 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
               <Code2 className="h-4 w-4 text-emerald-500" /> main.c Editor
             </span>
 
-            {/* Editor Action Controls: Font Size, Clear, Run */}
-            <div className="flex items-center gap-2">
+            {/* Editor Action Controls: Font Size, Debugger, Cheat Sheet, Clear, Run */}
+            <div className="flex flex-wrap items-center gap-1.5">
               <div className="hidden sm:flex items-center gap-1 bg-ink-800/80 px-2 py-0.5 rounded-full text-[10px] text-ink-300">
                 <Sliders className="h-3 w-3 text-emerald-400" />
                 <span>Font:</span>
@@ -151,6 +166,27 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
                   </button>
                 ))}
               </div>
+
+              <button
+                onClick={() => setShowDebugger(!showDebugger)}
+                className={`flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer border ${
+                  showDebugger
+                    ? 'bg-[#00ff66]/20 text-[#00ff66] border-[#00ff66]/50 shadow-glow-sm'
+                    : 'bg-ink-800 text-emerald-300 border-emerald-500/30 hover:bg-ink-700'
+                }`}
+                title="Step-by-Step Visual Execution Debugger"
+              >
+                <Bug className="h-3.5 w-3.5" />
+                {showDebugger ? 'Hide Debugger' : '🔍 Step Debugger (படி படியாக)'}
+              </button>
+
+              <button
+                onClick={() => setShowCheatSheet(true)}
+                className="flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-lg bg-golden-500/20 text-golden-300 border border-golden-500/40 hover:bg-golden-500/30 transition-all cursor-pointer"
+                title="Generate Printable C Reference Cheat Sheet"
+              >
+                <FileText className="h-3.5 w-3.5" /> 📄 Cheat Sheet PDF
+              </button>
 
               <button
                 onClick={handleClear}
@@ -176,19 +212,43 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
               rows={17}
               placeholder="// Write your C code here..."
               fontSize={fontSize}
+              highlightedStepLineIndex={showDebugger && activeDebugStep ? activeDebugStep.lineNumber : null}
             />
           </div>
         </div>
 
         {/* RIGHT: INTERACTIVE TERMINAL OUTPUT */}
-        <div>
+        <div className="flex flex-col gap-6">
           <InteractiveTerminal
             output={output}
             error={error}
             isRunning={isRunning}
           />
+
+          {/* STEP-BY-STEP VISUAL DEBUGGER PANEL */}
+          {showDebugger && (
+            <CDebuggerPanel
+              steps={debugSteps}
+              activeStepIndex={activeStepIndex}
+              onStepChange={setActiveStepIndex}
+              onClose={() => setShowDebugger(false)}
+            />
+          )}
         </div>
       </div>
+
+      {/* PRINTABLE BILINGUAL CHEAT SHEET MODAL */}
+      <CheatSheetModal
+        isOpen={showCheatSheet}
+        onClose={() => setShowCheatSheet(false)}
+        title="Interactive C Playground Reference"
+        tamilTitle="சி நிரலாக்க குறிப்பேடு"
+        conceptSummaryEn="Master C variable declarations, data types, logic conditions, and loops through real-time in-browser execution."
+        conceptSummaryTa="நிரலாக்க மாறிகள், தரவு வகைகள், மற்றும் கட்டுப்பாட்டு அமைப்புகளை நேரடி சோதனைகள் வழியாக கற்றுக்கொள்ளுங்கள்."
+        codeSnippet={code}
+        challengeTitle="Try Modifying Code & Running Tests"
+        challengeDescription="Change variable values or add printf statements to observe real-time terminal output and memory updates."
+      />
     </div>
   );
 }

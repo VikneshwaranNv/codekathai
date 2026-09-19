@@ -85,6 +85,7 @@ interface CCodeEditorProps {
   rows?: number;
   className?: string;
   errorLineIndex?: number | null;
+  highlightedStepLineIndex?: number | null;
   theme?: IdeTheme;
   onThemeChange?: (theme: IdeTheme) => void;
   typingSoundEnabled?: boolean;
@@ -323,6 +324,7 @@ export default function CCodeEditor({
   rows = 16,
   className = '',
   errorLineIndex = null,
+  highlightedStepLineIndex = null,
   theme = 'matrix',
   onThemeChange,
   typingSoundEnabled = true,
@@ -470,12 +472,15 @@ export default function CCodeEditor({
           {lineNumbers.map((num) => {
             const isActive = num === activeLine;
             const isError = errorLineIndex === num;
+            const isStep = highlightedStepLineIndex === num;
             return (
               <div
                 key={num}
                 className={`px-1 rounded transition-colors ${
                   isError
                     ? 'bg-red-900/80 text-white font-bold animate-pulse'
+                    : isStep
+                    ? 'bg-[#00ff66]/30 text-[#00ff66] font-bold border-l-2 border-[#00ff66] shadow-glow-sm'
                     : isActive
                     ? 'text-emerald-400 font-bold bg-emerald-500/20'
                     : ''

@@ -17,6 +17,7 @@ import {
   RotateCcw,
   Check,
   Play,
+  FileText,
 } from 'lucide-react';
 import type { Lesson, Level, Module } from '@/types';
 import CodeBlock from '@/components/CodeBlock';
@@ -24,6 +25,7 @@ import StoryCard from '@/components/StoryCard';
 import SceneVisual from '@/components/SceneVisual';
 import CCodeEditor from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
+import CheatSheetModal from '@/components/CheatSheetModal';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 
 interface LessonViewerProps {
@@ -128,6 +130,8 @@ export default function LessonViewer({
     setShowCompletionModal(true);
   };
 
+  const [showCheatSheet, setShowCheatSheet] = useState<boolean>(false);
+
   const levelBadgeLabel =
     level === 'beginner'
       ? '🌱 Beginner'
@@ -160,7 +164,15 @@ export default function LessonViewer({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setShowCheatSheet(true)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-golden-500/20 text-golden-300 border border-golden-500/40 text-xs font-bold hover:bg-golden-500/30 transition-all cursor-pointer shadow-soft"
+            title="Export Lesson Cheat Sheet as PDF"
+          >
+            <FileText className="h-3.5 w-3.5" /> 📄 Export Cheat Sheet PDF
+          </button>
+
           {nextLesson && (
             <button
               onClick={() => onSelectLesson(nextLesson.id)}
@@ -645,6 +657,19 @@ export default function LessonViewer({
           </div>
         </div>
       )}
+
+      {/* PRINTABLE BILINGUAL CHEAT SHEET MODAL */}
+      <CheatSheetModal
+        isOpen={showCheatSheet}
+        onClose={() => setShowCheatSheet(false)}
+        title={lesson.title}
+        tamilTitle={lesson.tamilTitle}
+        conceptSummaryEn={lesson.concept}
+        conceptSummaryTa={lesson.tamilExplanation}
+        codeSnippet={lesson.code.snippet}
+        challengeTitle={lesson.challenge.title}
+        challengeDescription={lesson.challenge.prompt}
+      />
     </div>
   );
 }
