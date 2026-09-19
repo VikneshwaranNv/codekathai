@@ -1,8 +1,5 @@
 import { useRef, useState, type UIEvent, type KeyboardEvent } from 'react';
-import { Coffee, Code2, Globe, Sparkles } from 'lucide-react';
-import KathaiAiModal from './KathaiAiModal';
-import { generateKathaiStory } from '@/services/kathaiAiService';
-import type { KathaiStory } from '@/types/kathaiAi';
+import { Coffee, Code2, Globe } from 'lucide-react';
 
 export type IdeTheme = 'bamboo' | 'matrix' | 'cyberpunk' | 'dracula' | 'sepia';
 
@@ -470,129 +467,98 @@ export default function CCodeEditor({
     setActiveLine(currentLine);
   };
 
-  const [isKathaiAiOpen, setIsKathaiAiOpen] = useState(false);
-  const [kathaiStory, setKathaiStory] = useState<KathaiStory | null>(null);
-
-  const handleOpenKathaiAi = () => {
-    const generated = generateKathaiStory(value, language);
-    setKathaiStory(generated);
-    setIsKathaiAiOpen(true);
-  };
-
   const highlightedHtml = highlightSyntax(value);
 
   return (
-    <>
-      <div
-        className={`flex flex-col rounded-2xl border border-bamboo-800 ${activeThemeConfig.bg} font-mono text-xs overflow-hidden shadow-2xl transition-colors duration-500 ${className}`}
-      >
-        {/* IDE Header with Filename Tab, Language Dropdown & Flagship Kathai-AI Button */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#0a200a] bg-[#020702] px-4 py-2 text-[11px] select-none">
-          {/* Filename & IDE Badge */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-[#00ff66] flex items-center gap-1.5 bg-[#051505] px-3 py-1 rounded-full border border-[#00ff66]/30 shadow-glow-sm">
-              {language === 'java' ? <Coffee className="h-3.5 w-3.5 text-golden-400" /> : <Code2 className="h-3.5 w-3.5 text-emerald-400" />}
-              <span>{displayFilename}</span>
-            </span>
-          </div>
+    <div
+      className={`flex flex-col rounded-2xl border border-bamboo-800 ${activeThemeConfig.bg} font-mono text-xs overflow-hidden shadow-2xl transition-colors duration-500 ${className}`}
+    >
+      {/* IDE Header with Filename Tab & Language Dropdown */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#0a200a] bg-[#020702] px-4 py-2 text-[11px] select-none">
+        {/* Filename & IDE Badge */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-bold text-[#00ff66] flex items-center gap-1.5 bg-[#051505] px-3 py-1 rounded-full border border-[#00ff66]/30 shadow-glow-sm">
+            {language === 'java' ? <Coffee className="h-3.5 w-3.5 text-golden-400" /> : <Code2 className="h-3.5 w-3.5 text-emerald-400" />}
+            <span>{displayFilename}</span>
+          </span>
+        </div>
 
-          {/* Controls: Kathai-AI Button & Compiler Language Selector */}
+        {/* Interactive Compiler Language Selector Dropdown */}
+        {onLanguageChange && (
           <div className="flex items-center gap-2">
-            {/* Flagship Kathai-AI Button */}
-            <button
-              onClick={handleOpenKathaiAi}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-500 hover:from-amber-400 hover:to-emerald-400 text-ink-950 font-extrabold font-mono text-xs shadow-glow-sm transition-all transform active:scale-95 border border-amber-300/40"
-              title="Turn current code into an interactive Tamil/English visual storybook!"
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider flex items-center gap-1">
+              <Globe className="h-3 w-3 text-emerald-400" /> Language:
+            </span>
+            <select
+              value={language}
+              onChange={(e) => onLanguageChange(e.target.value as 'c' | 'java')}
+              className="bg-[#0b1c0b] border border-[#00ff66]/40 text-[#00ff66] rounded-lg px-2.5 py-1 text-xs font-bold font-mono focus:outline-none focus:ring-1 focus:ring-[#00ff66] cursor-pointer"
             >
-              <Sparkles className="h-3.5 w-3.5 text-ink-950 animate-pulse" />
-              <span>🪄 Kathai-AI (கதை AI)</span>
-            </button>
-
-            {onLanguageChange && (
-              <div className="flex items-center gap-1.5 ml-1">
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                  <Globe className="h-3 w-3 text-emerald-400" /> Lang:
-                </span>
-                <select
-                  value={language}
-                  onChange={(e) => onLanguageChange(e.target.value as 'c' | 'java')}
-                  className="bg-[#0b1c0b] border border-[#00ff66]/40 text-[#00ff66] rounded-lg px-2.5 py-1 text-xs font-bold font-mono focus:outline-none focus:ring-1 focus:ring-[#00ff66] cursor-pointer"
-                >
-                  <option value="java">☕ Java (Main.java)</option>
-                  <option value="c">⚡ C (main.c)</option>
-                </select>
-              </div>
-            )}
+              <option value="java">☕ Java (Main.java)</option>
+              <option value="c">⚡ C (main.c)</option>
+            </select>
           </div>
-        </div>
-
-        <div className="relative flex flex-1 overflow-hidden min-h-[280px]">
-          {/* Line Numbers Sidebar */}
-          <div
-            ref={lineNumbersRef}
-            className={`select-none ${activeThemeConfig.lineBg} px-3 py-4 text-right font-mono text-[11px] leading-6 overflow-hidden min-w-[40px]`}
-          >
-            {lineNumbers.map((num) => {
-              const isActive = num === activeLine;
-              const isError = errorLineIndex === num;
-              const isStep = highlightedStepLineIndex === num;
-              return (
-                <div
-                  key={num}
-                  className={`px-1 rounded transition-colors ${
-                    isError
-                      ? 'bg-red-900/80 text-white font-bold animate-pulse'
-                      : isStep
-                      ? 'bg-[#00ff66]/30 text-[#00ff66] font-bold border-l-2 border-[#00ff66] shadow-glow-sm'
-                      : isActive
-                      ? 'text-emerald-400 font-bold bg-emerald-500/20'
-                      : ''
-                  }`}
-                >
-                  {num}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Editor Main Container */}
-          <div className="relative flex-1 overflow-hidden min-h-[280px]">
-            {/* Layer 1: Syntax Highlighting Visual Overlay */}
-            <div
-              ref={overlayRef}
-              aria-hidden="true"
-              className={`absolute inset-0 p-4 font-mono text-xs leading-6 pointer-events-none overflow-auto whitespace-pre tab-4 ${activeThemeConfig.text}`}
-              style={{ fontSize: `${fontSize}px` }}
-              dangerouslySetInnerHTML={{ __html: highlightedHtml + '<br/>' }}
-            />
-
-            {/* Layer 2: Transparent Input Textarea for native typing & copy/paste */}
-            <textarea
-              ref={textareaRef}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onScroll={handleScroll}
-              onKeyDown={handleKeyDown}
-              onSelect={handleSelect}
-              onKeyUp={handleSelect}
-              onClick={handleSelect}
-              rows={rows}
-              placeholder={placeholder}
-              spellCheck={false}
-              style={{ fontSize: `${fontSize}px` }}
-              className={`absolute inset-0 w-full h-full p-4 bg-transparent font-mono text-xs leading-6 text-transparent ${activeThemeConfig.caret} focus:outline-none resize-none whitespace-pre overflow-auto tab-4 selection:bg-emerald-500/30 selection:text-transparent`}
-            />
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Flagship Kathai-AI Modal */}
-      <KathaiAiModal
-        isOpen={isKathaiAiOpen}
-        onClose={() => setIsKathaiAiOpen(false)}
-        story={kathaiStory}
-        code={value}
-      />
-    </>
+      <div className="relative flex flex-1 overflow-hidden min-h-[280px]">
+        {/* Line Numbers Sidebar */}
+        <div
+          ref={lineNumbersRef}
+          className={`select-none ${activeThemeConfig.lineBg} px-3 py-4 text-right font-mono text-[11px] leading-6 overflow-hidden min-w-[40px]`}
+        >
+          {lineNumbers.map((num) => {
+            const isActive = num === activeLine;
+            const isError = errorLineIndex === num;
+            const isStep = highlightedStepLineIndex === num;
+            return (
+              <div
+                key={num}
+                className={`px-1 rounded transition-colors ${
+                  isError
+                    ? 'bg-red-900/80 text-white font-bold animate-pulse'
+                    : isStep
+                    ? 'bg-[#00ff66]/30 text-[#00ff66] font-bold border-l-2 border-[#00ff66] shadow-glow-sm'
+                    : isActive
+                    ? 'text-emerald-400 font-bold bg-emerald-500/20'
+                    : ''
+                }`}
+              >
+                {num}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Editor Main Container */}
+        <div className="relative flex-1 overflow-hidden min-h-[280px]">
+          {/* Layer 1: Syntax Highlighting Visual Overlay */}
+          <div
+            ref={overlayRef}
+            aria-hidden="true"
+            className={`absolute inset-0 p-4 font-mono text-xs leading-6 pointer-events-none overflow-auto whitespace-pre tab-4 ${activeThemeConfig.text}`}
+            style={{ fontSize: `${fontSize}px` }}
+            dangerouslySetInnerHTML={{ __html: highlightedHtml + '<br/>' }}
+          />
+
+          {/* Layer 2: Transparent Input Textarea for native typing & copy/paste */}
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onScroll={handleScroll}
+            onKeyDown={handleKeyDown}
+            onSelect={handleSelect}
+            onKeyUp={handleSelect}
+            onClick={handleSelect}
+            rows={rows}
+            placeholder={placeholder}
+            spellCheck={false}
+            style={{ fontSize: `${fontSize}px` }}
+            className={`absolute inset-0 w-full h-full p-4 bg-transparent font-mono text-xs leading-6 text-transparent ${activeThemeConfig.caret} focus:outline-none resize-none whitespace-pre overflow-auto tab-4 selection:bg-emerald-500/30 selection:text-transparent`}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
