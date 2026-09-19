@@ -30,6 +30,7 @@ export type Page =
   | 'story'
   | 'playground'
   | 'flowchart'
+  | 'matrix'
   | 'practice'
   | 'patterns'
   | 'tutor'
@@ -45,6 +46,7 @@ const baseLinks: { id: Page; label: string; icon: typeof BookOpen }[] = [
   { id: 'home', label: 'Home', icon: BookOpen },
   { id: 'levels', label: 'Levels', icon: GraduationCap },
   { id: 'dashboard', label: 'Courses', icon: LayoutGrid },
+  { id: 'matrix', label: '🧬 C ↔ Java Matrix', icon: Sparkles },
   { id: 'bughunter', label: '🐛 Bug Hunter', icon: Bug },
   { id: 'flowchart', label: '📊 Flowchart', icon: Workflow },
   { id: 'playground', label: 'Playground', icon: Code2 },
