@@ -10,7 +10,9 @@ import {
   Crown,
 } from 'lucide-react';
 import type { ModuleId, Level } from '@/types';
-import { modules } from '@/data/course';
+import { modules as cModules } from '@/data/course';
+import { javaModules } from '@/data/javaCourse';
+import { useLanguage } from '@/lib/languageContext';
 import { useAuth } from '@/lib/auth';
 import type { ProgressState } from '@/lib/useProgress';
 import type { Page } from '@/components/Navbar';
@@ -29,8 +31,11 @@ export default function DashboardPage({
   progress,
 }: DashboardPageProps) {
   const { profile } = useAuth();
+  const { language } = useLanguage();
   const currentLevel: Level = profile?.currentLevel ?? 'beginner';
   const name = profile?.name ?? 'Learner';
+
+  const activeModules = language === 'java' ? javaModules : cModules;
 
   const levelBadge =
     currentLevel === 'beginner' ? (
@@ -107,7 +112,7 @@ export default function DashboardPage({
 
       {/* Modules List */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {modules.map((mod) => {
+        {activeModules.map((mod) => {
           const topicIds = mod.topics.map((t) => t.id);
           const p = progress.moduleProgress(mod.id, topicIds);
           const firstLessonId = mod.topics[0]?.id ?? `${mod.id}-what-is-var`;

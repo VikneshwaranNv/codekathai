@@ -4,14 +4,17 @@ import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
-import { parseCToFlowchart, type FlowchartNode, type FlowchartNodeType } from '@/lib/cFlowchartParser';
+import { type FlowchartNode, type FlowchartNodeType } from '@/lib/cFlowchartParser';
 import { playButtonClickSound } from '@/lib/soundEffects';
+import { useLanguage } from '@/lib/languageContext';
+import { compileAndRunJavaProgram } from '@/lib/javaSimulator';
+import { parseCodeToFlowchart } from '@/lib/javaFlowchartParser';
 
 interface FlowchartPageProps {
   onNavigate: (page: Page) => void;
 }
 
-const FLOWCHART_PRESETS = [
+const C_FLOWCHART_PRESETS = [
   {
     name: 'Factorial of Number',
     code: `#include <stdio.h>\n\nint main() {\n    int n = 5;\n    unsigned long long fact = 1;\n\n    printf("Enter number: ");\n    if (n < 0) {\n        printf("Invalid input\\n");\n        return 1;\n    }\n\n    for (int i = 1; i <= n; i++) {\n        fact *= i;\n    }\n\n    printf("Factorial of %d = %llu\\n", n, fact);\n    return 0;\n}`,
@@ -22,27 +25,33 @@ const FLOWCHART_PRESETS = [
     code: `#include <stdio.h>\n\nint main() {\n    int num = 14;\n    printf("Enter an integer: ");\n\n    if (num % 2 == 0) {\n        printf("%d is Even.\\n", num);\n    } else {\n        printf("%d is Odd.\\n", num);\n    }\n    return 0;\n}`,
     input: '14',
   },
+];
+
+const JAVA_FLOWCHART_PRESETS = [
   {
-    name: 'Largest of 3 Numbers',
-    code: `#include <stdio.h>\n\nint main() {\n    int a = 10, b = 25, c = 15;\n\n    if (a >= b && a >= c) {\n        printf("%d is the largest.\\n", a);\n    } else if (b >= a && b >= c) {\n        printf("%d is the largest.\\n", b);\n    } else {\n        printf("%d is the largest.\\n", c);\n    }\n    return 0;\n}`,
-    input: '',
+    name: 'Java Even or Odd Check',
+    code: `public class Main {\n    public static void main(String[] args) {\n        int num = 14;\n        if (num % 2 == 0) {\n            System.out.println(num + " is Even.");\n        } else {\n            System.out.println(num + " is Odd.");\n        }\n    }\n}`,
+    input: '14',
   },
   {
-    name: 'Fibonacci Series Loop',
-    code: `#include <stdio.h>\n\nint main() {\n    int n = 7;\n    int t1 = 0, t2 = 1, next;\n\n    printf("Fibonacci Series: ");\n    for (int i = 1; i <= n; i++) {\n        printf("%d ", t1);\n        next = t1 + t2;\n        t1 = t2;\n        t2 = next;\n    }\n    printf("\\n");\n    return 0;\n}`,
-    input: '7',
+    name: 'Java For Loop Counter',
+    code: `public class Main {\n    public static void main(String[] args) {\n        for (int i = 1; i <= 5; i++) {\n            System.out.println("Item " + i);\n        }\n    }\n}`,
+    input: '',
   },
 ];
 
 export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
-  const [code, setCode] = useState<string>(FLOWCHART_PRESETS[0].code);
-  const [programInput, setProgramInput] = useState<string>(FLOWCHART_PRESETS[0].input);
+  const { language } = useLanguage();
+  const presets = language === 'java' ? JAVA_FLOWCHART_PRESETS : C_FLOWCHART_PRESETS;
+
+  const [code, setCode] = useState<string>(presets[0].code);
+  const [programInput, setProgramInput] = useState<string>(presets[0].input);
   const [output, setOutput] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
   // Flowchart Generation Trigger State
-  const [activeCodeForFlowchart, setActiveCodeForFlowchart] = useState<string | null>(FLOWCHART_PRESETS[0].code);
+  const [activeCodeForFlowchart, setActiveCodeForFlowchart] = useState<string | null>(presets[0].code);
   const [hasGenerated, setHasGenerated] = useState<boolean>(true);
 
   // Selected Node Index for Step-by-Step Walkthrough
@@ -56,10 +65,10 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
 
   const [fontSize, setFontSize] = useState<number>(13);
 
-  // Parse active C code into Flowchart AST Graph
+  // Parse active code into Flowchart AST Graph
   const graph = useMemo(() => {
-    return parseCToFlowchart(activeCodeForFlowchart || code);
-  }, [activeCodeForFlowchart, code]);
+    return parseCodeToFlowchart(language, activeCodeForFlowchart || code);
+  }, [activeCodeForFlowchart, code, language]);
 
   const activeNode: FlowchartNode | undefined = graph.nodes[selectedNodeIndex] || graph.nodes[0];
 
@@ -68,7 +77,7 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
     localStorage.setItem('codekathai_ide_theme', newTheme);
   };
 
-  // Trigger Flowchart Generation & Compile C Code
+  // Trigger Flowchart Generation & Compile Code
   const handleGenerateAndRun = async () => {
     playButtonClickSound();
     setActiveCodeForFlowchart(code);
@@ -77,9 +86,11 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
 
     setIsRunning(true);
     setError(null);
-    setOutput('Compiling and running C program with GCC...');
+    setOutput(language === 'java' ? 'Compiling and running Java program...' : 'Compiling and running C program with GCC...');
 
-    const result = await compileAndRunCProgram(code, programInput || '5');
+    const result = language === 'java'
+      ? await compileAndRunJavaProgram(code, programInput || '5')
+      : await compileAndRunCProgram(code, programInput || '5');
 
     if (result.error) {
       setError(result.error);
@@ -132,19 +143,21 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <span className="eyebrow flex items-center gap-1.5">
-            <Workflow className="h-4 w-4 text-purple-500" /> Interactive C Logic Diagrammer
+            <Workflow className="h-4 w-4 text-purple-500" /> {language === 'java' ? 'Interactive Java Logic Diagrammer' : 'Interactive C Logic Diagrammer'}
           </span>
           <h1 className="font-display text-2xl font-bold text-bamboo-950 dark:text-white sm:text-3xl flex items-center gap-2">
-            C Code ➔ Flowchart Studio 📊
+            {language === 'java' ? 'Java Code ➔ Flowchart Studio 📊' : 'C Code ➔ Flowchart Studio 📊'}
           </h1>
           <p className="font-tamil text-xs text-ink-600 dark:text-ink-300">
-            எந்த C நிரலையும் ஒட்டி (Paste), "🚀 Generate Flowchart & Run Code" பட்டனை அழுத்தவும். தர்க்க வரைபடம் Step 1-ல் இருந்து தொடங்கும்!
+            {language === 'java'
+              ? 'எந்த Java நிரலையும் ஒட்டி (Paste), "🚀 Generate Flowchart & Run Code" பட்டனை அழுத்தவும்!'
+              : 'எந்த C நிரலையும் ஒட்டி (Paste), "🚀 Generate Flowchart & Run Code" பட்டனை அழுத்தவும். தர்க்க வரைபடம் Step 1-ல் இருந்து தொடங்கும்!'}
           </p>
         </div>
 
-        {/* C CODE PRESET BUTTONS */}
+        {/* CODE PRESET BUTTONS */}
         <div className="flex flex-wrap gap-2">
-          {FLOWCHART_PRESETS.map((p, idx) => (
+          {presets.map((p, idx) => (
             <button
               key={idx}
               onClick={() => {

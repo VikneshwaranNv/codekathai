@@ -16,30 +16,16 @@ import {
 } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { placement100Mcqs, type PlacementMCQ } from '@/data/placement100Mcqs';
+import { javaPlacementMcqs } from '@/data/javaPlacementMcqs';
+import { useLanguage } from '@/lib/languageContext';
 import ProgressBar from '@/components/ProgressBar';
 
 interface QuizPageProps {
   onNavigate: (page: Page) => void;
 }
 
-const LEVEL_TABS = [
-  { id: 'easy', label: '🌱 Easy Part (100 Technical Placement MCQs)' },
-  { id: 'intermediate', label: '🚀 Intermediate Part (Logic Building MCQs)' },
-  { id: 'advanced', label: '🧠 Advanced Part (Memory & System MCQs)' },
-];
-
-const CATEGORIES = [
-  { id: 'all', label: 'All 100 Questions 🎯' },
-  { id: 'fundamentals', label: 'Fundamentals 💻' },
-  { id: 'operators', label: 'Operators ⚡' },
-  { id: 'controlflow', label: 'Control Flow 🔀' },
-  { id: 'storage', label: 'Storage Classes 📦' },
-  { id: 'pointers', label: 'Pointers & Memory 📍' },
-  { id: 'arrays_strings', label: 'Arrays & Strings 🧵' },
-  { id: 'structs_memory', label: 'Structs & Malloc 🏗️' },
-];
-
 export default function QuizPage({ onNavigate }: QuizPageProps) {
+  const { language } = useLanguage();
   const [selectedLevel, setSelectedLevel] = useState<'easy' | 'intermediate' | 'advanced'>('easy');
   const [selectedCat, setSelectedCat] = useState<string>('all');
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -50,11 +36,41 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
   const [finished, setFinished] = useState(false);
 
-  // Filter 100 questions for Easy level
+  const levelTabs = [
+    { id: 'easy', label: language === 'java' ? '🌱 Easy Part (Java Placement MCQs)' : '🌱 Easy Part (100 Technical Placement MCQs)' },
+    { id: 'intermediate', label: '🚀 Intermediate Part (Logic Building MCQs)' },
+    { id: 'advanced', label: '🧠 Advanced Part (Memory & System MCQs)' },
+  ];
+
+  const cCategories = [
+    { id: 'all', label: 'All 100 Questions 🎯' },
+    { id: 'fundamentals', label: 'Fundamentals 💻' },
+    { id: 'operators', label: 'Operators ⚡' },
+    { id: 'controlflow', label: 'Control Flow 🔀' },
+    { id: 'storage', label: 'Storage Classes 📦' },
+    { id: 'pointers', label: 'Pointers & Memory 📍' },
+    { id: 'arrays_strings', label: 'Arrays & Strings 🧵' },
+    { id: 'structs_memory', label: 'Structs & Malloc 🏗️' },
+  ];
+
+  const javaCategories = [
+    { id: 'all', label: 'All Java Questions 🎯' },
+    { id: 'fundamentals', label: 'JVM & Basics 💻' },
+    { id: 'operators', label: 'Operators & Loops ⚡' },
+    { id: 'controlflow', label: 'Control Flow 🔀' },
+    { id: 'structs_memory', label: 'OOPs Concepts 🏗️' },
+    { id: 'arrays_strings', label: 'Arrays & Strings 🧵' },
+    { id: 'storage', label: 'Exceptions & Memory 📦' },
+  ];
+
+  const activeMcqs = language === 'java' ? javaPlacementMcqs : placement100Mcqs;
+  const categories = language === 'java' ? javaCategories : cCategories;
+
+  // Filter questions for level and category
   const filteredQuestions: PlacementMCQ[] =
     selectedCat === 'all'
-      ? placement100Mcqs
-      : placement100Mcqs.filter((q) => q.category === selectedCat);
+      ? activeMcqs
+      : activeMcqs.filter((q) => q.category === selectedCat);
 
   const totalQuestions = filteredQuestions.length;
   const currentQ = filteredQuestions[currentIdx] || filteredQuestions[0];
@@ -65,7 +81,7 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
   };
 
   const handleSubmitAnswer = () => {
-    if (selectedOption === null || submitted) return;
+    if (selectedOption === null || submitted || !currentQ) return;
     setSubmitted(true);
     setUserAnswers((prev) => ({ ...prev, [currentQ.id]: selectedOption }));
   };
@@ -101,7 +117,7 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
   filteredQuestions.forEach((q) => {
     if (userAnswers[q.id] === q.answerIndex) correctCount++;
   });
-  const percentage = Math.round((correctCount / totalQuestions) * 100);
+  const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
 
   /* ==================== QUIZ RESULTS SCREEN ==================== */
   if (finished) {
@@ -126,7 +142,7 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
                 <Trophy className="h-10 w-10 text-white" />
               </div>
               <span className="text-xs uppercase tracking-widest font-bold text-white/90">
-                College Technical Placement Scorecard
+                {language === 'java' ? 'Java Technical Placement Scorecard' : 'College Technical Placement Scorecard'}
               </span>
               <h1 className="font-display text-3xl font-bold mt-1">
                 {isMaster
@@ -137,10 +153,10 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
               </h1>
               <p className="mt-2 text-sm text-white/90 max-w-xl mx-auto">
                 {isMaster
-                  ? 'Awesome! You scored 90%+ in Easy Technical MCQs for TCS, Wipro, Infosys, Zoho & Accenture campus drives.'
+                  ? `Awesome! You scored 90%+ in Technical ${language.toUpperCase()} MCQs for TCS, Wipro, Infosys, Zoho & Accenture campus drives.`
                   : isPassed
                   ? 'Great effort! Review missed questions to reach 90%+ placement readiness.'
-                  : 'Review the technical explanations below to master C output prediction questions.'}
+                  : `Review the technical explanations below to master ${language.toUpperCase()} output prediction questions.`}
               </p>
             </div>
 
@@ -175,7 +191,7 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
               {/* Question Review List */}
               <div className="space-y-3 max-h-[360px] overflow-y-auto pr-2 mb-6">
                 <p className="text-xs font-bold uppercase tracking-wider text-ink-500 mb-2">
-                  100 MCQs Review & Explanations:
+                  {language.toUpperCase()} MCQs Review & Explanations:
                 </p>
                 {filteredQuestions.map((q, idx) => {
                   const userAns = userAnswers[q.id];
@@ -221,7 +237,7 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3">
                 <button onClick={restart} className="btn-ghost flex items-center gap-2 text-xs font-bold">
-                  <RotateCcw className="h-4 w-4" /> Retake 100 MCQs
+                  <RotateCcw className="h-4 w-4" /> Retake {language.toUpperCase()} MCQs
                 </button>
                 <button
                   onClick={() => onNavigate('dashboard')}
@@ -238,6 +254,17 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
   }
 
   /* ==================== ACTIVE QUIZ SCREEN ==================== */
+  if (!currentQ) {
+    return (
+      <div className="container-page py-10 text-center">
+        <p className="text-sm font-bold text-ink-600">No questions available for this category.</p>
+        <button onClick={() => setSelectedCat('all')} className="btn-primary mt-4 text-xs">
+          Reset Filter
+        </button>
+      </div>
+    );
+  }
+
   const isCorrect = submitted && selectedOption === currentQ.answerIndex;
   const isIncorrect = submitted && selectedOption !== currentQ.answerIndex;
 
@@ -250,16 +277,18 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
             <Award className="h-3.5 w-3.5 inline mr-1" /> Practice Section - College Placement Prep
           </span>
           <h1 className="font-display text-2xl font-bold text-bamboo-950 dark:text-white sm:text-3xl mt-2">
-            C Programming Technical MCQs 🎯
+            {language === 'java' ? 'Java Programming Technical MCQs 🎯' : 'C Programming Technical MCQs 🎯'}
           </h1>
           <p className="font-tamil text-xs text-ink-600 dark:text-ink-400 mt-1">
-            Easy பகுதியின் கீழ் 100 முக்கிய C நிரலாக்க வினாக்கள் (Campus Interview MCQs).
+            {language === 'java'
+              ? 'Java பகுதியின் கீழ் முக்கியமான Java நிரலாக்க வினாக்கள் (Campus Interview MCQs).'
+              : 'Easy பகுதியின் கீழ் 100 முக்கிய C நிரலாக்க வினாக்கள் (Campus Interview MCQs).'}
           </p>
         </div>
 
         {/* Level Selector Tabs */}
         <div className="mb-6 flex border-b border-bamboo-200 bg-bamboo-50/60 p-1.5 rounded-2xl dark:border-bamboo-800 dark:bg-ink-900">
-          {LEVEL_TABS.map((lvl) => (
+          {levelTabs.map((lvl) => (
             <button
               key={lvl.id}
               onClick={() => {
@@ -280,7 +309,7 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
         {/* Category Filters (Visible for Easy Part) */}
         {selectedLevel === 'easy' && (
           <div className="mb-6 flex flex-wrap gap-2 justify-center">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => {
@@ -318,7 +347,7 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
             <span className="text-[10px] font-bold uppercase tracking-wider bg-bamboo-100 text-bamboo-800 px-3 py-1 rounded-full dark:bg-bamboo-950 dark:text-bamboo-300">
               {currentQ.category.toUpperCase()}
             </span>
-            <span className="text-xs font-bold text-ink-400">Question {currentIdx + 1} / 100</span>
+            <span className="text-xs font-bold text-ink-400">Question {currentIdx + 1} / {totalQuestions}</span>
           </div>
 
           <h2 className="font-display text-lg font-bold text-bamboo-950 dark:text-white leading-relaxed mb-4">
@@ -342,11 +371,9 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
 
               if (submitted) {
                 if (optIdx === currentQ.answerIndex) {
-                  // CORRECT ANSWER -> ALWAYS VIBRANT GREEN
                   cardStyle =
                     'border-emerald-600 bg-emerald-500 text-white font-bold shadow-md dark:bg-emerald-600 dark:border-emerald-400';
                 } else if (isSelected && optIdx !== currentQ.answerIndex) {
-                  // WRONG SELECTION -> VIBRANT RED
                   cardStyle =
                     'border-red-600 bg-red-500 text-white font-bold shadow-md dark:bg-red-600 dark:border-red-400';
                 } else {

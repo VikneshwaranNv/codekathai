@@ -1,9 +1,11 @@
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import type { ModuleId, Level } from '@/types';
-import { modules } from '@/data/course';
+import { modules as cModules } from '@/data/course';
+import { javaModules, getJavaLessonForLevel } from '@/data/javaCourse';
 import { allLessons, getLessonForLevel } from '@/data/levelLessons';
 import LessonViewer from '@/components/LessonViewer';
 import type { Page } from '@/components/Navbar';
+import { useLanguage } from '@/lib/languageContext';
 
 interface LessonPageProps {
   moduleId: ModuleId;
@@ -24,10 +26,12 @@ export default function LessonPage({
   completeLesson,
   isCompleted,
 }: LessonPageProps) {
-  const mod = modules.find((m) => m.id === moduleId) ?? modules[0];
+  const { language } = useLanguage();
+  const activeModules = language === 'java' ? javaModules : cModules;
+  const mod = activeModules.find((m) => m.id === moduleId) ?? activeModules[0];
 
   // Dynamically resolve exact level-specific lesson & unique level challenge
-  const matchedLesson = getLessonForLevel(lessonId, level);
+  const matchedLesson = language === 'java' ? getJavaLessonForLevel(lessonId, level) : getLessonForLevel(lessonId, level);
 
   // NO SILENT FALLBACK to lessons[0]!
   if (!matchedLesson) {
@@ -59,7 +63,7 @@ export default function LessonPage({
   }
 
   // Find ordered list of all topic items across modules in course order
-  const allTopicItems = modules.flatMap((m) =>
+  const allTopicItems = activeModules.flatMap((m) =>
     m.topics.map((t) => ({ moduleId: m.id, topicId: t.id }))
   );
 
@@ -71,12 +75,17 @@ export default function LessonPage({
       ? allTopicItems[currentTopicIdx + 1]
       : undefined;
 
-  const prevLesson = prevItem ? getLessonForLevel(prevItem.topicId, level) : undefined;
-  const nextLesson = nextItem ? getLessonForLevel(nextItem.topicId, level) : undefined;
+  const resolveLesson = (tId: string) =>
+    language === 'java' ? getJavaLessonForLevel(tId, level) : getLessonForLevel(tId, level);
+
+  const prevLesson = prevItem ? resolveLesson(prevItem.topicId) : undefined;
+  const nextLesson = nextItem ? resolveLesson(nextItem.topicId) : undefined;
 
   const handleSelectLesson = (targetLessonId: string) => {
-    const target = getLessonForLevel(targetLessonId, level);
-    onStartLesson(target.moduleId, target.id);
+    const target = resolveLesson(targetLessonId);
+    if (target) {
+      onStartLesson(target.moduleId, target.id);
+    }
   };
 
   return (

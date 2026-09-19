@@ -1,8 +1,11 @@
 import { ArrowLeft, Lightbulb, CheckCircle2, XCircle, Code2, Eye, Bug, FileCode, Star, Send, Award, Play } from 'lucide-react';
 import { useState } from 'react';
 import { practiceProblems, type PracticeProblem, type Difficulty, type ProblemType } from '@/data/practice';
+import { javaPracticeProblems } from '@/data/javaPractice';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
+import { compileAndRunJavaProgram } from '@/lib/javaSimulator';
+import { useLanguage } from '@/lib/languageContext';
 import CCodeEditor from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
 
@@ -35,6 +38,7 @@ const typeLabels: Record<ProblemType, string> = {
 };
 
 export default function PracticePage({ onNavigate }: PracticePageProps) {
+  const { language } = useLanguage();
   const [filterDiff, setFilterDiff] = useState<Difficulty | 'all'>('easy'); // Default to easy
   const [active, setActive] = useState<PracticeProblem | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
@@ -52,10 +56,16 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
   const [compilerError, setCompilerError] = useState<string | null>(null);
   const [isCompiling, setIsCompiling] = useState(false);
 
-  const filtered = practiceProblems.filter((p) => {
+  const activeProblems = language === 'java' ? javaPracticeProblems : practiceProblems;
+
+  const filtered = activeProblems.filter((p) => {
     if (filterDiff !== 'all' && p.difficulty !== filterDiff) return false;
     return true;
   });
+
+  const defaultStarterCode = language === 'java'
+    ? `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello Java!");\n    }\n}`
+    : `#include <stdio.h>\n\nint main() {\n    int n;\n    printf("Enter number: ");\n    scanf("%d", &n);\n    printf("Output: %d\\n", n);\n    return 0;\n}`;
 
   const openProblem = (p: PracticeProblem) => {
     setActive(p);
@@ -66,7 +76,7 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
     setShowSolution(false);
     setDebugInput(p.buggyCode ?? '');
     setDebugResult('idle');
-    setUserCode(p.code || p.buggyCode || p.solution || '#include <stdio.h>\n\nint main() {\n    int n;\n    printf("Enter number: ");\n    scanf("%d", &n);\n    printf("Output: %d\\n", n);\n    return 0;\n}');
+    setUserCode(p.code || p.buggyCode || p.solution || defaultStarterCode);
     setProgramInput('9');
     setCompilerOutput('');
     setCompilerError(null);
@@ -76,20 +86,31 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
     if (!userCode.trim()) return;
     setIsCompiling(true);
     setCompilerError(null);
-    setCompilerOutput('Compiling C code with GCC...');
-
     const activeStdin = overrideInput !== undefined ? overrideInput.trim() : programInput.trim();
     if (overrideInput !== undefined) {
       setProgramInput(overrideInput);
     }
 
-    const result = await compileAndRunCProgram(userCode, activeStdin || '9');
-    if (result.error) {
-      setCompilerError(result.error);
-      setCompilerOutput('');
+    if (language === 'java') {
+      setCompilerOutput('Compiling Java code with OpenJDK...');
+      const result = await compileAndRunJavaProgram(userCode, activeStdin);
+      if (result.error) {
+        setCompilerError(result.error);
+        setCompilerOutput('');
+      } else {
+        setCompilerOutput(result.output || 'Program finished with exit code 0.');
+        setCompilerError(null);
+      }
     } else {
-      setCompilerOutput(result.output || 'Program finished with exit code 0.');
-      setCompilerError(null);
+      setCompilerOutput('Compiling C code with GCC...');
+      const result = await compileAndRunCProgram(userCode, activeStdin || '9');
+      if (result.error) {
+        setCompilerError(result.error);
+        setCompilerOutput('');
+      } else {
+        setCompilerOutput(result.output || 'Program finished with exit code 0.');
+        setCompilerError(null);
+      }
     }
     setIsCompiling(false);
   };
@@ -133,11 +154,11 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
             )}
           </div>
 
-          {/* Interactive GCC Compiler Panel with In-Terminal Input Prompt */}
+          {/* Interactive Compiler Panel with In-Terminal Input Prompt */}
           <div className="mt-6 rounded-2xl border border-bamboo-200 bg-ink-950 p-4 shadow-md dark:border-bamboo-800">
             <div className="flex items-center justify-between border-b border-ink-800 pb-3 mb-3">
               <span className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                <Code2 className="h-4 w-4" /> ⚡ C GCC Compiler (Edit Code & Type Input directly in Terminal)
+                <Code2 className="h-4 w-4" /> {language === 'java' ? '⚡ Java OpenJDK Compiler' : '⚡ C GCC Compiler'} (Edit Code & Type Input directly in Terminal)
               </span>
               <button
                 onClick={() => handleRunCompiler()}
@@ -155,7 +176,7 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
                   value={userCode}
                   onChange={setUserCode}
                   rows={10}
-                  placeholder="// Write or modify C code..."
+                  placeholder={language === 'java' ? '// Write or modify Java code...' : '// Write or modify C code...'}
                 />
               </div>
 
@@ -167,7 +188,7 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
                   isRunning={isCompiling}
                   onRun={handleRunCompiler}
                   initialInput={programInput}
-                  placeholder="Type number here (e.g. 9) & press Enter..."
+                  placeholder="Type input here & press Enter..."
                 />
               </div>
             </div>
@@ -279,32 +300,38 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
       </button>
 
       <div className="mb-8">
-        <span className="eyebrow">PRACTICE CODING</span>
+        <span className="eyebrow">{language === 'java' ? 'PRACTICE JAVA CODING' : 'PRACTICE C CODING'}</span>
         <h1 className="font-display text-2xl font-bold text-bamboo-950 dark:text-white sm:text-3xl mt-2">
-          Sharpen Your Skills 🎯
+          Sharpen Your {language === 'java' ? 'Java' : 'C'} Skills 🎯
         </h1>
         <p className="mt-2 max-w-2xl text-xs text-ink-600 dark:text-ink-400">
-          C Programming Technical Placement & Interview Questions mapped directly for practice with interactive GCC compiler.
+          {language === 'java'
+            ? 'Java Programming Technical Placement & Interview Questions mapped directly for practice with interactive OpenJDK compiler.'
+            : 'C Programming Technical Placement & Interview Questions mapped directly for practice with interactive GCC compiler.'}
         </p>
       </div>
 
-      {/* Special Banner for 100 Technical MCQs */}
+      {/* Special Banner for Technical MCQs */}
       <div className="mb-8 card p-6 bg-gradient-to-r from-bamboo-600 to-bamboo-800 text-white shadow-lg">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <span className="chip bg-white/20 text-white font-bold text-[10px] uppercase tracking-wider mb-2 inline-block">
               <Award className="h-3.5 w-3.5 inline mr-1" /> Campus Placement Special
             </span>
-            <h2 className="font-display text-xl font-bold">100 Technical C Placement MCQs Bank 🌟</h2>
+            <h2 className="font-display text-xl font-bold">
+              {language === 'java' ? 'Java Technical Placement Questions Bank 🌟' : '100 Technical C Placement MCQs Bank 🌟'}
+            </h2>
             <p className="font-tamil text-xs text-white/90 mt-1">
-              TCS, Wipro, Infosys, Zoho & Accenture நிறுவனங்களின் 100 முக்கியமான C நிரலாக்க வினாக்கள்!
+              {language === 'java'
+                ? 'TCS, Wipro, Infosys, Zoho & Accenture நிறுவனங்களின் முக்கியமான Java நிரலாக்க வினாக்கள்!'
+                : 'TCS, Wipro, Infosys, Zoho & Accenture நிறுவனங்களின் 100 முக்கியமான C நிரலாக்க வினாக்கள்!'}
             </p>
           </div>
           <button
             onClick={() => setFilterDiff('easy')}
             className="btn-primary bg-golden-500 hover:bg-golden-400 text-bamboo-950 text-xs font-bold px-5 py-2.5 shadow-md"
           >
-            Show Easy (100 MCQs) 🎯
+            Show Easy Questions 🎯
           </button>
         </div>
       </div>
@@ -323,7 +350,7 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
             onClick={() => setFilterDiff(d)}
             className={`chip font-bold ${filterDiff === d ? difficultyColors[d] : 'bg-bamboo-50 text-ink-500 border border-bamboo-100 dark:bg-ink-900 dark:text-ink-400 dark:border-bamboo-800'}`}
           >
-            {d} {d === 'easy' ? '(100 MCQs) 🌟' : ''}
+            {d}
           </button>
         ))}
       </div>
@@ -365,7 +392,7 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
 
       {filtered.length === 0 && (
         <div className="card p-10 text-center border border-bamboo-200 dark:border-bamboo-800">
-          <p className="text-xs font-semibold text-ink-500">No problems match these filters. Click "Show Easy (100 MCQs)" to view placement questions.</p>
+          <p className="text-xs font-semibold text-ink-500">No problems match these filters. Click "Show Easy Questions" to view placement questions.</p>
         </div>
       )}
     </div>

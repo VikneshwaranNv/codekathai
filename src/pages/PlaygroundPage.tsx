@@ -7,21 +7,19 @@ import InteractiveTerminal from '@/components/InteractiveTerminal';
 import CDebuggerPanel from '@/components/CDebuggerPanel';
 import CheatSheetModal from '@/components/CheatSheetModal';
 import { parseCExecutionSteps } from '@/lib/cDebuggerEngine';
+import { useLanguage } from '@/lib/languageContext';
+import { compileAndRunJavaProgram } from '@/lib/javaSimulator';
+import { parseJavaExecutionSteps } from '@/lib/javaDebuggerEngine';
 
 interface PlaygroundPageProps {
   onNavigate: (page: Page) => void;
 }
 
-const PRESETS = [
+const C_PRESETS = [
   {
     name: 'Factorial (scanf)',
     code: `#include <stdio.h>\n\nint main() {\n    int n;\n    unsigned long long fact = 1;\n\n    printf("Enter a number: ");\n    if (scanf("%d", &n) != 1 || n < 0) {\n        printf("Please enter a non-negative integer.\\n");\n        return 1;\n    }\n\n    for (int i = 1; i <= n; i++) {\n        fact *= i;\n    }\n\n    printf("Factorial of %d = %llu\\n", n, fact);\n    return 0;\n}`,
     defaultInput: '9',
-  },
-  {
-    name: 'Fibonacci Series (scanf)',
-    code: `#include <stdio.h>\n\nint main() {\n    int n;\n    unsigned long long first = 0, second = 1, next;\n\n    printf("Enter the number of terms: ");\n    if (scanf("%d", &n) != 1 || n <= 0) {\n        printf("Please enter a positive integer.\\n");\n        return 1;\n    }\n\n    printf("Fibonacci Series: ");\n    for (int i = 0; i < n; i++) {\n        if (i <= 1) {\n            next = i;\n        } else {\n            next = first + second;\n            first = second;\n            second = next;\n        }\n        printf("%llu ", next);\n    }\n    printf("\\n");\n    return 0;\n}`,
-    defaultInput: '8',
   },
   {
     name: 'Hello World',
@@ -33,21 +31,32 @@ const PRESETS = [
     code: `#include <stdio.h>\n\nint main() {\n    int age = 20;\n    float mark = 94.5;\n    char grade = 'A';\n    \n    printf("Age: %d\\n", age);\n    printf("Mark: %.1f\\n", mark);\n    printf("Grade: %c\\n", grade);\n    return 0;\n}`,
     defaultInput: '',
   },
+];
+
+const JAVA_PRESETS = [
   {
-    name: 'If Else Condition',
-    code: `#include <stdio.h>\n\nint main() {\n    int age = 20;\n    if (age >= 18) {\n        printf("Status: Eligible to Vote!\\n");\n    } else {\n        printf("Status: Not Eligible\\n");\n    }\n    return 0;\n}`,
+    name: 'Hello Java!',
+    code: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Vanakkam Code Kathai!");\n        System.out.println("Welcome to Java Programming in Tamil!");\n    }\n}`,
     defaultInput: '',
   },
   {
-    name: 'For Loop Counter',
-    code: `#include <stdio.h>\n\nint main() {\n    printf("Counting from 1 to 5:\\n");\n    for (int i = 1; i <= 5; i++) {\n        printf("Item %d\\n", i);\n    }\n    return 0;\n}`,
+    name: 'Java Variables & Scanner',
+    code: `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int age = 20;\n        String name = "Kavi";\n        System.out.println(name + " is " + age + " years old.");\n    }\n}`,
+    defaultInput: '20',
+  },
+  {
+    name: 'Java Classes & Objects',
+    code: `class Student {\n    String name = "Kavi";\n    int mark = 95;\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Student s = new Student();\n        System.out.println(s.name + " scored " + s.mark + " marks!");\n    }\n}`,
     defaultInput: '',
   },
 ];
 
 export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
-  const [code, setCode] = useState(PRESETS[0].code);
-  const [programInput, setProgramInput] = useState(PRESETS[0].defaultInput);
+  const { language } = useLanguage();
+  const presets = language === 'java' ? JAVA_PRESETS : C_PRESETS;
+
+  const [code, setCode] = useState(presets[0].code);
+  const [programInput, setProgramInput] = useState(presets[0].defaultInput);
   const [output, setOutput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -62,8 +71,8 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
 
   // Compute debug execution steps for active code
   const debugSteps = useMemo(() => {
-    return parseCExecutionSteps(code);
-  }, [code]);
+    return language === 'java' ? parseJavaExecutionSteps(code) : parseCExecutionSteps(code);
+  }, [code, language]);
 
   const activeDebugStep = debugSteps[activeStepIndex] || debugSteps[0];
 
@@ -82,21 +91,23 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
   const handleRun = async (overrideInput?: string) => {
     setIsRunning(true);
     setError(null);
-    setOutput('Compiling and running C code...');
+    setOutput(language === 'java' ? 'Compiling and running Java code...' : 'Compiling and running C code...');
 
     const activeStdin = overrideInput !== undefined ? overrideInput.trim() : programInput.trim();
     if (overrideInput !== undefined) {
       setProgramInput(overrideInput);
     }
 
-    // Run code through GCC compiler engine
-    const result = await compileAndRunCProgram(code, activeStdin || '9');
+    // Run code through language compiler engine
+    const result = language === 'java'
+      ? await compileAndRunJavaProgram(code, activeStdin || '20')
+      : await compileAndRunCProgram(code, activeStdin || '9');
 
     if (result.error) {
       setError(result.error);
       setOutput('');
     } else {
-      setOutput(result.output || 'Program finished with exit code 0.');
+      setOutput(result.output || 'Program finished successfully with exit code 0.');
       setError(null);
     }
     setIsRunning(false);
@@ -113,18 +124,18 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
     <div className="container-page py-6 sm:py-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="eyebrow">Programiz-like Interactive C Compiler</span>
+          <span className="eyebrow">{language === 'java' ? 'Interactive Java Compiler Sandbox' : 'Programiz-like Interactive C Compiler'}</span>
           <h1 className="font-display text-2xl font-bold text-bamboo-950 dark:text-white sm:text-3xl">
-            C Code Playground ⚡
+            {language === 'java' ? 'Java Code Playground ☕' : 'C Code Playground ⚡'}
           </h1>
           <p className="font-tamil text-xs text-ink-600 dark:text-ink-400">
-            எந்த C நிரலையும் எழுதி, Terminal-ல் நேரடியாக எண்களை (எ.கா. 9) உள்ளிட்டு Run பட்டனை அழுத்தவும்.
+            {language === 'java' ? 'எந்த Java நிரலையும் எழுதி, கன்சோலில் நேரடியாக இயக்கி சோதிக்கலாம்.' : 'எந்த C நிரலையும் எழுதி, Terminal-ல் நேரடியாக எண்களை (எ.கா. 9) உள்ளிட்டு Run பட்டனை அழுத்தவும்.'}
           </p>
         </div>
 
         {/* Preset Buttons */}
         <div className="flex flex-wrap gap-2">
-          {PRESETS.map((p, idx) => (
+          {presets.map((p, idx) => (
             <button
               key={idx}
               onClick={() => {
@@ -142,11 +153,11 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* LEFT: C CODE EDITOR */}
+        {/* LEFT: CODE EDITOR */}
         <div className="card flex flex-col overflow-hidden border border-bamboo-200 dark:border-bamboo-800">
           <div className="flex items-center justify-between border-b border-bamboo-100 bg-bamboo-50 px-4 py-3 dark:border-bamboo-800 dark:bg-ink-900">
             <span className="flex items-center gap-2 text-xs font-bold text-bamboo-900 dark:text-bamboo-200">
-              <Code2 className="h-4 w-4 text-emerald-500" /> main.c Editor
+              <Code2 className="h-4 w-4 text-emerald-500" /> {language === 'java' ? 'Main.java Editor' : 'main.c Editor'}
             </span>
 
             {/* Editor Action Controls: Font Size, Debugger, Cheat Sheet, Clear, Run */}

@@ -18,6 +18,8 @@ import { useState } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useAuth } from '@/lib/auth';
 
+import { useLanguage } from '@/lib/languageContext';
+
 export type Page =
   | 'home'
   | 'levels'
@@ -44,7 +46,7 @@ const baseLinks: { id: Page; label: string; icon: typeof BookOpen }[] = [
   { id: 'levels', label: 'Levels', icon: GraduationCap },
   { id: 'dashboard', label: 'Courses', icon: LayoutGrid },
   { id: 'bughunter', label: '🐛 Bug Hunter', icon: Bug },
-  { id: 'flowchart', label: '📊 C Flowchart', icon: Workflow },
+  { id: 'flowchart', label: '📊 Flowchart', icon: Workflow },
   { id: 'playground', label: 'Playground', icon: Code2 },
   { id: 'practice', label: 'Practice', icon: Sparkles },
   { id: 'patterns', label: 'Patterns', icon: Grid3x3 },
@@ -55,6 +57,7 @@ const baseLinks: { id: Page; label: string; icon: typeof BookOpen }[] = [
 export default function Navbar({ current, onNavigate }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const { profile, signOut, isAdmin } = useAuth();
+  const { language, setLanguage } = useLanguage();
 
   const go = (p: Page) => {
     onNavigate(p);
@@ -71,14 +74,40 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-bamboo-100/80 bg-white/90 backdrop-blur-md dark:border-bamboo-800/80 dark:bg-ink-950/90">
       <nav className="container-page flex h-16 items-center justify-between">
-        <button onClick={() => go(isAdmin ? 'admin' : 'home')} className="flex items-center gap-2.5 text-left">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-bamboo-600 text-white shadow-soft">
-            <BookOpen className="h-5 w-5" strokeWidth={2.4} />
-          </span>
-          <span className="font-display text-lg font-bold text-bamboo-950 dark:text-white">
-            Code Kathai
-          </span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => go(isAdmin ? 'admin' : 'home')} className="flex items-center gap-2.5 text-left">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-bamboo-600 text-white shadow-soft">
+              <BookOpen className="h-5 w-5" strokeWidth={2.4} />
+            </span>
+            <span className="font-display text-lg font-bold text-bamboo-950 dark:text-white">
+              Code Kathai
+            </span>
+          </button>
+
+          {/* LANGUAGE SWITCHER: C | JAVA */}
+          <div className="flex items-center gap-1 bg-ink-100 dark:bg-ink-900 p-1 rounded-full border border-bamboo-200 dark:border-bamboo-800 shadow-inner text-xs font-bold select-none">
+            <button
+              onClick={() => setLanguage('c')}
+              className={`px-3 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1 ${
+                language === 'c'
+                  ? 'bg-bamboo-600 text-white shadow-soft font-extrabold scale-105'
+                  : 'text-ink-600 dark:text-ink-400 hover:text-bamboo-600'
+              }`}
+            >
+              💙 C
+            </button>
+            <button
+              onClick={() => setLanguage('java')}
+              className={`px-3 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1 ${
+                language === 'java'
+                  ? 'bg-gradient-to-r from-amber-600 to-golden-600 text-white shadow-soft font-extrabold scale-105'
+                  : 'text-ink-600 dark:text-ink-400 hover:text-golden-500'
+              }`}
+            >
+              ☕ Java
+            </button>
+          </div>
+        </div>
 
         {/* Desktop Links */}
         <div className="hidden items-center gap-1 lg:flex">

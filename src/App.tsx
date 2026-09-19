@@ -135,10 +135,14 @@ function MainApp() {
   );
 }
 
+import { LanguageProvider } from '@/lib/languageContext';
+
 export default function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
