@@ -19,29 +19,56 @@ function renderVisual(visual: StoryScene['visual'] | string) {
 
     case 'inheritance-intro':
     case 'inheritance-family':
+    case 'single-inheritance':
       return (
         <svg viewBox="0 0 340 190" className="h-full w-full max-w-[380px]">
           <rect x="20" y="8" width="300" height="24" rx="6" fill="#1f412c" />
           <text x="170" y="24" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
-            👨‍👦 Real-Life Inheritance: Father ➔ Son
+            👨‍👦 1. Single Inheritance: Father ➔ Son
           </text>
           <g>
             <rect x="90" y="40" width="160" height="52" rx="8" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
-            <text x="170" y="58" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">👨 PARENT CLASS: Father</text>
+            <text x="170" y="58" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">👨 SUPER CLASS: Father</text>
             <text x="170" y="72" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">house(), surname="Sharma"</text>
-            <text x="170" y="84" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#6e7864">(Super Class)</text>
+            <text x="170" y="84" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#6e7864">(Parent Class)</text>
           </g>
           <path d="M170 93 L170 118" stroke="#f59e0b" strokeWidth="3" markerEnd="url(#arr-inh-fam)" />
           <rect x="180" y="100" width="100" height="18" rx="4" fill="#f59e0b" />
           <text x="230" y="113" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="800" fill="#fff">extends Father</text>
           <g>
             <rect x="70" y="122" width="200" height="58" rx="10" fill="#ffd24a" stroke="#b45309" strokeWidth="2" />
-            <text x="170" y="140" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">👦 CHILD CLASS: Son</text>
+            <text x="170" y="140" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">👦 SUB CLASS: Son</text>
             <text x="170" y="154" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#92400e">Inherits: house(), surname</text>
-            <text x="170" y="168" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#b45309">+ Own Property: bike()</text>
+            <text x="170" y="168" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#b45309">+ Own Skill: driveCar()</text>
           </g>
           <defs>
             <marker id="arr-inh-fam" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#f59e0b" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'multilevel-inheritance':
+      return (
+        <svg viewBox="0 0 340 195" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="6" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="22" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🪜 2. Multilevel: Grandfather ➔ Father ➔ Son
+          </text>
+          <rect x="70" y="36" width="200" height="34" rx="6" fill="#1f412c" stroke="#479a63" strokeWidth="1.5" />
+          <text x="170" y="52" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">👴 Grandfather (Super Class)</text>
+          <text x="170" y="64" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#a7f3d0">landProp = "50 Acres"</text>
+          <path d="M170 71 L170 85" stroke="#f59e0b" strokeWidth="2.5" markerEnd="url(#arr-ml)" />
+          <rect x="70" y="87" width="200" height="36" rx="6" fill="#e3f4e8" stroke="#479a63" strokeWidth="1.5" />
+          <text x="170" y="103" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">👨 Father extends Grandfather</text>
+          <text x="170" y="116" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#347d4d">house = "Villa" (Sub &amp; Super)</text>
+          <path d="M170 124 L170 138" stroke="#f59e0b" strokeWidth="2.5" markerEnd="url(#arr-ml)" />
+          <rect x="70" y="140" width="200" height="42" rx="6" fill="#ffd24a" stroke="#b45309" strokeWidth="2" />
+          <text x="170" y="156" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">👦 Son extends Father</text>
+          <text x="170" y="172" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fontWeight="700" fill="#92400e">Inherits landProp + house + owns car</text>
+          <defs>
+            <marker id="arr-ml" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
               <path d="M0 0 L6 3 L0 6 Z" fill="#f59e0b" />
             </marker>
           </defs>
@@ -52,28 +79,28 @@ function renderVisual(visual: StoryScene['visual'] | string) {
     case 'hierarchical-inheritance':
       return (
         <svg viewBox="0 0 340 195" className="h-full w-full max-w-[380px]">
-          <rect x="20" y="8" width="300" height="24" rx="6" fill="#1f412c" />
-          <text x="170" y="24" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
-            🐾 Hierarchical Inheritance: Animal ➔ Dog & Cat
+          <rect x="20" y="6" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="22" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🌿 3. Hierarchical: Father ➔ Son &amp; Daughter
           </text>
           <g>
-            <rect x="95" y="40" width="150" height="48" rx="8" fill="#1f412c" stroke="#479a63" strokeWidth="2" />
-            <text x="170" y="58" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">🐾 Super Class: Animal</text>
-            <text x="170" y="74" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#a7f3d0">eat(), sleep()</text>
+            <rect x="85" y="36" width="170" height="48" rx="8" fill="#1f412c" stroke="#479a63" strokeWidth="2" />
+            <text x="170" y="54" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">👨 PARENT: Father</text>
+            <text x="170" y="70" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#a7f3d0">familyTitle = "Rao", land()</text>
           </g>
-          <path d="M130 90 L85 115" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#arr-anim)" />
-          <path d="M210 90 L255 115" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arr-anim-red)" />
+          <path d="M130 85 L85 112" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#arr-anim)" />
+          <path d="M210 85 L255 112" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arr-anim-red)" />
           <g>
-            <rect x="15" y="118" width="140" height="62" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
-            <text x="85" y="136" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1e40af">🐶 Dog extends Animal</text>
-            <text x="85" y="152" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#1e40af">Inherits: eat(), sleep()</text>
-            <text x="85" y="166" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#2563eb">+ bark()</text>
+            <rect x="15" y="115" width="140" height="68" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
+            <text x="85" y="133" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1e40af">👦 Son extends Father</text>
+            <text x="85" y="148" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#1e40af">Inherits familyTitle, land()</text>
+            <text x="85" y="162" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#2563eb">+ skill: Engineer</text>
           </g>
           <g>
-            <rect x="185" y="118" width="140" height="62" rx="8" fill="#fee2e2" stroke="#ef4444" strokeWidth="2" />
-            <text x="255" y="136" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#991b1b">🐱 Cat extends Animal</text>
-            <text x="255" y="152" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#991b1b">Inherits: eat(), sleep()</text>
-            <text x="255" y="166" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#dc2626">+ meow()</text>
+            <rect x="185" y="115" width="140" height="68" rx="8" fill="#fee2e2" stroke="#ef4444" strokeWidth="2" />
+            <text x="255" y="133" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#991b1b">👧 Daughter extends Father</text>
+            <text x="255" y="148" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#991b1b">Inherits familyTitle, land()</text>
+            <text x="255" y="162" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#dc2626">+ skill: Doctor</text>
           </g>
           <defs>
             <marker id="arr-anim" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
@@ -86,47 +113,69 @@ function renderVisual(visual: StoryScene['visual'] | string) {
         </svg>
       );
 
-    case 'multilevel-inheritance':
+    case 'multiple-inheritance':
+    case 'interface-inheritance':
       return (
-        <svg viewBox="0 0 340 190" className="h-full w-full max-w-[380px]">
-          <rect x="20" y="8" width="300" height="24" rx="6" fill="#1f412c" />
-          <text x="170" y="24" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
-            🪜 Multilevel: Grandfather ➔ Father ➔ Son
+        <svg viewBox="0 0 340 195" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="6" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="22" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            ⚡ 4. Multiple Inheritance via Interface (Father &amp; Mother)
           </text>
-          <rect x="80" y="38" width="180" height="32" rx="6" fill="#1f412c" stroke="#479a63" strokeWidth="1.5" />
-          <text x="170" y="58" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">👴 Grandfather (landProps)</text>
-          <path d="M170 71 L170 86" stroke="#f59e0b" strokeWidth="2.5" markerEnd="url(#arr-ml)" />
-          <rect x="80" y="88" width="180" height="34" rx="6" fill="#e3f4e8" stroke="#479a63" strokeWidth="1.5" />
-          <text x="170" y="108" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">👨 Father extends Grandfather</text>
-          <path d="M170 123 L170 138" stroke="#f59e0b" strokeWidth="2.5" markerEnd="url(#arr-ml)" />
-          <rect x="80" y="140" width="180" height="36" rx="6" fill="#ffd24a" stroke="#b45309" strokeWidth="2" />
-          <text x="170" y="162" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">👦 Son extends Father</text>
+          <rect x="15" y="38" width="145" height="50" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
+          <text x="87" y="55" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="800" fill="#1e40af">&lt;&lt;interface&gt;&gt;</text>
+          <text x="87" y="70" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1e40af">👨 Father (Driveable)</text>
+          <rect x="180" y="38" width="145" height="50" rx="8" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
+          <text x="252" y="55" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="800" fill="#78350f">&lt;&lt;interface&gt;&gt;</text>
+          <text x="252" y="70" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">👩 Mother (Cookable)</text>
+          <path d="M87 89 L130 118" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="3 3" markerEnd="url(#arr-mi-b)" />
+          <path d="M252 89 L210 118" stroke="#b45309" strokeWidth="2.5" strokeDasharray="3 3" markerEnd="url(#arr-mi-o)" />
+          <rect x="50" y="122" width="240" height="60" rx="10" fill="#10b981" stroke="#047857" strokeWidth="2" />
+          <text x="170" y="140" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#fff">🧒 Child Class</text>
+          <text x="170" y="156" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#ecfdf5">implements Father, Mother</text>
+          <text x="170" y="170" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#d1fae5">(Inherits both driving &amp; cooking traits!)</text>
           <defs>
-            <marker id="arr-ml" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-              <path d="M0 0 L6 3 L0 6 Z" fill="#f59e0b" />
+            <marker id="arr-mi-b" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#3b82f6" />
+            </marker>
+            <marker id="arr-mi-o" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#b45309" />
             </marker>
           </defs>
         </svg>
       );
 
-    case 'interface-inheritance':
+    case 'hybrid-inheritance':
       return (
-        <svg viewBox="0 0 340 190" className="h-full w-full max-w-[380px]">
-          <rect x="20" y="8" width="300" height="24" rx="6" fill="#1f412c" />
-          <text x="170" y="24" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
-            🔌 Multiple Inheritance with Interfaces
+        <svg viewBox="0 0 340 195" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="6" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="22" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🔀 5. Hybrid: Combo (Multilevel + Interface)
           </text>
-          <rect x="20" y="42" width="130" height="45" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
-          <text x="85" y="60" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#1e40af">&lt;&lt;interface&gt;&gt;</text>
-          <text x="85" y="74" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1e40af">📷 Camera</text>
-          <rect x="190" y="42" width="130" height="45" rx="8" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
-          <text x="255" y="60" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#78350f">&lt;&lt;interface&gt;&gt;</text>
-          <text x="255" y="74" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">📞 Phone</text>
-          <path d="M85 88 L130 118" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="3 3" />
-          <path d="M255 88 L210 118" stroke="#b45309" strokeWidth="2.5" strokeDasharray="3 3" />
-          <rect x="70" y="122" width="200" height="52" rx="10" fill="#10b981" stroke="#047857" strokeWidth="2" />
-          <text x="170" y="142" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#fff">📱 SmartPhone</text>
-          <text x="170" y="158" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fontWeight="700" fill="#ecfdf5">implements Camera, Phone</text>
+          {/* Top: Grandfather */}
+          <rect x="100" y="34" width="140" height="30" rx="6" fill="#1f412c" stroke="#479a63" strokeWidth="1.5" />
+          <text x="170" y="52" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">👴 Grandfather Class</text>
+          <path d="M170 65 L120 90" stroke="#f59e0b" strokeWidth="2" markerEnd="url(#arr-hyb)" />
+          {/* Middle Left: Father */}
+          <rect x="40" y="92" width="140" height="32" rx="6" fill="#e3f4e8" stroke="#479a63" strokeWidth="1.5" />
+          <text x="110" y="110" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">👨 Father extends GF</text>
+          {/* Middle Right: Mother Interface */}
+          <rect x="200" y="92" width="125" height="32" rx="6" fill="#fef3c7" stroke="#b45309" strokeWidth="1.5" />
+          <text x="262" y="110" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">👩 Mother Interface</text>
+          {/* Down to Child */}
+          <path d="M110 125 L145 145" stroke="#f59e0b" strokeWidth="2" markerEnd="url(#arr-hyb)" />
+          <path d="M262 125 L200 145" stroke="#b45309" strokeWidth="2" strokeDasharray="3 3" markerEnd="url(#arr-hyb-o)" />
+          {/* Bottom: Child */}
+          <rect x="60" y="148" width="220" height="40" rx="8" fill="#ffd24a" stroke="#b45309" strokeWidth="2" />
+          <text x="170" y="165" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">🧒 Child (extends Father implements Mother)</text>
+          <text x="170" y="179" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#92400e">Has GF, Father &amp; Mother Traits!</text>
+          <defs>
+            <marker id="arr-hyb" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#f59e0b" />
+            </marker>
+            <marker id="arr-hyb-o" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#b45309" />
+            </marker>
+          </defs>
         </svg>
       );
 
