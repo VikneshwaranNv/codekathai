@@ -76,10 +76,10 @@ function MainApp() {
   const currentLevel = profile?.currentLevel ?? 'beginner';
 
   return (
-    <div className="flex min-h-screen flex-col bg-bamboo-50/20 dark:bg-ink-950">
+    <div className="flex min-h-screen flex-col bg-bamboo-50/20 dark:bg-ink-950 overflow-x-hidden max-w-full w-full">
       <Navbar current={page} onNavigate={navigate} />
 
-      <main className="flex-1">
+      <main className="flex-1 max-w-full overflow-x-hidden">
         {page === 'admin' && isAdmin && <AdminDashboardPage onNavigate={navigate} />}
         {page === 'home' && <LandingPage onNavigate={navigate} />}
         {page === 'levels' && (

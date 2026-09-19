@@ -177,9 +177,9 @@ export default function TranspilerPage({ onNavigate: _onNavigate }: TranspilerPa
         <button
           onClick={handleRunDualCompilers}
           disabled={isCRunning || isJavaRunning}
-          className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-bamboo-600 via-emerald-600 to-teal-600 hover:from-bamboo-500 hover:to-emerald-500 text-white font-extrabold text-xs sm:text-sm font-mono shadow-xl flex items-center gap-2.5 transition-all transform active:scale-95 cursor-pointer disabled:opacity-50"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-bamboo-600 via-emerald-600 to-teal-600 hover:from-bamboo-500 hover:to-emerald-500 text-white font-extrabold text-xs sm:text-sm font-mono shadow-xl flex items-center justify-center gap-2.5 transition-all transform active:scale-95 cursor-pointer disabled:opacity-50"
         >
-          <Play className="h-4 w-4 fill-white text-white" />
+          <Play className="h-4 w-4 fill-white text-white shrink-0" />
           <span>⚡ Run Dual Compilers Simultaneously (இயக்கு)</span>
         </button>
       </div>

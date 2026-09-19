@@ -75,22 +75,22 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-bamboo-100/80 bg-white/90 backdrop-blur-md dark:border-bamboo-800/80 dark:bg-ink-950/90">
-      <nav className="container-page flex h-16 items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => go(isAdmin ? 'admin' : 'home')} className="flex items-center gap-2.5 text-left">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-bamboo-600 text-white shadow-soft">
+      <nav className="container-page flex h-16 items-center justify-between gap-2 overflow-hidden">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button onClick={() => go(isAdmin ? 'admin' : 'home')} className="flex items-center gap-2 text-left shrink-0">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-bamboo-600 text-white shadow-soft shrink-0">
               <BookOpen className="h-5 w-5" strokeWidth={2.4} />
             </span>
-            <span className="font-display text-lg font-bold text-bamboo-950 dark:text-white">
+            <span className="font-display text-base sm:text-lg font-bold text-bamboo-950 dark:text-white hidden sm:inline-block whitespace-nowrap">
               Code Kathai
             </span>
           </button>
 
           {/* LANGUAGE SWITCHER: C | JAVA */}
-          <div className="flex items-center gap-1 bg-ink-100 dark:bg-ink-900 p-1 rounded-full border border-bamboo-200 dark:border-bamboo-800 shadow-inner text-xs font-bold select-none">
+          <div className="flex items-center gap-0.5 bg-ink-100 dark:bg-ink-900 p-0.5 rounded-full border border-bamboo-200 dark:border-bamboo-800 shadow-inner text-[11px] font-bold select-none shrink-0">
             <button
               onClick={() => setLanguage('c')}
-              className={`px-3 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1 ${
                 language === 'c'
                   ? 'bg-bamboo-600 text-white shadow-soft font-extrabold scale-105'
                   : 'text-ink-600 dark:text-ink-400 hover:text-bamboo-600'
@@ -100,7 +100,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
             </button>
             <button
               onClick={() => setLanguage('java')}
-              className={`px-3 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-full transition-all cursor-pointer flex items-center gap-1 ${
                 language === 'java'
                   ? 'bg-gradient-to-r from-amber-600 to-golden-600 text-white shadow-soft font-extrabold scale-105'
                   : 'text-ink-600 dark:text-ink-400 hover:text-golden-500'
@@ -111,8 +111,8 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
           </div>
         </div>
 
-        {/* Desktop Links */}
-        <div className="hidden items-center gap-1 lg:flex">
+        {/* Desktop Links - Scrollable without pushing viewport width */}
+        <div className="hidden items-center gap-1 overflow-x-auto no-scrollbar py-1 max-w-[50vw] xl:max-w-none lg:flex shrink min-w-0">
           {links.map((l) => {
             const Icon = l.icon;
             const active = current === l.id || (l.id === 'dashboard' && current === 'lesson');
@@ -122,7 +122,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
               <button
                 key={l.id}
                 onClick={() => go(l.id)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap shrink-0 ${
                   active
                     ? 'bg-bamboo-600 text-white shadow-soft'
                     : 'text-ink-700 hover:bg-bamboo-100 hover:text-bamboo-800 dark:text-ink-300 dark:hover:bg-ink-800'
@@ -136,8 +136,8 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
         </div>
 
         {/* User Badge & Actions */}
-        <div className="hidden items-center gap-3 lg:flex">
-          <span className="rounded-full bg-bamboo-100 px-3 py-1 text-xs font-bold text-bamboo-800 dark:bg-bamboo-950 dark:text-bamboo-300 max-w-[150px] truncate">
+        <div className="hidden items-center gap-2 lg:flex shrink-0">
+          <span className="rounded-full bg-bamboo-100 px-3 py-1 text-xs font-bold text-bamboo-800 dark:bg-bamboo-950 dark:text-bamboo-300 max-w-[120px] xl:max-w-[160px] truncate">
             {displayName}
           </span>
           <button
@@ -150,10 +150,10 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 lg:hidden shrink-0">
           <button
             onClick={() => setOpen((v) => !v)}
-            className="grid h-10 w-10 place-items-center rounded-xl border border-bamboo-200 bg-white text-bamboo-800 dark:border-bamboo-700 dark:bg-ink-900 dark:text-white"
+            className="grid h-10 w-10 place-items-center rounded-xl border border-bamboo-200 bg-white text-bamboo-800 dark:border-bamboo-700 dark:bg-ink-900 dark:text-white shadow-sm"
             aria-label="Toggle navigation menu"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -163,12 +163,14 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
 
       {/* Mobile Drawer */}
       {open && (
-        <div className="border-t border-bamboo-100 bg-white p-4 dark:border-bamboo-800 dark:bg-ink-900 lg:hidden">
+        <div className="border-t border-bamboo-100 bg-white/95 backdrop-blur-lg p-4 dark:border-bamboo-800 dark:bg-ink-900 lg:hidden max-w-full overflow-hidden shadow-2xl">
           <div className="mb-3 flex items-center justify-between border-b border-bamboo-100 pb-2 dark:border-bamboo-800">
-            <span className="text-xs font-bold text-bamboo-700 dark:text-bamboo-300">
+            <span className="text-xs font-bold text-bamboo-700 dark:text-bamboo-300 truncate max-w-[200px]">
               {displayName} {isAdmin && '(Admin)'}
             </span>
-            <span className="text-xs text-ink-400 capitalize">{profile?.currentLevel ?? 'beginner'} Level</span>
+            <span className="text-[10px] uppercase font-bold text-ink-500 bg-ink-100 dark:bg-ink-800 px-2 py-0.5 rounded-full capitalize">
+              {profile?.currentLevel ?? 'beginner'} Level
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {links.map((l) => {
@@ -178,14 +180,14 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                 <button
                   key={l.id}
                   onClick={() => go(l.id)}
-                  className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold ${
+                  className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-bamboo-600 text-white font-bold'
+                      ? 'bg-bamboo-600 text-white font-bold shadow-soft'
                       : 'text-ink-700 hover:bg-bamboo-50 dark:text-ink-300 dark:hover:bg-ink-800'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  {l.label}
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{l.label}</span>
                 </button>
               );
             })}
