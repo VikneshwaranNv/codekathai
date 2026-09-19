@@ -17,7 +17,9 @@ export type ModuleId =
   | 'filehandling'
   | 'problemsolving'
   | 'stack'
-  | 'queue';
+  | 'queue'
+  | 'inheritance'
+  | 'oop_advanced';
 
 export interface Topic {
   id: string;

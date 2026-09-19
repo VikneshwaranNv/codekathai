@@ -17,6 +17,142 @@ function renderVisual(visual: StoryScene['visual'] | string) {
   switch (visual) {
     /* ==================== JAVA DEDICATED VISUAL DIAGRAMS ==================== */
 
+    case 'inheritance-intro':
+    case 'inheritance-family':
+      return (
+        <svg viewBox="0 0 340 190" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="8" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="24" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            👨‍👦 Real-Life Inheritance: Father ➔ Son
+          </text>
+          <g>
+            <rect x="90" y="40" width="160" height="52" rx="8" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
+            <text x="170" y="58" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">👨 PARENT CLASS: Father</text>
+            <text x="170" y="72" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">house(), surname="Sharma"</text>
+            <text x="170" y="84" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#6e7864">(Super Class)</text>
+          </g>
+          <path d="M170 93 L170 118" stroke="#f59e0b" strokeWidth="3" markerEnd="url(#arr-inh-fam)" />
+          <rect x="180" y="100" width="100" height="18" rx="4" fill="#f59e0b" />
+          <text x="230" y="113" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="800" fill="#fff">extends Father</text>
+          <g>
+            <rect x="70" y="122" width="200" height="58" rx="10" fill="#ffd24a" stroke="#b45309" strokeWidth="2" />
+            <text x="170" y="140" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">👦 CHILD CLASS: Son</text>
+            <text x="170" y="154" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#92400e">Inherits: house(), surname</text>
+            <text x="170" y="168" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#b45309">+ Own Property: bike()</text>
+          </g>
+          <defs>
+            <marker id="arr-inh-fam" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#f59e0b" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'inheritance-animal':
+    case 'hierarchical-inheritance':
+      return (
+        <svg viewBox="0 0 340 195" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="8" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="24" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🐾 Hierarchical Inheritance: Animal ➔ Dog & Cat
+          </text>
+          <g>
+            <rect x="95" y="40" width="150" height="48" rx="8" fill="#1f412c" stroke="#479a63" strokeWidth="2" />
+            <text x="170" y="58" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">🐾 Super Class: Animal</text>
+            <text x="170" y="74" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#a7f3d0">eat(), sleep()</text>
+          </g>
+          <path d="M130 90 L85 115" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#arr-anim)" />
+          <path d="M210 90 L255 115" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arr-anim-red)" />
+          <g>
+            <rect x="15" y="118" width="140" height="62" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
+            <text x="85" y="136" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1e40af">🐶 Dog extends Animal</text>
+            <text x="85" y="152" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#1e40af">Inherits: eat(), sleep()</text>
+            <text x="85" y="166" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#2563eb">+ bark()</text>
+          </g>
+          <g>
+            <rect x="185" y="118" width="140" height="62" rx="8" fill="#fee2e2" stroke="#ef4444" strokeWidth="2" />
+            <text x="255" y="136" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#991b1b">🐱 Cat extends Animal</text>
+            <text x="255" y="152" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#991b1b">Inherits: eat(), sleep()</text>
+            <text x="255" y="166" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#dc2626">+ meow()</text>
+          </g>
+          <defs>
+            <marker id="arr-anim" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#3b82f6" />
+            </marker>
+            <marker id="arr-anim-red" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#ef4444" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'multilevel-inheritance':
+      return (
+        <svg viewBox="0 0 340 190" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="8" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="24" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🪜 Multilevel: Grandfather ➔ Father ➔ Son
+          </text>
+          <rect x="80" y="38" width="180" height="32" rx="6" fill="#1f412c" stroke="#479a63" strokeWidth="1.5" />
+          <text x="170" y="58" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">👴 Grandfather (landProps)</text>
+          <path d="M170 71 L170 86" stroke="#f59e0b" strokeWidth="2.5" markerEnd="url(#arr-ml)" />
+          <rect x="80" y="88" width="180" height="34" rx="6" fill="#e3f4e8" stroke="#479a63" strokeWidth="1.5" />
+          <text x="170" y="108" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">👨 Father extends Grandfather</text>
+          <path d="M170 123 L170 138" stroke="#f59e0b" strokeWidth="2.5" markerEnd="url(#arr-ml)" />
+          <rect x="80" y="140" width="180" height="36" rx="6" fill="#ffd24a" stroke="#b45309" strokeWidth="2" />
+          <text x="170" y="162" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">👦 Son extends Father</text>
+          <defs>
+            <marker id="arr-ml" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#f59e0b" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'interface-inheritance':
+      return (
+        <svg viewBox="0 0 340 190" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="8" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="24" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🔌 Multiple Inheritance with Interfaces
+          </text>
+          <rect x="20" y="42" width="130" height="45" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
+          <text x="85" y="60" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#1e40af">&lt;&lt;interface&gt;&gt;</text>
+          <text x="85" y="74" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1e40af">📷 Camera</text>
+          <rect x="190" y="42" width="130" height="45" rx="8" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
+          <text x="255" y="60" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#78350f">&lt;&lt;interface&gt;&gt;</text>
+          <text x="255" y="74" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">📞 Phone</text>
+          <path d="M85 88 L130 118" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="3 3" />
+          <path d="M255 88 L210 118" stroke="#b45309" strokeWidth="2.5" strokeDasharray="3 3" />
+          <rect x="70" y="122" width="200" height="52" rx="10" fill="#10b981" stroke="#047857" strokeWidth="2" />
+          <text x="170" y="142" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#fff">📱 SmartPhone</text>
+          <text x="170" y="158" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fontWeight="700" fill="#ecfdf5">implements Camera, Phone</text>
+        </svg>
+      );
+
+    case 'encapsulation':
+      return (
+        <svg viewBox="0 0 340 180" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="10" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="26" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🔒 Encapsulation: Private Fields + Public Getters
+          </text>
+          <rect x="40" y="45" width="260" height="120" rx="20" fill="#e3f4e8" stroke="#479a63" strokeWidth="3" />
+          <rect x="60" y="60" width="100" height="90" rx="10" fill="#ef4444" stroke="#991b1b" strokeWidth="2" />
+          <text x="110" y="80" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#fff">🔒 Private Data</text>
+          <text x="110" y="98" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#fef2f2">private int balance</text>
+          <text x="110" y="112" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#fef2f2">private String pin</text>
+          <text x="110" y="132" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#ffd24a">(Direct Access Blocked)</text>
+          <g>
+            <path d="M162 105 L178 105" stroke="#f59e0b" strokeWidth="3" />
+            <rect x="180" y="65" width="105" height="80" rx="8" fill="#3b82f6" stroke="#1d4ed8" strokeWidth="2" />
+            <text x="232" y="85" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#fff">🔑 Public API</text>
+            <text x="232" y="102" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#dbeafe">getBalance()</text>
+            <text x="232" y="120" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#dbeafe">setBalance()</text>
+          </g>
+        </svg>
+      );
+
     case 'jvm':
     case 'wora':
       return (

@@ -84,6 +84,40 @@ export const javaModules: Module[] = [
       { id: 'java-string-equals', title: 'equals() vs == Comparison', tamilTitle: 'String ஒப்பீடு' },
     ],
   },
+  {
+    id: 'inheritance' as ModuleId,
+    index: 6,
+    title: '6. மரபுரிமை (Inheritance in Java)',
+    tamilTitle: 'மரபுரிமை (Inheritance)',
+    icon: 'GitFork',
+    description: 'extends keyword, super class, sub class, Single, Multilevel & Hierarchical Inheritance with real-life Father-Son & Animal examples.',
+    tamilDescription: 'தந்தை-மகன் மற்றும் மிருகங்கள் உதாரணங்களுடன் மரபுரிமை கோட்பாடுகள்.',
+    starred: true,
+    progress: 0,
+    topics: [
+      { id: 'java-inheritance-intro', title: 'What is Inheritance & extends Keyword', tamilTitle: 'மரபுரிமை என்றால் என்ன? extends சொல்' },
+      { id: 'java-single-inheritance', title: 'Single Inheritance (Father ➔ Son)', tamilTitle: 'ஒன்றிய மரபுரிமை (தந்தை ➔ மகன்)' },
+      { id: 'java-multilevel-inheritance', title: 'Multilevel Inheritance (Grandfather ➔ Father ➔ Son)', tamilTitle: 'பலபடி நிலை மரபுரிமை' },
+      { id: 'java-hierarchical-inheritance', title: 'Hierarchical Inheritance (Animal ➔ Dog & Cat)', tamilTitle: 'கிளை மரபுரிமை (மிருகம் ➔ நாய், பூனை)' },
+      { id: 'java-super-keyword', title: 'super Keyword & Method Overriding', tamilTitle: 'super முக்கியச்சொல் & மேலெழுதுதல்' },
+    ],
+  },
+  {
+    id: 'oop_advanced' as ModuleId,
+    index: 7,
+    title: '7. OOP உயர் கோட்பாடுகள் (Polymorphism & Abstraction)',
+    tamilTitle: 'OOP உயர் கோட்பாடுகள்',
+    icon: 'Shield',
+    description: 'Encapsulation, Private Fields, Getters/Setters, Abstract Classes & Interfaces.',
+    tamilDescription: 'உறைபொதியாக்கம், அருவ வகுப்புகள் மற்றும் இடைமுகங்கள்.',
+    starred: true,
+    progress: 0,
+    topics: [
+      { id: 'java-encapsulation', title: 'Encapsulation & Private Fields', tamilTitle: 'உறைபொதியாக்கம் (Encapsulation)' },
+      { id: 'java-abstract-class', title: 'Abstract Classes & Abstract Methods', tamilTitle: 'அருவ வகுப்பு (Abstract Class)' },
+      { id: 'java-interface', title: 'Interfaces & Multiple Inheritance', tamilTitle: 'இடைமுகம் (Interface)' },
+    ],
+  },
 ];
 
 /**
@@ -108,6 +142,14 @@ const topicModuleMap: Record<string, ModuleId> = {
   'java-string-intro': 'strings',
   'java-string-methods': 'strings',
   'java-string-equals': 'strings',
+  'java-inheritance-intro': 'inheritance',
+  'java-single-inheritance': 'inheritance',
+  'java-multilevel-inheritance': 'inheritance',
+  'java-hierarchical-inheritance': 'inheritance',
+  'java-super-keyword': 'inheritance',
+  'java-encapsulation': 'oop_advanced',
+  'java-abstract-class': 'oop_advanced',
+  'java-interface': 'oop_advanced',
 };
 
 /**
@@ -1380,6 +1422,552 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
         starter: `public class Main {\n    public static void main(String[] args) {\n        String s1 = "Code";\n        String s2 = "Code";\n        System.out.println(s1.equals(s2));\n    }\n}`,
         hint: 'System.out.println(s1.equals(s2));',
         expected: 'true',
+      },
+    };
+  }
+
+  // 19. JAVA INHERITANCE INTRO
+  if (topicId === 'java-inheritance-intro') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'What is Inheritance & extends Keyword',
+      tamilTitle: 'மரபுரிமை என்றால் என்ன? extends சொல்',
+      duration: 10,
+      xp: isAdv ? 45 : isInter ? 30 : 20,
+      concept: 'Inheritance allows a Child class (Subclass) to inherit fields and methods from a Parent class (Superclass) using the extends keyword.',
+      tamilExplanation: 'மரபுரிமை (Inheritance) என்பது ஒரு தாய் வகுப்பின் (Parent Class) பண்புகளையும் முறைமைகளையும் சேய் வகுப்பு (Child Class) `extends` சொல் மூலம் பெறுவதாகும்.',
+      englishTerms: [
+        { term: 'Inheritance', meaning: 'மரபுரிமை / வாரிசுத்தன்மை' },
+        { term: 'extends', meaning: 'தாய் வகுப்பிலிருந்து பண்புகளை நீட்டிக்கும் சொல்' },
+        { term: 'Superclass', meaning: 'தாய் வகுப்பு (Parent Class)' },
+        { term: 'Subclass', meaning: 'சேய் வகுப்பு (Child Class)' },
+      ],
+      realLife: {
+        title: 'Father & Son Ancestral House (தந்தை ➔ மகன்)',
+        body: 'தந்தையிடம் உள்ள வீடு மற்றும் குடும்பப் பெயர் (surname) மகனுக்குத் தானாகவே சொந்தமாவது போல, Parent Class பண்புகள் Child Class-க்குக் கிடைக்கும்!',
+      },
+      visualExplanation: {
+        title: 'Parent Class (Father) to Child Class (Son) Inheritance',
+        description: 'Father class defines house() and surname. Son class extends Father and inherits both.',
+        diagramType: 'inheritance-family',
+      },
+      code: {
+        snippet: `class Father {\n    String surname = "Sharma";\n    void house() {\n        System.out.println("Living in Family House");\n    }\n}\n\nclass Son extends Father {\n    void bike() {\n        System.out.println("Riding Sports Bike");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Son s = new Son();\n        s.house();\n        System.out.println("Surname: " + s.surname);\n        s.bike();\n    }\n}`,
+        parts: [
+          { text: 'class Son ', tone: 'keyword' },
+          { text: 'extends ', tone: 'keyword' },
+          { text: 'Father {\n', tone: 'plain' },
+          { text: 's.house();', tone: 'name' },
+        ],
+        explanation: [
+          { token: 'extends Father', meaning: 'Father வகுப்பிலிருந்து பண்புகளைப் பெறுகிறது' },
+          { token: 's.house()', meaning: 'Father வகுப்பின் house() முறைமையை அழைக்கலாம்' },
+        ],
+      },
+      outputExplanation: 'Living in Family House\nSurname: Sharma\nRiding Sports Bike',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'curious',
+          visual: 'code',
+          dialogue: 'Child Class-ல் Parent Class முறைமையை மீண்டும் எழுத வேண்டுமா Buddy?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'தேவையே இல்லை! extends போட்டவுடன் Parent Class முறைமைகள் தானாகவே Child Class-க்கு வந்துவிடும்!',
+        },
+      ],
+      practice: {
+        question: 'Which Java keyword is used to inherit from a class?',
+        options: ['extends', 'implements', 'inherits', 'super'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! `extends` keyword is used for class inheritance.',
+      },
+      challenge: {
+        title: 'Single Inheritance Output',
+        prompt: 'Son s = new Son(); உருவாக்கி s.house(); அச்சிடுங்கள்.',
+        starter: `class Father {\n    void house() {\n        System.out.println("Family House");\n    }\n}\n\nclass Son extends Father {}\n\npublic class Main {\n    public static void main(String[] args) {\n        // Your code\n    }\n}`,
+        hint: 'Son s = new Son();\ns.house();',
+        expected: 'Family House',
+      },
+    };
+  }
+
+  // 20. JAVA SINGLE INHERITANCE
+  if (topicId === 'java-single-inheritance') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Single Inheritance (Father ➔ Son)',
+      tamilTitle: 'ஒற்றை மரபுரிமை (Single Inheritance)',
+      duration: 10,
+      xp: isAdv ? 45 : isInter ? 30 : 20,
+      concept: 'Single Inheritance is when one subclass derives directly from exactly one superclass.',
+      tamilExplanation: 'ஒற்றை மரபுரிமை (Single Inheritance) என்பதில் ஒரே ஒரு சேய் வகுப்பு ஒரே ஒரு தாய் வகுப்பிலிருந்து மட்டும் பண்புகளைப் பெறும்.',
+      englishTerms: [
+        { term: 'Single Inheritance', meaning: 'ஒரே ஒரு தாய் ➔ ஒரே சேய் தொடர்பு' },
+      ],
+      realLife: {
+        title: 'Single Parent & Child Bond',
+        body: 'ஒரு தந்தை தன் மகனுக்கு மட்டும் சொத்துக்களை வழங்குவது போன்ற நேரியல் தொடர்பு!',
+      },
+      visualExplanation: {
+        title: 'Single Inheritance Class Mapping',
+        description: 'Parent -> Child direct 1-to-1 extension.',
+        diagramType: 'inheritance-family',
+      },
+      code: {
+        snippet: `class Parent {\n    int pocketMoney = 5000;\n}\n\nclass Child extends Parent {\n    void show() {\n        System.out.println("Pocket Money: " + pocketMoney);\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Child c = new Child();\n        c.show();\n    }\n}`,
+        parts: [
+          { text: 'class Child extends Parent', tone: 'keyword' },
+        ],
+        explanation: [
+          { token: 'pocketMoney', meaning: 'Parent வகுப்பின் மாறியை Child நேரடியாக பயன்படுத்துகிறது' },
+        ],
+      },
+      outputExplanation: 'Pocket Money: 5000',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'happy',
+          visual: 'code',
+          dialogue: 'Single Inheritance-ல் எத்தனை Child Class இருக்க முடியும்?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'Single Inheritance என்பதில் ஒரு Parent-க்கு ஒரு குறிப்பிட்ட Child நேரடி தொடர்பில் இருக்கும்!',
+        },
+      ],
+      practice: {
+        question: 'In Single Inheritance, how many superclasses does a subclass have?',
+        options: ['Exactly 1', 'Multiple', 'Zero', 'Unlimited'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! A subclass has exactly 1 superclass in Single Inheritance.',
+      },
+      challenge: {
+        title: 'Print Pocket Money',
+        prompt: 'Child c = new Child(); உருவாக்கி c.show(); அச்சிடுங்கள்.',
+        starter: `class Parent { int money = 5000; }\nclass Child extends Parent { void show() { System.out.println(money); } }\n\npublic class Main {\n    public static void main(String[] args) {\n        Child c = new Child();\n        c.show();\n    }\n}`,
+        hint: 'c.show();',
+        expected: '5000',
+      },
+    };
+  }
+
+  // 21. JAVA MULTILEVEL INHERITANCE
+  if (topicId === 'java-multilevel-inheritance') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Multilevel Inheritance (Grandfather ➔ Father ➔ Son)',
+      tamilTitle: 'பலபடி நிலை மரபுரிமை',
+      duration: 10,
+      xp: isAdv ? 50 : isInter ? 35 : 20,
+      concept: 'Multilevel Inheritance forms a chain of inheritance where a class extends a child class (Grandfather -> Father -> Son).',
+      tamilExplanation: 'பலபடி நிலை மரபுரிமை (Multilevel Inheritance) என்பது சங்கிலித் தொடர் போன்றது (தாத்தா ➔ தந்தை ➔ சேய்). சேய் வகுப்பிற்கு தாத்தா மற்றும் தந்தை இருவரின் பண்புகளும் கிடைக்கும்.',
+      englishTerms: [
+        { term: 'Multilevel', meaning: 'பல நிலைகள் கொண்ட மரபுரிமை சங்கிலி' },
+      ],
+      realLife: {
+        title: 'Ancestral Chain (தாத்தா ➔ தந்தை ➔ பேரக்குழந்தை)',
+        body: 'தாத்தாவின் நிலம் தந்தைக்கு வரும், தந்தையின் வீடும் நிலமும் பேரனுக்குச் சேரும் சங்கிலித் தொடர்பு!',
+      },
+      visualExplanation: {
+        title: 'Multilevel Inheritance 3-Tier Ladder',
+        description: 'Grandfather (land) -> Father (house) -> Son (car). Son has access to land, house & car.',
+        diagramType: 'multilevel-inheritance',
+      },
+      code: {
+        snippet: `class Grandfather {\n    void land() { System.out.println("5 Acres Land"); }\n}\nclass Father extends Grandfather {\n    void house() { System.out.println("2 Story House"); }\n}\nclass Son extends Father {\n    void car() { System.out.println("Electric Car"); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Son s = new Son();\n        s.land();\n        s.house();\n        s.car();\n    }\n}`,
+        parts: [
+          { text: 'class Father extends Grandfather', tone: 'keyword' },
+          { text: '\nclass Son extends Father', tone: 'keyword' },
+        ],
+        explanation: [
+          { token: 's.land()', meaning: 'Grandfather வகுப்பின் முறைமை Son-க்குக் கிடைக்கிறது' },
+        ],
+      },
+      outputExplanation: '5 Acres Land\n2 Story House\nElectric Car',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'curious',
+          visual: 'code',
+          dialogue: 'Son பொருளால் Grandfather முறைமையை அழைக்க முடியுமா?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'கண்டிப்பாக! Multilevel என்பதால் சங்கிலியின் உச்சியில் உள்ள அனைத்து பண்புகளும் கடைசி பேரனுக்குக் கிடைக்கும்!',
+        },
+      ],
+      practice: {
+        question: 'Which of the following represents Multilevel Inheritance?',
+        options: ['A -> B -> C', 'A -> B and A -> C', 'A and B -> C', 'A -> A'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! A -> B -> C is Multilevel Inheritance chain.',
+      },
+      challenge: {
+        title: 'Multilevel Call',
+        prompt: 'Son s = new Son(); உருவாக்கி s.land(); அச்சிடுங்கள்.',
+        starter: `class Grandfather { void land() { System.out.println("Ancestral Land"); } }\nclass Father extends Grandfather {}\nclass Son extends Father {}\n\npublic class Main {\n    public static void main(String[] args) {\n        Son s = new Son();\n        s.land();\n    }\n}`,
+        hint: 's.land();',
+        expected: 'Ancestral Land',
+      },
+    };
+  }
+
+  // 22. JAVA HIERARCHICAL INHERITANCE
+  if (topicId === 'java-hierarchical-inheritance') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Hierarchical Inheritance (Animal ➔ Dog & Cat)',
+      tamilTitle: 'கிளை மரபுரிமை (Hierarchical Inheritance)',
+      duration: 10,
+      xp: isAdv ? 50 : isInter ? 35 : 20,
+      concept: 'Hierarchical Inheritance occurs when multiple subclasses inherit from a single common superclass (Animal -> Dog, Animal -> Cat).',
+      tamilExplanation: 'கிளை மரபுரிமை (Hierarchical Inheritance) என்பதில் ஒரே ஒரு பொதுத் தாய் வகுப்பிலிருந்து (Animal) பல சேய் வகுப்புகள் (Dog, Cat) கிளைகளாகப் பிரியும்.',
+      englishTerms: [
+        { term: 'Hierarchical', meaning: 'ஒரே தாய் வகுப்பிலிருந்து பல கிளை சேய் வகுப்புகள்' },
+      ],
+      realLife: {
+        title: 'Animal Kingdom Hierarchy (மிருக சாம்ராஜ்யம்)',
+        body: 'மிருகம் (Animal) என்ற பொது அமைப்பில் இருந்து நாய் (Dog) குறைக்கவும், பூனை (Cat) கத்தவும் தனியாகப் பிரிகின்றன!',
+      },
+      visualExplanation: {
+        title: 'Hierarchical Tree Branching Diagram',
+        description: 'Animal (eat) branches into Dog (bark) and Cat (meow).',
+        diagramType: 'hierarchical-inheritance',
+      },
+      code: {
+        snippet: `class Animal {\n    void eat() { System.out.println("Eating food..."); }\n}\nclass Dog extends Animal {\n    void bark() { System.out.println("Dog barks: Woof!"); }\n}\nclass Cat extends Animal {\n    void meow() { System.out.println("Cat meows: Meow!"); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Dog d = new Dog();\n        Cat c = new Cat();\n        d.eat();\n        d.bark();\n        c.eat();\n        c.meow();\n    }\n}`,
+        parts: [
+          { text: 'class Dog extends Animal', tone: 'keyword' },
+          { text: '\nclass Cat extends Animal', tone: 'keyword' },
+        ],
+        explanation: [
+          { token: 'd.eat() & c.eat()', meaning: 'இரு சேய் வகுப்புகளும் Animal-ன் eat() முறைமையைப் பகிர்ந்து கொள்கின்றன' },
+        ],
+      },
+      outputExplanation: 'Eating food...\nDog barks: Woof!\nEating food...\nCat meows: Meow!',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'happy',
+          visual: 'code',
+          dialogue: 'Dog பொருளால் Cat-ன் meow() முறைமையை அழைக்க முடியுமா?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'முடியாது! Dog மற்றும் Cat இரண்டும் தனித்தனி சேய் வகுப்புகள்! அவை Animal-ன் பண்புகளை மட்டுமே பகிரும்!',
+        },
+      ],
+      practice: {
+        question: 'In Hierarchical Inheritance, how many parent classes are there for multiple child classes?',
+        options: ['One common parent class', 'Multiple parent classes', 'No parent class', 'Two parent classes'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! Multiple child classes inherit from ONE common parent class.',
+      },
+      challenge: {
+        title: 'Hierarchical Call',
+        prompt: 'Dog d = new Dog(); d.bark(); அச்சிடுங்கள்.',
+        starter: `class Animal { void eat() { System.out.println("Eating"); } }\nclass Dog extends Animal { void bark() { System.out.println("Woof"); } }\n\npublic class Main {\n    public static void main(String[] args) {\n        Dog d = new Dog();\n        d.bark();\n    }\n}`,
+        hint: 'd.bark();',
+        expected: 'Woof',
+      },
+    };
+  }
+
+  // 23. JAVA SUPER KEYWORD
+  if (topicId === 'java-super-keyword') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'super Keyword & Method Overriding',
+      tamilTitle: 'super முக்கியச்சொல் & மேலெழுதுதல்',
+      duration: 10,
+      xp: isAdv ? 45 : isInter ? 30 : 20,
+      concept: 'The `super` keyword is used to refer to immediate parent class objects, methods, or constructors.',
+      tamilExplanation: '`super` முக்கியச்சொல் தாய் வகுப்பின் (Parent Class) முறைமைகள், மாறிகள் அல்லது ஆக்கிகளை (Constructors) சேய் வகுப்பிற்குள் இருந்து நேரடியாக அழைக்கப் பயன்படுகிறது.',
+      englishTerms: [
+        { term: 'super', meaning: 'தாய் வகுப்பைக் குறிக்கும் சிறப்புச் சொல்' },
+        { term: 'Method Overriding', meaning: 'தாய் வகுப்பு முறைமையை சேய் வகுப்பில் திருத்தி எழுதுதல்' },
+      ],
+      realLife: {
+        title: 'Calling Father from Son Room',
+        body: 'சேய் தன் சொந்த குரலில் பேசினாலும் தந்தையின் பாரம்பரிய குரலை super.greet() மூலம் ஒலிப்பது போன்றது!',
+      },
+      visualExplanation: {
+        title: 'super Keyword Pointer to Superclass Frame',
+        description: 'Child calls super.greet() to invoke Parent implementation before running its own code.',
+        diagramType: 'inheritance-family',
+      },
+      code: {
+        snippet: `class Parent {\n    void greet() { System.out.println("Parent Greet"); }\n}\nclass Child extends Parent {\n    void greet() {\n        super.greet();\n        System.out.println("Child Greet");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Child c = new Child();\n        c.greet();\n    }\n}`,
+        parts: [
+          { text: 'super.greet();', tone: 'keyword' },
+        ],
+        explanation: [
+          { token: 'super.greet()', meaning: 'Parent வகுப்பின் greet() முறைமையை அழைக்கிறது' },
+        ],
+      },
+      outputExplanation: 'Parent Greet\nChild Greet',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'curious',
+          visual: 'code',
+          dialogue: 'super.greet() போடவில்லை என்றால் என்ன ஆகும்?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'Child வகுப்பின் greet() மட்டுமே இயங்கும்! Parent வகுப்பின் greet() மறைக்கப்படும் (Overridden)!',
+        },
+      ],
+      practice: {
+        question: 'What is the purpose of the `super` keyword in Java?',
+        options: ['To refer to immediate parent class instance', 'To create a static variable', 'To terminate a loop', 'To make a class private'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! `super` refers to parent class methods/fields/constructors.',
+      },
+      challenge: {
+        title: 'Super Call Challenge',
+        prompt: 'super.greet(); மூலம் Parent Greet அச்சிடுங்கள்.',
+        starter: `class Parent { void greet() { System.out.println("Parent Greet"); } }\nclass Child extends Parent {\n    void greet() {\n        super.greet();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Child c = new Child();\n        c.greet();\n    }\n}`,
+        hint: 'c.greet();',
+        expected: 'Parent Greet',
+      },
+    };
+  }
+
+  // 24. JAVA ENCAPSULATION
+  if (topicId === 'java-encapsulation') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Encapsulation & Private Fields',
+      tamilTitle: 'உறைபொதியாக்கம் (Encapsulation)',
+      duration: 10,
+      xp: isAdv ? 45 : isInter ? 30 : 20,
+      concept: 'Encapsulation is wrapping data (variables) and code (methods) together into a single unit, keeping fields private with public getters and setters.',
+      tamilExplanation: 'உறைபொதியாக்கம் (Encapsulation) என்பது தரவுகளைப் பாதுகாக்க மாறிகளை `private` ஆக்கி, அவற்றைப் படிக்க/மாற்ற `public` getter & setter முறைமைகளைப் பயன்படுத்துவதாகும்.',
+      englishTerms: [
+        { term: 'Encapsulation', meaning: 'தரவுப் பாதுகாப்பு உறைபொதியாக்கம்' },
+        { term: 'private', meaning: 'வகுப்பிற்குள் மட்டுமே அணுகக்கூடியது' },
+        { term: 'getter / setter', meaning: 'மதிப்பை படிக்கவும் எழுதவும் உதவும் பொது முறைமைகள்' },
+      ],
+      realLife: {
+        title: 'Medicine Capsule & Bank ATM Locker',
+        body: 'மருந்து கேப்சூலுக்குள் பொடி பாதுகாப்பாகிருப்பது போல, private variables பாதுகாக்கப்படுகிறது!',
+      },
+      visualExplanation: {
+        title: 'Encapsulation Private Lock & Public Getter API',
+        description: 'private balance field locked inside. getBalance() provides public read access.',
+        diagramType: 'encapsulation',
+      },
+      code: {
+        snippet: `class BankAccount {\n    private double balance = 1000.0;\n\n    public double getBalance() {\n        return balance;\n    }\n    public void deposit(double amount) {\n        if (amount > 0) balance += amount;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        BankAccount acc = new BankAccount();\n        acc.deposit(500);\n        System.out.println("Balance: " + acc.getBalance());\n    }\n}`,
+        parts: [
+          { text: 'private double ', tone: 'keyword' },
+          { text: 'balance = 1000.0;\n', tone: 'plain' },
+          { text: 'public double getBalance()', tone: 'name' },
+        ],
+        explanation: [
+          { token: 'private double balance', meaning: 'வகுப்பிற்கு வெளியே நேரடியாக அணுக முடியாது' },
+        ],
+      },
+      outputExplanation: 'Balance: 1500.0',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'curious',
+          visual: 'code',
+          dialogue: 'acc.balance = -5000; என நேரடியாக மாற்ற முடியாதா?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'முடியாது! balance என்பது private என்பதால் தொகுப்பி (Compiler) பிழை காட்டும்! deposit() வழியாக மட்டுமே மாற்றி தவறான தொகையைத் தடுக்க முடியும்!',
+        },
+      ],
+      practice: {
+        question: 'How do you achieve Encapsulation in Java?',
+        options: ['Declare variables as private & provide public getters/setters', 'Make all fields public', 'Delete all methods', 'Use global variables'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! Private variables + public getters/setters = Encapsulation.',
+      },
+      challenge: {
+        title: 'Get Balance Output',
+        prompt: 'acc.getBalance() அழைத்து அச்சிடுங்கள்.',
+        starter: `class Account {\n    private int bal = 100;\n    public int getBal() { return bal; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Account a = new Account();\n        System.out.println(a.getBal());\n    }\n}`,
+        hint: 'System.out.println(a.getBal());',
+        expected: '100',
+      },
+    };
+  }
+
+  // 25. JAVA ABSTRACT CLASS
+  if (topicId === 'java-abstract-class') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Abstract Classes & Abstract Methods',
+      tamilTitle: 'அருவ வகுப்பு (Abstract Class)',
+      duration: 10,
+      xp: isAdv ? 50 : isInter ? 35 : 20,
+      concept: 'An Abstract Class cannot be instantiated. It can contain abstract methods (methods without a body) that must be implemented by subclasses.',
+      tamilExplanation: 'அருவ வகுப்பு (Abstract Class) என்பது நேரடியாக பொருள் உருவாக்க முடியாத வகுப்பு. இதில் உடல் இல்லாத `abstract` முறைமைகள் இருக்கும், சேய் வகுப்புகள் அவற்றை கட்டாயம் செயல்படுத்த வேண்டும்.',
+      englishTerms: [
+        { term: 'abstract', meaning: 'உடல் இல்லாத / அருவமான முறைமை' },
+      ],
+      realLife: {
+        title: 'TV Remote Power Button Standard',
+        body: 'பவர் பொத்தான் இருக்க வேண்டும் என்ற விதிமுறை (Abstract Class) ஒன்றுதான், ஆனால் சோனி, சாம்சங் டிவிகள் (Subclasses) அதைத் தங்கள் வழியில் செயல்படுத்தும்!',
+      },
+      visualExplanation: {
+        title: 'Abstract Shape Class to Concrete Circle Class',
+        description: 'Shape (abstract draw()) -> Circle implements draw().',
+        diagramType: 'class-object',
+      },
+      code: {
+        snippet: `abstract class Shape {\n    abstract void draw();\n}\n\nclass Circle extends Shape {\n    void draw() {\n        System.out.println("Drawing a Circle");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Shape s = new Circle();\n        s.draw();\n    }\n}`,
+        parts: [
+          { text: 'abstract class Shape', tone: 'keyword' },
+          { text: '\nabstract void draw();', tone: 'keyword' },
+        ],
+        explanation: [
+          { token: 'abstract void draw()', meaning: 'உடல் இல்லாத முறைமை, Circle வகுப்பு இதை நிரப்பும்' },
+        ],
+      },
+      outputExplanation: 'Drawing a Circle',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'curious',
+          visual: 'code',
+          dialogue: 'new Shape() என நேரடியாக பொருள் உருவாக்கலாமா?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'கூடாது! Abstract Class அரைகுறையானது என்பதால் அதற்கு நேரடியாக பொருள் உருவாக்க முடியாது!',
+        },
+      ],
+      practice: {
+        question: 'Can you instantiate an abstract class directly with `new`?',
+        options: ['No', 'Yes', 'Only inside main()', 'Only if it has no variables'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! Abstract classes cannot be instantiated directly.',
+      },
+      challenge: {
+        title: 'Abstract Method Output',
+        prompt: 's.draw(); அழைத்து "Drawing a Circle" அச்சிடுங்கள்.',
+        starter: `abstract class Shape { abstract void draw(); }\nclass Circle extends Shape { void draw() { System.out.println("Drawing a Circle"); } }\n\npublic class Main {\n    public static void main(String[] args) {\n        Shape s = new Circle();\n        s.draw();\n    }\n}`,
+        hint: 's.draw();',
+        expected: 'Drawing a Circle',
+      },
+    };
+  }
+
+  // 26. JAVA INTERFACE
+  if (topicId === 'java-interface') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Interfaces & Multiple Inheritance',
+      tamilTitle: 'இடைமுகம் (Interface)',
+      duration: 10,
+      xp: isAdv ? 50 : isInter ? 35 : 20,
+      concept: 'An Interface is a 100% abstract contract. In Java, a class can implement multiple interfaces, allowing Multiple Inheritance simulation.',
+      tamilExplanation: 'இடைமுகம் (Interface) என்பது முழுமையான 100% அருவக் ஒப்பந்தமாகும். Java-வில் ஒரு வகுப்பு பல இடைமுகங்களை `implements` செய்து பன்முக மரபுரிமையை (Multiple Inheritance) சாத்தியமாக்கும்.',
+      englishTerms: [
+        { term: 'Interface', meaning: 'இடைமுகம் / 100% ஒப்பந்தம்' },
+        { term: 'implements', meaning: 'இடைமுகத்தை செயல்படுத்தும் முக்கியச்சொல்' },
+        { term: 'Multiple Inheritance', meaning: 'பன்முக மரபுரிமை' },
+      ],
+      realLife: {
+        title: 'SmartPhone = Camera + Phone Interfaces',
+        body: 'ஸ்மார்ட்போன் என்பது கேமரா (Camera) மற்றும் போன் (Phone) ஆகிய இரு வெவ்வேறு கருவிகளின் திறன்களையும் ஒன்றாக இணைத்துச் செயல்படுவது!',
+      },
+      visualExplanation: {
+        title: 'SmartPhone implements Camera & Phone Interfaces',
+        description: 'Camera interface + Phone interface -> SmartPhone class implements both.',
+        diagramType: 'interface-inheritance',
+      },
+      code: {
+        snippet: `interface Camera {\n    void takePhoto();\n}\ninterface Phone {\n    void makeCall();\n}\n\nclass SmartPhone implements Camera, Phone {\n    public void takePhoto() { System.out.println("Photo taken!"); }\n    public void makeCall() { System.out.println("Calling..."); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        SmartPhone sp = new SmartPhone();\n        sp.makeCall();\n        sp.takePhoto();\n    }\n}`,
+        parts: [
+          { text: 'interface Camera', tone: 'keyword' },
+          { text: '\nimplements Camera, Phone', tone: 'keyword' },
+        ],
+        explanation: [
+          { token: 'implements Camera, Phone', meaning: 'இரு இடைமுகங்களையும் ஒரே நேரத்தில் செயல்படுத்துகிறது' },
+        ],
+      },
+      outputExplanation: 'Calling...\nPhoto taken!',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'happy',
+          visual: 'code',
+          dialogue: 'Java-வில் `class A extends B, C` என ஏன் எழுத முடியாது?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'Class மூலம் பன்முக மரபுரிமை செய்தால் Diamond Problem பிழை வரும்! அதனால் தான் Interface பயன்படுத்தி `implements Camera, Phone` என எழுதுகிறோம்!',
+        },
+      ],
+      practice: {
+        question: 'Which keyword is used by a class to implement an interface in Java?',
+        options: ['implements', 'extends', 'interface', 'uses'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! `implements` keyword is used to implement an interface.',
+      },
+      challenge: {
+        title: 'Interface Call Output',
+        prompt: 'sp.takePhoto(); அச்சிடுங்கள்.',
+        starter: `interface Camera { void takePhoto(); }\nclass SmartPhone implements Camera {\n    public void takePhoto() { System.out.println("Photo taken!"); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        SmartPhone sp = new SmartPhone();\n        sp.takePhoto();\n    }\n}`,
+        hint: 'sp.takePhoto();',
+        expected: 'Photo taken!',
       },
     };
   }
