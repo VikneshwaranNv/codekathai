@@ -52,8 +52,17 @@ const JAVA_PRESETS = [
 ];
 
 export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const presets = language === 'java' ? JAVA_PRESETS : C_PRESETS;
+
+  const handleLanguageSwitch = (newLang: 'c' | 'java') => {
+    setLanguage(newLang);
+    const newPresets = newLang === 'java' ? JAVA_PRESETS : C_PRESETS;
+    setCode(newPresets[0].code);
+    setProgramInput(newPresets[0].defaultInput);
+    setOutput('');
+    setError(null);
+  };
 
   const [code, setCode] = useState(presets[0].code);
   const [programInput, setProgramInput] = useState(presets[0].defaultInput);
@@ -221,9 +230,12 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
               value={code}
               onChange={setCode}
               rows={17}
-              placeholder="// Write your C code here..."
+              placeholder={language === 'java' ? '// Write your Java code here...' : '// Write your C code here...'}
               fontSize={fontSize}
               highlightedStepLineIndex={showDebugger && activeDebugStep ? activeDebugStep.lineNumber : null}
+              language={language}
+              onLanguageChange={handleLanguageSwitch}
+              filename={language === 'java' ? 'Main.java' : 'main.c'}
             />
           </div>
         </div>
@@ -234,6 +246,7 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
             output={output}
             error={error}
             isRunning={isRunning}
+            language={language}
           />
 
           {/* STEP-BY-STEP VISUAL DEBUGGER PANEL */}

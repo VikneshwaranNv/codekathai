@@ -1,4 +1,4 @@
-import { Terminal as TerminalIcon, CheckCircle2, XCircle, AlertTriangle, Play, Check } from 'lucide-react';
+import { Terminal as TerminalIcon, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 
 interface InteractiveTerminalProps {
   output: string;
@@ -8,6 +8,7 @@ interface InteractiveTerminalProps {
   initialInput?: string;
   placeholder?: string;
   className?: string;
+  language?: 'c' | 'java';
 }
 
 export default function InteractiveTerminal({
@@ -15,10 +16,19 @@ export default function InteractiveTerminal({
   error,
   isRunning,
   className = '',
+  language = 'c',
 }: InteractiveTerminalProps) {
   const isSuccess = !error && output && !isRunning;
   const isError = Boolean(error);
   const isWarning = Boolean(error && error.toLowerCase().includes('warning') && !error.toLowerCase().includes('error'));
+
+  const consoleTitle = language === 'java' ? 'OpenJDK Java Console (v21.0.2)' : 'GCC Compiler Console (v13.2.0)';
+  const executionCommand = language === 'java' ? '$ javac Main.java && java Main' : '$ gcc main.c -o main && ./main';
+  const compilingMessage = language === 'java' ? 'Compiling Java code with OpenJDK compiler engine...' : 'Compiling C code with GCC compiler engine...';
+  const failureHeader = language === 'java' ? 'OpenJDK Compiler Failure Breakdown:' : 'GCC Compiler Failure Breakdown:';
+  const tipText = language === 'java'
+    ? '💡 Tip: Ensure your class is named public class Main, check missing semicolons \';\', or bracket closures in Main.java.'
+    : '💡 Tip: Review line numbers, missing semicolons \';\', or bracket closures in main.c.';
 
   return (
     <div className={`card flex flex-col overflow-hidden border border-bamboo-700/80 bg-[#090d16] text-white min-h-[340px] shadow-2xl rounded-2xl ${className}`}>
@@ -34,7 +44,7 @@ export default function InteractiveTerminal({
 
           <span className="flex items-center gap-2 text-xs font-bold text-emerald-400 font-mono">
             <TerminalIcon className="h-4 w-4 text-emerald-400" />
-            <span>GCC Compiler Console (v13.2.0)</span>
+            <span>{consoleTitle}</span>
           </span>
         </div>
 
@@ -69,24 +79,24 @@ export default function InteractiveTerminal({
           {isRunning ? (
             <div className="flex items-center gap-2 text-amber-300 font-bold animate-pulse py-6">
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-              Compiling C code with GCC compiler engine...
+              {compilingMessage}
             </div>
           ) : isError ? (
             <div className="space-y-3">
               <div className="rounded-xl bg-rose-950/60 p-4 border border-rose-800/80 text-rose-200">
                 <p className="font-bold text-rose-400 mb-2 flex items-center gap-1.5 text-xs">
-                  <XCircle className="h-4 w-4" /> GCC Compiler Failure Breakdown:
+                  <XCircle className="h-4 w-4" /> {failureHeader}
                 </p>
                 <pre className="whitespace-pre-wrap font-mono text-xs text-rose-300 leading-relaxed">{error}</pre>
               </div>
               <p className="text-[11px] text-stone-400 italic">
-                💡 Tip: Review line numbers, missing semicolons ';', or bracket closures in main.c.
+                {tipText}
               </p>
             </div>
           ) : output ? (
             <div className="space-y-2">
               <div className="text-[10px] text-stone-500 select-none pb-1 border-b border-stone-800/60">
-                $ gcc main.c -o main && ./main
+                {executionCommand}
               </div>
               <pre className="text-emerald-300 font-bold whitespace-pre-wrap text-xs sm:text-sm leading-relaxed">{output}</pre>
             </div>

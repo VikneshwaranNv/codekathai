@@ -38,7 +38,7 @@ const typeLabels: Record<ProblemType, string> = {
 };
 
 export default function PracticePage({ onNavigate }: PracticePageProps) {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const [filterDiff, setFilterDiff] = useState<Difficulty | 'all'>('easy'); // Default to easy
   const [active, setActive] = useState<PracticeProblem | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
@@ -177,6 +177,9 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
                   onChange={setUserCode}
                   rows={10}
                   placeholder={language === 'java' ? '// Write or modify Java code...' : '// Write or modify C code...'}
+                  language={language}
+                  onLanguageChange={(newLang) => setLanguage(newLang)}
+                  filename={language === 'java' ? 'Main.java' : 'main.c'}
                 />
               </div>
 
@@ -189,6 +192,7 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
                   onRun={handleRunCompiler}
                   initialInput={programInput}
                   placeholder="Type input here & press Enter..."
+                  language={language}
                 />
               </div>
             </div>

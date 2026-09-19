@@ -1,4 +1,5 @@
 import { useRef, useState, type UIEvent, type KeyboardEvent } from 'react';
+import { Coffee, Code2, Globe } from 'lucide-react';
 
 export type IdeTheme = 'bamboo' | 'matrix' | 'cyberpunk' | 'dracula' | 'sepia';
 
@@ -91,21 +92,15 @@ interface CCodeEditorProps {
   typingSoundEnabled?: boolean;
   onToggleTypingSound?: () => void;
   fontSize?: number;
+  language?: 'c' | 'java';
+  onLanguageChange?: (lang: 'c' | 'java') => void;
+  filename?: string;
 }
 
 /**
- * Tokenize and highlight C source code with high-contrast distinct color coding
- * - Data Types: Sky Blue (text-sky-400)
- * - Keywords & Control: Vivid Pink (text-pink-400)
- * - Functions: Amber Yellow (text-amber-300)
- * - Variables & Identifiers: Bright Soft White (text-gray-100)
- * - Strings: Emerald Green (text-emerald-400)
- * - Numbers: Bright Orange (text-orange-400)
- * - Comments: Soft Slate Gray (text-slate-400 italic)
- * - Operators: Rose Red (text-rose-400)
- * - Brackets & Punctuation: Warm Yellow (text-yellow-300)
+ * High-contrast Syntax Highlighter for C & Java code
  */
-function highlightCSyntax(code: string): string {
+function highlightSyntax(code: string): string {
   if (!code) return '';
 
   const escapeHtml = (str: string) =>
@@ -195,7 +190,7 @@ function highlightCSyntax(code: string): string {
         const restOfLine = lineText.slice(wordEnd).trim();
         const isFunctionCall = restOfLine.startsWith('(');
 
-        // C Data Types
+        // C & Java Data Types
         const dataTypes = new Set([
           'int',
           'float',
@@ -204,6 +199,9 @@ function highlightCSyntax(code: string): string {
           'void',
           'long',
           'short',
+          'boolean',
+          'byte',
+          'String',
           'unsigned',
           'signed',
           'size_t',
@@ -221,8 +219,29 @@ function highlightCSyntax(code: string): string {
           'uint64_t',
         ]);
         
-        // C Control & Structural Keywords
+        // C & Java Keywords
         const keywords = new Set([
+          'public',
+          'private',
+          'protected',
+          'class',
+          'static',
+          'new',
+          'import',
+          'package',
+          'extends',
+          'implements',
+          'final',
+          'abstract',
+          'interface',
+          'this',
+          'super',
+          'try',
+          'catch',
+          'finally',
+          'throw',
+          'throws',
+          'instanceof',
           'if',
           'else',
           'for',
@@ -236,25 +255,27 @@ function highlightCSyntax(code: string): string {
           'typedef',
           'sizeof',
           'goto',
-          'static',
           'const',
           'extern',
-          'register',
           'volatile',
         ]);
 
-        // Common C Functions
+        // C & Java Standard Functions & Classes
         const stdFunctions = new Set([
           'printf',
           'scanf',
           'main',
-          'strlen',
-          'strcpy',
-          'strcmp',
-          'strcat',
-          'puts',
-          'gets',
-          'fgets',
+          'System',
+          'out',
+          'println',
+          'print',
+          'Scanner',
+          'nextInt',
+          'nextLine',
+          'substring',
+          'length',
+          'charAt',
+          'equals',
           'malloc',
           'free',
           'exit',
@@ -263,9 +284,6 @@ function highlightCSyntax(code: string): string {
           'peek',
           'enqueue',
           'dequeue',
-          'fopen',
-          'fprintf',
-          'fclose',
         ]);
 
         if (dataTypes.has(word)) {
@@ -320,16 +338,16 @@ function highlightCSyntax(code: string): string {
 export default function CCodeEditor({
   value,
   onChange,
-  placeholder = '// Write your C program here...',
+  placeholder = '// Write code here...',
   rows = 16,
   className = '',
   errorLineIndex = null,
   highlightedStepLineIndex = null,
   theme = 'matrix',
-  onThemeChange,
-  typingSoundEnabled = true,
-  onToggleTypingSound,
   fontSize = 12,
+  language = 'c',
+  onLanguageChange,
+  filename,
 }: CCodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -338,6 +356,8 @@ export default function CCodeEditor({
   const [activeLine, setActiveLine] = useState<number>(1);
 
   const activeThemeConfig = IDE_THEMES.find((t) => t.id === 'matrix') || IDE_THEMES[1];
+
+  const displayFilename = filename || (language === 'java' ? 'Main.java' : 'main.c');
 
   const lines = value.split('\n');
   const lineCount = Math.max(lines.length, 15);
@@ -447,20 +467,38 @@ export default function CCodeEditor({
     setActiveLine(currentLine);
   };
 
-  const highlightedHtml = highlightCSyntax(value);
+  const highlightedHtml = highlightSyntax(value);
 
   return (
     <div
       className={`flex flex-col rounded-2xl border border-bamboo-800 ${activeThemeConfig.bg} font-mono text-xs overflow-hidden shadow-2xl transition-colors duration-500 ${className}`}
     >
-      {/* IDE Header with Matrix Hacker Badge */}
+      {/* IDE Header with Filename Tab & Language Dropdown */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#0a200a] bg-[#020702] px-4 py-2 text-[11px] select-none">
-        {/* Matrix Hacker Badge */}
-        <div className="flex items-center gap-2">
+        {/* Filename & IDE Badge */}
+        <div className="flex items-center gap-3">
           <span className="text-xs font-bold text-[#00ff66] flex items-center gap-1.5 bg-[#051505] px-3 py-1 rounded-full border border-[#00ff66]/30 shadow-glow-sm">
-            📟 Matrix Hacker IDE
+            {language === 'java' ? <Coffee className="h-3.5 w-3.5 text-golden-400" /> : <Code2 className="h-3.5 w-3.5 text-emerald-400" />}
+            <span>{displayFilename}</span>
           </span>
         </div>
+
+        {/* Interactive Compiler Language Selector Dropdown */}
+        {onLanguageChange && (
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider flex items-center gap-1">
+              <Globe className="h-3 w-3 text-emerald-400" /> Language:
+            </span>
+            <select
+              value={language}
+              onChange={(e) => onLanguageChange(e.target.value as 'c' | 'java')}
+              className="bg-[#0b1c0b] border border-[#00ff66]/40 text-[#00ff66] rounded-lg px-2.5 py-1 text-xs font-bold font-mono focus:outline-none focus:ring-1 focus:ring-[#00ff66] cursor-pointer"
+            >
+              <option value="java">☕ Java (Main.java)</option>
+              <option value="c">⚡ C (main.c)</option>
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="relative flex flex-1 overflow-hidden min-h-[280px]">

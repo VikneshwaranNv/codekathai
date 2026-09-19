@@ -64,7 +64,7 @@ export default function LessonViewer({
   onCompleteLesson,
   isCompleted,
 }: LessonViewerProps) {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState<Tab>('concept');
   const [sceneIndex, setSceneIndex] = useState(0);
   const [practicePicked, setPracticePicked] = useState<number | null>(null);
@@ -384,6 +384,9 @@ export default function LessonViewer({
                       onChange={setLessonCode}
                       rows={10}
                       placeholder={language === 'java' ? '// Edit lesson Java code here...' : '// Edit lesson C code here...'}
+                      language={language}
+                      onLanguageChange={(newLang) => setLanguage(newLang)}
+                      filename={language === 'java' ? 'Main.java' : 'main.c'}
                     />
                   </div>
 
@@ -396,6 +399,7 @@ export default function LessonViewer({
                       onRun={handleRunLessonCompiler}
                       initialInput="5"
                       placeholder="Type input here & press Enter..."
+                      language={language}
                     />
                   </div>
                 </div>
