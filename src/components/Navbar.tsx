@@ -122,7 +122,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
               <button
                 key={l.id}
                 onClick={() => go(l.id)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
                   active
                     ? 'bg-bamboo-600 text-white shadow-soft'
                     : 'text-ink-700 hover:bg-bamboo-100 hover:text-bamboo-800 dark:text-ink-300 dark:hover:bg-ink-800'

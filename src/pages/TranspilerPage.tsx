@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Play, Code2, Coffee, CheckCircle2, ArrowRightLeft, Layers, ShieldAlert, Cpu } from 'lucide-react';
+import { Sparkles, Play, Code2, Coffee, ArrowRightLeft, Layers, Cpu } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import CCodeEditor from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
@@ -59,9 +59,45 @@ const MATRIX_PRESETS: MatrixPreset[] = [
     explanationTa: 'C மொழியில் தனித்த உலகளாவிய சார்புகள் (Global Functions) எழுதலாம். Java-வில் அனைத்து சார்புகளும் கண்டிப்பாக ஒரு Class-க்குள் `method` ஆக மட்டுமே இருக்க வேண்டும்.',
     explanationEn: 'C functions exist globally. Java methods must strictly belong inside a class container.',
   },
+  {
+    id: 'array-arraylist',
+    title: '5. C Fixed Array ➔ Java ArrayList & Array',
+    tamilTitle: '5. C மாறா அணி ➔ Java ArrayList & Arrays',
+    cCode: `#include <stdio.h>\n\nint main() {\n    int marks[3] = {85, 90, 95};\n    int i;\n    for(i = 0; i < 3; i++) {\n        printf("Mark[%d] = %d\\n", i, marks[i]);\n    }\n    return 0;\n}`,
+    javaCode: `import java.util.ArrayList;\n\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<Integer> marks = new ArrayList<>();\n        marks.add(85);\n        marks.add(90);\n        marks.add(95);\n\n        for (int i = 0; i < marks.size(); i++) {\n            System.out.println("Mark[" + i + "] = " + marks.get(i));\n        }\n    }\n}`,
+    explanationTa: 'C மொழியில் அணிகள் (Arrays) நிலையான அளவு கொண்டவை. Java-வில் `ArrayList` மூலம் dynamically நினைவக அளவை உயர்த்திக்கொள்ளலாம்.',
+    explanationEn: 'C arrays are static contiguous memory blocks. Java ArrayList provides dynamic resizable collections on the Heap.',
+  },
+  {
+    id: 'malloc-new',
+    title: '6. C malloc() ➔ Java new Keyword & GC',
+    tamilTitle: '6. C நினைவக ஒதுக்கீடு (malloc) ➔ Java new & GC',
+    cCode: `#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int *arr = (int*) malloc(2 * sizeof(int));\n    if (arr != NULL) {\n        arr[0] = 100;\n        arr[1] = 200;\n        printf("Allocated: %d, %d\\n", arr[0], arr[1]);\n        free(arr);\n    }\n    return 0;\n}`,
+    javaCode: `public class Main {\n    public static void main(String[] args) {\n        int[] arr = new int[2];\n        arr[0] = 100;\n        arr[1] = 200;\n        System.out.println("Allocated: " + arr[0] + ", " + arr[1]);\n        // JVM Garbage Collector automatically frees memory!\n    }\n}`,
+    explanationTa: 'C மொழியில் `malloc()` மற்றும் `free()` மூலம் நாமே நினைவகத்தை ஒதுக்கி அழிக்க வேண்டும். Java-வில் `new` மூலம் உருவாக்கி, JVM Garbage Collector தானாகவே தூய்மை செய்கிறது.',
+    explanationEn: 'C requires manual dynamic memory management (malloc/free). Java uses new keyword with automatic JVM Garbage Collection.',
+  },
+  {
+    id: 'string-object',
+    title: '7. C String (char[]) ➔ Java String Object',
+    tamilTitle: '7. C எழுத்து அணி (char[]) ➔ Java String ஆப்ஜெக்ட்',
+    cCode: `#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char greeting[20] = "Hello";\n    strcat(greeting, " World");\n    printf("Length: %lu\\n", strlen(greeting));\n    printf("Result: %s\\n", greeting);\n    return 0;\n}`,
+    javaCode: `public class Main {\n    public static void main(String[] args) {\n        String greeting = "Hello";\n        greeting = greeting + " World";\n        System.out.println("Length: " + greeting.length());\n        System.out.println("Result: " + greeting);\n    }\n}`,
+    explanationTa: 'C மொழியில் சரம் என்பது \\0 உடன் முடியும் `char` அணி ஆகும். Java-வில் `String` என்பது பல பயனுள்ள முறைமைகளை (Methods) கொண்ட ஒரு நிலையான (Immutable) ஆப்ஜெக்ட் ஆகும்.',
+    explanationEn: 'C handles strings as null-terminated char arrays. Java treats strings as high-level immutable Objects with built-in utility methods.',
+  },
+  {
+    id: 'define-final',
+    title: '8. C #define Macro ➔ Java final Constant',
+    tamilTitle: '8. C #define மாறிலி ➔ Java final மாறிலி',
+    cCode: `#include <stdio.h>\n#define PI 3.14159\n#define MAX_USERS 100\n\nint main() {\n    printf("PI Value: %.2f\\n", PI);\n    printf("Max Users: %d\\n", MAX_USERS);\n    return 0;\n}`,
+    javaCode: `public class Main {\n    public static final double PI = 3.14159;\n    public static final int MAX_USERS = 100;\n\n    public static void main(String[] args) {\n        System.out.println("PI Value: " + PI);\n        System.out.println("Max Users: " + MAX_USERS);\n    }\n}`,
+    explanationTa: 'C மொழியில் `#define` மூலம் Preprocessor உரை மாற்றீடு நடைபெறுகிறது. Java-வில் `final` மற்றும் `static` விசைச்சொற்கள் மூலம் Type-Safe மாறிலிகள் உருவாக்கப்படுகின்றன.',
+    explanationEn: 'C #define is a textual preprocessor replacement. Java uses type-safe static final constants verified by compiler type-checking.',
+  },
 ];
 
-export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
+export default function TranspilerPage({ onNavigate: _onNavigate }: TranspilerPageProps) {
   const [activePreset, setActivePreset] = useState<MatrixPreset>(MATRIX_PRESETS[0]);
   const [cCode, setCCode] = useState<string>(MATRIX_PRESETS[0].cCode);
   const [javaCode, setJavaCode] = useState<string>(MATRIX_PRESETS[0].javaCode);
@@ -119,20 +155,20 @@ export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
   };
 
   return (
-    <div className="container-page py-6 sm:py-10 text-white">
+    <div className="container-page py-6 sm:py-10 text-ink-950 dark:text-white">
       {/* Page Header */}
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-bamboo-800/80 pb-6">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-bamboo-200 dark:border-bamboo-800/80 pb-6">
         <div>
-          <span className="eyebrow flex items-center gap-1.5 text-amber-400">
+          <span className="eyebrow flex items-center gap-1.5 text-bamboo-700 dark:text-amber-400 font-bold">
             <Sparkles className="h-4 w-4" /> CodeKathai Flagship Dual Transpiler
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink-900 dark:text-white flex flex-wrap items-center gap-3">
             <span>C ↔ Java Concept Transpiler Matrix</span>
-            <span className="text-xs font-mono font-extrabold bg-gradient-to-r from-amber-500 to-emerald-500 text-ink-950 px-3 py-1 rounded-full shadow-glow-sm">
-              இருமொழி ஒப்பீடு
+            <span className="text-xs font-mono font-extrabold bg-gradient-to-r from-bamboo-600 to-emerald-600 text-white px-3 py-1 rounded-full shadow-soft">
+              8 இருமொழி தலைப்புகள்
             </span>
           </h1>
-          <p className="font-tamil text-xs text-ink-300 mt-1">
+          <p className="font-tamil text-xs text-ink-600 dark:text-ink-300 mt-1">
             C மொழியில் கற்ற தத்துவங்கள் Java OOP மொழியில் எவ்வாறு செயல்படுகின்றன என்பதை நேரடி ஒப்பீட்டு வடிவில் கற்றுக்கொள்ளலாம்.
           </p>
         </div>
@@ -141,17 +177,17 @@ export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
         <button
           onClick={handleRunDualCompilers}
           disabled={isCRunning || isJavaRunning}
-          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-500 hover:from-amber-400 hover:to-emerald-400 text-ink-950 font-black text-xs font-mono shadow-xl shadow-emerald-950/60 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer disabled:opacity-50"
+          className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-bamboo-600 via-emerald-600 to-teal-600 hover:from-bamboo-500 hover:to-emerald-500 text-white font-extrabold text-xs sm:text-sm font-mono shadow-xl flex items-center gap-2.5 transition-all transform active:scale-95 cursor-pointer disabled:opacity-50"
         >
-          <Play className="h-4 w-4 fill-ink-950" />
-          <span>⚡ Run Dual Compilers Simultaneously (இரு compilers இயக்கு)</span>
+          <Play className="h-4 w-4 fill-white text-white" />
+          <span>⚡ Run Dual Compilers Simultaneously (இயக்கு)</span>
         </button>
       </div>
 
       {/* Concept Matrix Presets */}
-      <div className="mb-6 space-y-2">
-        <label className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-          <Layers className="h-3.5 w-3.5" /> Choose Concept Mapping Preset (ஒப்பீட்டு தலைப்பைத் தேர்ந்தெடுக்கவும்):
+      <div className="mb-6 space-y-3">
+        <label className="text-xs font-bold text-bamboo-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+          <Layers className="h-4 w-4 text-bamboo-600 dark:text-amber-400" /> Choose Concept Mapping Preset (ஒப்பீட்டு தலைப்பைத் தேர்ந்தெடுக்கவும்):
         </label>
         <div className="flex flex-wrap gap-2.5">
           {MATRIX_PRESETS.map((p) => {
@@ -160,10 +196,10 @@ export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
               <button
                 key={p.id}
                 onClick={() => handleSelectPreset(p)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer border ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer border shadow-sm ${
                   isSelected
-                    ? 'bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-300 border-amber-500/50 shadow-glow-sm'
-                    : 'bg-ink-900 text-gray-300 border-ink-800 hover:bg-ink-800 hover:text-white'
+                    ? 'bg-bamboo-600 text-white border-bamboo-500 shadow-md ring-2 ring-bamboo-400/40 scale-[1.02]'
+                    : 'bg-white text-ink-800 border-ink-200 hover:bg-bamboo-50 hover:text-bamboo-800 dark:bg-ink-900 dark:text-ink-200 dark:border-ink-700 dark:hover:bg-ink-800 dark:hover:text-white'
                 }`}
               >
                 {p.title}
@@ -174,12 +210,12 @@ export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
       </div>
 
       {/* Concept Explanation Card */}
-      <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-ink-900 via-ink-950 to-emerald-950/60 border border-emerald-500/40 shadow-xl space-y-2">
-        <h3 className="text-sm font-extrabold text-amber-300 flex items-center gap-2">
-          <ArrowRightLeft className="h-4 w-4 text-emerald-400" />
+      <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-ink-900 via-ink-950 to-emerald-950 border border-emerald-500/40 shadow-xl space-y-2 text-white">
+        <h3 className="text-sm sm:text-base font-extrabold text-amber-300 flex items-center gap-2">
+          <ArrowRightLeft className="h-4 w-4 text-emerald-400 shrink-0" />
           <span>{activePreset.tamilTitle}</span>
         </h3>
-        <p className="text-xs text-emerald-200 font-semibold leading-relaxed">
+        <p className="text-xs sm:text-sm text-emerald-200 font-semibold leading-relaxed">
           💡 {activePreset.explanationTa}
         </p>
         <p className="text-xs text-gray-300 font-mono italic">
@@ -191,7 +227,7 @@ export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Left: C Code Editor */}
         <div className="flex flex-col space-y-3">
-          <div className="flex items-center justify-between px-3 py-1.5 bg-ink-900 rounded-xl border border-bamboo-800 text-xs font-bold text-emerald-400">
+          <div className="flex items-center justify-between px-3.5 py-2 bg-ink-900 rounded-xl border border-bamboo-800 text-xs font-bold text-emerald-400">
             <span className="flex items-center gap-1.5">
               <Code2 className="h-4 w-4 text-emerald-400" /> ⚡ C Source Code (main.c)
             </span>
@@ -208,7 +244,7 @@ export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
 
         {/* Right: Java Code Editor */}
         <div className="flex flex-col space-y-3">
-          <div className="flex items-center justify-between px-3 py-1.5 bg-ink-900 rounded-xl border border-bamboo-800 text-xs font-bold text-golden-300">
+          <div className="flex items-center justify-between px-3.5 py-2 bg-ink-900 rounded-xl border border-bamboo-800 text-xs font-bold text-golden-300">
             <span className="flex items-center gap-1.5">
               <Coffee className="h-4 w-4 text-golden-400" /> ☕ Java OOP Code (Main.java)
             </span>
@@ -228,7 +264,7 @@ export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left C Console */}
         <div className="flex flex-col space-y-2">
-          <h4 className="text-xs font-bold text-emerald-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
+          <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
             <Cpu className="h-3.5 w-3.5" /> GCC Compiler Console Output (main.c)
           </h4>
           <InteractiveTerminal
@@ -241,8 +277,8 @@ export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
 
         {/* Right Java Console */}
         <div className="flex flex-col space-y-2">
-          <h4 className="text-xs font-bold text-golden-300 font-mono uppercase tracking-wider flex items-center gap-1.5">
-            <Coffee className="h-3.5 w-3.5 text-golden-400" /> OpenJDK Java Console Output (Main.java)
+          <h4 className="text-xs font-bold text-golden-600 dark:text-golden-300 font-mono uppercase tracking-wider flex items-center gap-1.5">
+            <Coffee className="h-3.5 w-3.5 text-golden-500 dark:text-golden-400" /> OpenJDK Java Console Output (Main.java)
           </h4>
           <InteractiveTerminal
             output={javaOutput}
