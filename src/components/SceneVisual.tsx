@@ -15,45 +15,331 @@ export default function SceneVisual({ visual, className = '' }: SceneVisualProps
 
 function renderVisual(visual: StoryScene['visual']) {
   switch (visual) {
+    /* ==================== JAVA DEDICATED VISUAL DIAGRAMS ==================== */
+
+    case 'jvm':
+    case 'wora':
+      return (
+        <svg viewBox="0 0 340 180" className="h-full w-full max-w-[380px]">
+          {/* 1. Java Source Code */}
+          <g>
+            <rect x="15" y="45" width="70" height="50" rx="8" fill="#1f412c" stroke="#479a63" strokeWidth="2" />
+            <text x="50" y="68" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="700" fill="#ffd24a">Main.java</text>
+            <text x="50" y="82" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#fff">Source Code</text>
+          </g>
+
+          {/* Arrow to Compiler */}
+          <path d="M88 70 L108 70" stroke="#479a63" strokeWidth="2.5" markerEnd="url(#arr-jvm)" />
+
+          {/* 2. Compiler (javac) */}
+          <g>
+            <rect x="110" y="50" width="55" height="40" rx="6" fill="#f59e0b" />
+            <text x="137" y="70" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#fff">javac</text>
+            <text x="137" y="82" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#fff">Compiler</text>
+          </g>
+
+          {/* Arrow to Bytecode */}
+          <path d="M168 70 L188 70" stroke="#479a63" strokeWidth="2.5" markerEnd="url(#arr-jvm)" />
+
+          {/* 3. Bytecode (.class) */}
+          <g>
+            <rect x="190" y="45" width="65" height="50" rx="8" fill="#3b82f6" stroke="#1d4ed8" strokeWidth="2" />
+            <text x="222" y="68" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="700" fill="#fff">Main.class</text>
+            <text x="222" y="82" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#93c5fd">Bytecode</text>
+          </g>
+
+          {/* Arrow to JVM */}
+          <path d="M258 70 L278 70" stroke="#479a63" strokeWidth="2.5" markerEnd="url(#arr-jvm)" />
+
+          {/* 4. JVM Engine */}
+          <g>
+            <rect x="280" y="40" width="50" height="60" rx="10" fill="#10b981" />
+            <text x="305" y="66" textAnchor="middle" fontSize="12" fontFamily="JetBrains Mono" fontWeight="800" fill="#fff">JVM</text>
+            <text x="305" y="80" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#ecfdf5">Engine</text>
+          </g>
+
+          {/* Platform OS Boxes below JVM */}
+          <g>
+            <line x1="305" y1="102" x2="305" y2="120" stroke="#10b981" strokeWidth="2" strokeDasharray="3 3" />
+            <rect x="15" y="130" width="315" height="35" rx="8" fill="#e3f4e8" stroke="#479a63" strokeWidth="1.5" />
+            <text x="70" y="152" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#1f412c">🪟 Windows</text>
+            <text x="165" y="152" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#1f412c">🍎 macOS</text>
+            <text x="260" y="152" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#1f412c">🐧 Linux</text>
+          </g>
+
+          {/* WORA Banner */}
+          <rect x="60" y="12" width="220" height="22" rx="6" fill="#1f412c" />
+          <text x="170" y="27" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            WORA: Write Once, Run Anywhere
+          </text>
+
+          <defs>
+            <marker id="arr-jvm" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#479a63" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'heap-stack':
+      return (
+        <svg viewBox="0 0 340 190" className="h-full w-full max-w-[380px]">
+          {/* JVM Memory Header */}
+          <rect x="20" y="10" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="26" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            JVM Memory Architecture (Stack vs Heap)
+          </text>
+
+          {/* 1. STACK MEMORY (Left Column) */}
+          <g>
+            <rect x="20" y="42" width="135" height="135" rx="10" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
+            <text x="87" y="60" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">🥞 JVM STACK</text>
+            
+            {/* Primitive int age = 20 */}
+            <rect x="30" y="70" width="115" height="28" rx="6" fill="#fff" stroke="#479a63" strokeWidth="1.5" />
+            <text x="87" y="88" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">int age = 20</text>
+
+            {/* Reference Variable s1 */}
+            <rect x="30" y="108" width="115" height="32" rx="6" fill="#ffd24a" stroke="#b45309" strokeWidth="2" />
+            <text x="87" y="124" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#b45309">Student s1</text>
+            <text x="87" y="136" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#78350f">ref: 0x4A80</text>
+          </g>
+
+          {/* Pointer Arrow from Stack s1 to Heap Object */}
+          <path d="M145 124 C 170 124, 160 110, 182 110" stroke="#ef4444" strokeWidth="3" fill="none" markerEnd="url(#arr-hs)" className="animate-pulse" />
+
+          {/* 2. HEAP MEMORY (Right Column) */}
+          <g>
+            <rect x="185" y="42" width="135" height="135" rx="10" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
+            <text x="252" y="60" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">🏔️ JVM HEAP</text>
+            
+            {/* Object Instance */}
+            <rect x="195" y="75" width="115" height="90" rx="8" fill="#fff" stroke="#f59e0b" strokeWidth="2" />
+            <text x="252" y="93" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#b45309">Student Object</text>
+            <text x="252" y="105" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fill="#92400e">Addr: 0x4A80</text>
+
+            <line x1="200" y1="112" x2="305" y2="112" stroke="#fde68a" strokeWidth="1.5" />
+
+            <text x="205" y="128" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#1f412c">name: "Kavi"</text>
+            <text x="205" y="145" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#1f412c">mark: 95</text>
+          </g>
+
+          <defs>
+            <marker id="arr-hs" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#ef4444" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'class-object':
+      return (
+        <svg viewBox="0 0 340 190" className="h-full w-full max-w-[380px]">
+          {/* Top: Class Blueprint */}
+          <g>
+            <rect x="90" y="10" width="160" height="55" rx="8" fill="#1f412c" stroke="#479a63" strokeWidth="2" />
+            <text x="170" y="28" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">📐 CLASS BLUEPRINT</text>
+            <text x="170" y="44" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="700" fill="#fff">class Student</text>
+            <text x="170" y="56" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#a7f3d0">String name; int mark;</text>
+          </g>
+
+          {/* Split Instantiation Arrows */}
+          <path d="M140 67 L90 98" stroke="#f59e0b" strokeWidth="2.5" markerEnd="url(#arr-co)" />
+          <text x="95" y="80" fontSize="8" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#f59e0b">new Student()</text>
+
+          <path d="M200 67 L250 98" stroke="#f59e0b" strokeWidth="2.5" markerEnd="url(#arr-co)" />
+          <text x="225" y="80" fontSize="8" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#f59e0b">new Student()</text>
+
+          {/* Bottom Left: Object 1 */}
+          <g>
+            <rect x="20" y="102" width="135" height="75" rx="10" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
+            <text x="87" y="120" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#1f412c">s1 (Object Instance 1)</text>
+            <rect x="30" y="128" width="115" height="40" rx="6" fill="#fff" stroke="#347d4d" strokeWidth="1" />
+            <text x="40" y="144" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">name = "Kavi"</text>
+            <text x="40" y="158" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">mark = 95</text>
+          </g>
+
+          {/* Bottom Right: Object 2 */}
+          <g>
+            <rect x="185" y="102" width="135" height="75" rx="10" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
+            <text x="252" y="120" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#1e40af">s2 (Object Instance 2)</text>
+            <rect x="195" y="128" width="115" height="40" rx="6" fill="#fff" stroke="#2563eb" strokeWidth="1" />
+            <text x="205" y="144" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#1e40af">name = "Arul"</text>
+            <text x="205" y="158" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#1e40af">mark = 90</text>
+          </g>
+
+          <defs>
+            <marker id="arr-co" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#f59e0b" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'string-pool':
+      return (
+        <svg viewBox="0 0 340 180" className="h-full w-full max-w-[380px]">
+          {/* Header */}
+          <rect x="20" y="10" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="26" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            Java String Constant Pool Memory Optimization
+          </text>
+
+          {/* Left: Stack Variables */}
+          <g>
+            <rect x="20" y="45" width="110" height="120" rx="8" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
+            <text x="75" y="64" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">STACK</text>
+
+            <rect x="30" y="75" width="90" height="24" rx="4" fill="#ffd24a" stroke="#b45309" strokeWidth="1.5" />
+            <text x="75" y="91" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#b45309">s1 = "Java"</text>
+
+            <rect x="30" y="108" width="90" height="24" rx="4" fill="#ffd24a" stroke="#b45309" strokeWidth="1.5" />
+            <text x="75" y="124" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#b45309">s2 = "Java"</text>
+          </g>
+
+          {/* Right: Heap with String Pool */}
+          <g>
+            <rect x="155" y="45" width="165" height="120" rx="8" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
+            <text x="237" y="64" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#78350f">HEAP MEMORY</text>
+
+            {/* String Pool Box */}
+            <rect x="165" y="75" width="145" height="75" rx="8" fill="#fff" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 2" />
+            <text x="237" y="91" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#b45309">String Constant Pool</text>
+
+            <rect x="180" y="100" width="115" height="35" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" />
+            <text x="237" y="122" textAnchor="middle" fontSize="12" fontFamily="JetBrains Mono" fontWeight="800" fill="#047857">"Java"</text>
+            <text x="237" y="132" textAnchor="middle" fontSize="7" fontFamily="JetBrains Mono" fill="#065f46">Shared Address: 0x101</text>
+          </g>
+
+          {/* Arrows pointing from s1 & s2 to single "Java" literal */}
+          <path d="M120 87 L178 110" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arr-sp)" />
+          <path d="M120 120 L178 120" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arr-sp)" />
+
+          <defs>
+            <marker id="arr-sp" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#ef4444" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'scanner-input':
+      return (
+        <svg viewBox="0 0 340 170" className="h-full w-full max-w-[380px]">
+          {/* Header */}
+          <rect x="20" y="10" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="26" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            Java Scanner Input Stream Pipeline
+          </text>
+
+          {/* 1. Keyboard */}
+          <g>
+            <rect x="15" y="55" width="65" height="50" rx="8" fill="#374151" stroke="#1f2937" strokeWidth="2" />
+            <text x="47" y="78" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#fff">⌨️ Input</text>
+            <text x="47" y="92" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#fbbf24">"20"</text>
+          </g>
+
+          <path d="M82 80 L102 80" stroke="#479a63" strokeWidth="2.5" markerEnd="url(#arr-sc)" />
+
+          {/* 2. System.in Stream */}
+          <g>
+            <rect x="104" y="55" width="70" height="50" rx="8" fill="#3b82f6" stroke="#1d4ed8" strokeWidth="2" />
+            <text x="139" y="78" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="800" fill="#fff">System.in</text>
+            <text x="139" y="92" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#93c5fd">Input Stream</text>
+          </g>
+
+          <path d="M176 80 L196 80" stroke="#479a63" strokeWidth="2.5" markerEnd="url(#arr-sc)" />
+
+          {/* 3. Scanner Object */}
+          <g>
+            <rect x="198" y="50" width="75" height="60" rx="10" fill="#f59e0b" stroke="#b45309" strokeWidth="2" />
+            <text x="235" y="75" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#fff">Scanner</text>
+            <text x="235" y="90" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fontWeight="700" fill="#fff">nextInt()</text>
+          </g>
+
+          <path d="M275 80 L293 80" stroke="#479a63" strokeWidth="2.5" markerEnd="url(#arr-sc)" />
+
+          {/* 4. Java Int Variable */}
+          <g>
+            <rect x="295" y="55" width="40" height="50" rx="8" fill="#10b981" stroke="#047857" strokeWidth="2" />
+            <text x="315" y="78" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="800" fill="#fff">int n</text>
+            <text x="315" y="94" textAnchor="middle" fontSize="11" fontFamily="JetBrains Mono" fontWeight="800" fill="#ffd24a">20</text>
+          </g>
+
+          <text x="170" y="145" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#479a63">
+            Scanner converts keyboard text stream into integer variable 20
+          </text>
+
+          <defs>
+            <marker id="arr-sc" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#479a63" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'method-stack':
+      return (
+        <svg viewBox="0 0 320 180" className="h-full w-full max-w-[360px]">
+          {/* Outer Stack Container */}
+          <path d="M80 20 L80 145 L240 145 L240 20" stroke="#479a63" strokeWidth="3" fill="none" strokeLinecap="round" />
+
+          {/* Stack Frame 1 (bottom): main() */}
+          <g>
+            <rect x="90" y="105" width="140" height="32" rx="6" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
+            <text x="160" y="125" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">main(String[] args)</text>
+          </g>
+
+          {/* Stack Frame 2 (top): add(10, 20) */}
+          <g>
+            <rect x="90" y="65" width="140" height="32" rx="6" fill="#ffd24a" stroke="#b45309" strokeWidth="2" className="animate-pulse" />
+            <text x="160" y="85" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#b45309">add(int x=10, y=20)</text>
+          </g>
+
+          {/* Return Arrow */}
+          <path d="M245 80 C270 80 270 120 235 120" stroke="#ef4444" strokeWidth="2.5" fill="none" markerEnd="url(#arr-ms)" />
+          <text x="280" y="100" fontSize="9" fontFamily="JetBrains Mono" fontWeight="800" fill="#ef4444">return 30</text>
+
+          {/* Stack Caption */}
+          <rect x="70" y="155" width="180" height="20" rx="4" fill="#1f412c" />
+          <text x="160" y="169" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#ffd24a">
+            JVM Method Call Stack Execution
+          </text>
+
+          <defs>
+            <marker id="arr-ms" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#ef4444" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    /* ==================== EXISTING C VISUAL DIAGRAMS ==================== */
+
     case 'stack':
       return (
         <svg viewBox="0 0 240 180" className="h-full w-full max-w-[320px]">
-          {/* Outer Stack Container */}
           <path d="M60 20 L60 140 L180 140 L180 20" stroke="#479a63" strokeWidth="3" fill="none" strokeLinecap="round" />
-          
-          {/* Stack Elements (Bottom to Top) */}
           <g>
-            {/* Bottom Element */}
             <rect x="70" y="104" width="100" height="28" rx="6" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
             <text x="120" y="122" textAnchor="middle" fontSize="12" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">Plate 1 [10]</text>
-            
-            {/* Middle Element */}
             <rect x="70" y="70" width="100" height="28" rx="6" fill="#ffd24a" opacity="0.9" stroke="#b45309" strokeWidth="2" />
             <text x="120" y="88" textAnchor="middle" fontSize="12" fontFamily="JetBrains Mono" fontWeight="700" fill="#b45309">Plate 2 [20]</text>
-            
-            {/* Top Element */}
             <rect x="70" y="36" width="100" height="28" rx="6" fill="#479a63" stroke="#1f412c" strokeWidth="2.5" className="animate-pulse" />
             <text x="120" y="54" textAnchor="middle" fontSize="12" fontFamily="JetBrains Mono" fontWeight="700" fill="#fff">Plate 3 [30]</text>
           </g>
-
-          {/* TOP Pointer Arrow */}
           <g>
             <path d="M195 50 L175 50" stroke="#ef4444" strokeWidth="2.5" fill="none" markerEnd="url(#arr-top)" />
             <text x="210" y="54" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ef4444">TOP 🔝</text>
           </g>
-
-          {/* Operation Labels: Push & Pop */}
           <g>
             <text x="30" y="45" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#479a63">Push ↑</text>
             <text x="30" y="85" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#f59e0b">Pop ↓</text>
           </g>
-
-          {/* LIFO Caption */}
           <rect x="50" y="152" width="140" height="22" rx="6" fill="#1f412c" />
           <text x="120" y="167" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#ffd24a">
             Stack LIFO (Last In First Out)
           </text>
-          
           <defs>
             <marker id="arr-top" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
               <path d="M0 0 L6 3 L0 6 Z" fill="#ef4444" />
@@ -65,50 +351,33 @@ function renderVisual(visual: StoryScene['visual']) {
     case 'queue':
       return (
         <svg viewBox="0 0 260 180" className="h-full w-full max-w-[340px]">
-          {/* Horizontal Queue Channel */}
           <line x1="20" y1="50" x2="240" y2="50" stroke="#479a63" strokeWidth="3" strokeDasharray="6 4" />
           <line x1="20" y1="120" x2="240" y2="120" stroke="#479a63" strokeWidth="3" strokeDasharray="6 4" />
-
-          {/* Front & Rear Elements */}
-          {/* Person 1 (Front) */}
           <g>
             <rect x="30" y="60" width="56" height="50" rx="8" fill="#479a63" stroke="#1f412c" strokeWidth="2" />
             <text x="58" y="85" textAnchor="middle" fontSize="12" fontFamily="JetBrains Mono" fontWeight="700" fill="#fff">[10]</text>
             <text x="58" y="100" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#ffd24a">1st Person</text>
-            
-            {/* FRONT Pointer */}
             <path d="M58 32 L58 48" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arr-q)" />
             <text x="58" y="24" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ef4444">FRONT ➔</text>
           </g>
-
-          {/* Person 2 (Middle) */}
           <g>
             <rect x="102" y="60" width="56" height="50" rx="8" fill="#ffd24a" stroke="#b45309" strokeWidth="2" />
             <text x="130" y="85" textAnchor="middle" fontSize="12" fontFamily="JetBrains Mono" fontWeight="700" fill="#b45309">[20]</text>
             <text x="130" y="100" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#b45309">2nd Person</text>
           </g>
-
-          {/* Person 3 (Rear) */}
           <g>
             <rect x="174" y="60" width="56" height="50" rx="8" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
             <text x="202" y="85" textAnchor="middle" fontSize="12" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">[30]</text>
             <text x="202" y="100" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#347d4d">3rd Person</text>
-
-            {/* REAR Pointer */}
             <path d="M202 32 L202 48" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#arr-q-blue)" />
             <text x="202" y="24" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#3b82f6">REAR ➔</text>
           </g>
-
-          {/* Enqueue & Dequeue Flow Arrows */}
           <text x="15" y="90" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ef4444">Dequeue ➔</text>
           <text x="245" y="90" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#3b82f6">Enqueue ➔</text>
-
-          {/* FIFO Caption */}
           <rect x="60" y="148" width="140" height="22" rx="6" fill="#1f412c" />
           <text x="130" y="163" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="700" fill="#ffd24a">
             Queue FIFO (First In First Out)
           </text>
-
           <defs>
             <marker id="arr-q" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
               <path d="M0 0 L6 3 L0 6 Z" fill="#ef4444" />
@@ -141,6 +410,7 @@ function renderVisual(visual: StoryScene['visual']) {
           <circle cx="130" cy="118" r="6" fill="#6bb684" />
         </svg>
       );
+
     case 'memory':
       return (
         <svg viewBox="0 0 200 160" className="h-full w-full max-w-[280px]">
@@ -165,6 +435,7 @@ function renderVisual(visual: StoryScene['visual']) {
           <text x="100" y="150" textAnchor="middle" fontSize="9" fontFamily="Plus Jakarta Sans" fontWeight="600" fill="#6e7864">computer memory</text>
         </svg>
       );
+
     case 'containers':
       return (
         <svg viewBox="0 0 220 160" className="h-full w-full max-w-[300px]">
@@ -182,6 +453,7 @@ function renderVisual(visual: StoryScene['visual']) {
           ))}
         </svg>
       );
+
     case 'calculator':
       return (
         <svg viewBox="0 0 160 180" className="h-full w-full max-w-[220px]">
@@ -197,6 +469,7 @@ function renderVisual(visual: StoryScene['visual']) {
           <text x="129" y="106" textAnchor="middle" fontSize="14" fontWeight="700" fill="#fff">=</text>
         </svg>
       );
+
     case 'signal':
       return (
         <svg viewBox="0 0 200 160" className="h-full w-full max-w-[260px]">
@@ -208,6 +481,7 @@ function renderVisual(visual: StoryScene['visual']) {
           <circle cx="100" cy="110" r="16" fill="#479a63" opacity="0.3" className="animate-pulse-ring" />
         </svg>
       );
+
     case 'repeat':
       return (
         <svg viewBox="0 0 200 160" className="h-full w-full max-w-[260px]">
@@ -235,6 +509,7 @@ function renderVisual(visual: StoryScene['visual']) {
           ))}
         </svg>
       );
+
     case 'machine':
       return (
         <svg viewBox="0 0 220 140" className="h-full w-full max-w-[300px]">
@@ -253,6 +528,7 @@ function renderVisual(visual: StoryScene['visual']) {
           </defs>
         </svg>
       );
+
     case 'lockers':
       return (
         <svg viewBox="0 0 220 140" className="h-full w-full max-w-[300px]">
@@ -266,6 +542,7 @@ function renderVisual(visual: StoryScene['visual']) {
           ))}
         </svg>
       );
+
     case 'address':
       return (
         <svg viewBox="0 0 220 160" className="h-full w-full max-w-[300px]">
@@ -278,6 +555,7 @@ function renderVisual(visual: StoryScene['visual']) {
           <text x="165" y="24" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="600" fill="#b45309">address</text>
         </svg>
       );
+
     case 'code':
       return (
         <svg viewBox="0 0 200 140" className="h-full w-full max-w-[260px]">
@@ -289,6 +567,7 @@ function renderVisual(visual: StoryScene['visual']) {
           <text x="100" y="92" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fill="#ffd24a">printf(age);</text>
         </svg>
       );
+
     default:
       return (
         <svg viewBox="0 0 200 140" className="h-full w-full max-w-[240px]">

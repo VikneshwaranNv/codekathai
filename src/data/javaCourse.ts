@@ -217,7 +217,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'JDK > JRE > JVM Nested Architecture',
         description: 'JDK contains JRE + Development Tools (javac). JRE contains JVM + Class Libraries.',
-        diagramType: 'lockers',
+        diagramType: 'jvm',
       },
       code: {
         snippet: `// Compiled with javac Main.java -> Main.class\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("JVM Architecture in Action!");\n    }\n}`,
@@ -433,7 +433,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'RAM Memory Slot Reservation',
         description: 'int age = 20 reserves 4 bytes in RAM Stack with identifier "age".',
-        diagramType: 'lunchbox',
+        diagramType: 'heap-stack',
       },
       code: {
         snippet: `public class Main {\n    public static void main(String[] args) {\n        int age = 20;\n        System.out.println("Age is: " + age);\n    }\n}`,
@@ -576,7 +576,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Scanner System.in Buffer Stream',
         description: 'Keyboard Input -> System.in Stream -> Scanner -> Java Variable.',
-        diagramType: 'generic',
+        diagramType: 'scanner-input',
       },
       code: {
         snippet: `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        System.out.print("Enter number: ");\n        int n = scanner.nextInt();\n        System.out.println("You entered: " + n);\n    }\n}`,
@@ -715,7 +715,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Class Blueprint to Multiple Heap Objects',
         description: 'Student Class -> student1 Object (Name: Kavi) & student2 Object (Name: Arul).',
-        diagramType: 'stack',
+        diagramType: 'class-object',
       },
       code: {
         snippet: `class Student {\n    String name = "Kavi";\n    int mark = 95;\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Student s = new Student();\n        System.out.println(s.name + " got " + s.mark);\n    }\n}`,
@@ -785,7 +785,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Stack Reference Pointer to Heap Memory Object',
         description: 'Stack Frame (s -> 0x400) points to Heap Object (Student instance).',
-        diagramType: 'pointers',
+        diagramType: 'heap-stack',
       },
       code: {
         snippet: `class Car {\n    String model = "Tesla";\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Car c1 = new Car();\n        Car c2 = new Car();\n        System.out.println(c1.model);\n    }\n}`,
@@ -855,7 +855,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Constructor Automatic Triggering on Instantiation',
         description: 'new Student("Kavi", 95) -> Constructor executes -> Instance initialized.',
-        diagramType: 'generic',
+        diagramType: 'class-object',
       },
       code: {
         snippet: `class Student {\n    String name;\n    Student(String n) {\n        name = n;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Student s = new Student("Kavi");\n        System.out.println("Name: " + s.name);\n    }\n}`,
@@ -923,7 +923,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Dot Operator Field Lookup',
         description: 's1.name = "Kavi", s2.name = "Arul". Distinct Heap Slots.',
-        diagramType: 'lockers',
+        diagramType: 'class-object',
       },
       code: {
         snippet: `class Dog {\n    String breed = "Labrador";\n    int age = 3;\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Dog d = new Dog();\n        System.out.println(d.breed + " is " + d.age + " yrs old.");\n    }\n}`,
@@ -992,7 +992,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'Method Execution Stack Push & Pop',
         description: 'main() calls greet() -> greet() frame pushed to Stack -> returns -> popped.',
-        diagramType: 'stack',
+        diagramType: 'method-stack',
       },
       code: {
         snippet: `public class Main {\n    static void greet() {\n        System.out.println("Vanakkam Java!");\n    }\n\n    public static void main(String[] args) {\n        greet();\n    }\n}`,
@@ -1199,7 +1199,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'String Pool Heap Memory Architecture',
         description: 's1 = "Java", s2 = "Java". Both point to same String Pool literal memory address.',
-        diagramType: 'pointers',
+        diagramType: 'string-pool',
       },
       code: {
         snippet: `public class Main {\n    public static void main(String[] args) {\n        String str = "CodeKathai";\n        System.out.println("Hello " + str);\n    }\n}`,
@@ -1269,7 +1269,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: 'String Character Array Indexing',
         description: 's = "JAVA" -> Index 0:\'J\', Index 1:\'A\', Index 2:\'V\', Index 3:\'A\'. Length = 4.',
-        diagramType: 'generic',
+        diagramType: 'string-pool',
       },
       code: {
         snippet: `public class Main {\n    public static void main(String[] args) {\n        String text = "Java";\n        System.out.println("Length: " + text.length());\n        System.out.println("First Char: " + text.charAt(0));\n    }\n}`,
@@ -1338,7 +1338,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
       visualExplanation: {
         title: '== vs equals() Memory Allocation Diagram',
         description: 's1 == s2 checks address pointers. s1.equals(s2) checks string characters inside Heap.',
-        diagramType: 'pointers',
+        diagramType: 'string-pool',
       },
       code: {
         snippet: `public class Main {\n    public static void main(String[] args) {\n        String s1 = "Java";\n        String s2 = new String("Java");\n        System.out.println("== : " + (s1 == s2));\n        System.out.println("equals : " + s1.equals(s2));\n    }\n}`,

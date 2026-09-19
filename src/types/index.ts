@@ -61,7 +61,14 @@ export interface StoryScene {
     | 'address'
     | 'stack'
     | 'queue'
-    | 'generic';
+    | 'generic'
+    | 'jvm'
+    | 'heap-stack'
+    | 'class-object'
+    | 'string-pool'
+    | 'scanner-input'
+    | 'method-stack'
+    | 'wora';
   dialogue: string;
   code?: CodePart[];
   caption?: string;
