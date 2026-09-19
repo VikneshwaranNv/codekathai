@@ -2,8 +2,10 @@ import { ArrowLeft, Sparkles, BookOpen, Lightbulb, AlertCircle, Repeat, MessageS
 import { useState } from 'react';
 import { explainLineByLine, explainAsTamilStory, generateSimilarQuestion, explainError } from '@/data/aiTutor';
 import type { Page } from '@/components/Navbar';
-import { generateVisualExplanation, type VisualExplanationData } from '@/lib/visualGenerator';
+import { generateVisualExplanation, isJavaCode, type VisualExplanationData } from '@/lib/visualGenerator';
 import VisualExplanationView from '@/components/VisualExplanationView';
+import { useLanguage } from '@/lib/languageContext';
+import CCodeEditor from '@/components/CCodeEditor';
 
 interface AITutorPageProps {
   onNavigate: (page: Page) => void;
@@ -11,17 +13,8 @@ interface AITutorPageProps {
 
 type Mode = 'line-by-line' | 'tamil-story' | 'similar-question' | 'error-explain' | 'visual';
 
-const modes: { id: Mode; label: string; icon: typeof BookOpen; description: string }[] = [
-  { id: 'line-by-line', label: 'Explain Line by Line', icon: BookOpen, description: 'Understand each line of your code' },
-  { id: 'tamil-story', label: 'Tamil Story Explanation', icon: Sparkles, description: 'Learn through a Tamil story' },
-  { id: 'similar-question', label: 'Generate Similar Question', icon: Repeat, description: 'Practice with a new question' },
-  { id: 'error-explain', label: 'Explain Compiler Error', icon: AlertCircle, description: 'Understand what went wrong' },
-  { id: 'visual', label: 'Visual Explanation', icon: Eye, description: 'See your code as a visual concept' },
-];
+const DEFAULT_C_CODE = `#include <stdio.h>
 
-export default function AITutorPage({ onNavigate }: AITutorPageProps) {
-  const [mode, setMode] = useState<Mode>('visual'); // Default to Visual Explanation
-  const [code, setCode] = useState(`#include <stdio.h>
 int main() {
   int age;
   scanf("%d", &age);
@@ -32,7 +25,36 @@ int main() {
     printf("Minor");
 
   return 0;
-}`);
+}`;
+
+const DEFAULT_JAVA_CODE = `import java.util.Scanner;
+
+public class EvenOddCheck {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter your age: ");
+        int age = sc.nextInt();
+
+        if (age >= 18) {
+            System.out.println("Adult");
+        } else {
+            System.out.println("Minor");
+        }
+    }
+}`;
+
+const modes: { id: Mode; label: string; icon: typeof BookOpen; description: string }[] = [
+  { id: 'line-by-line', label: 'Explain Line by Line', icon: BookOpen, description: 'Understand each line of your code' },
+  { id: 'tamil-story', label: 'Tamil Story Explanation', icon: Sparkles, description: 'Learn through a Tamil story' },
+  { id: 'similar-question', label: 'Generate Similar Question', icon: Repeat, description: 'Practice with a new question' },
+  { id: 'error-explain', label: 'Explain Compiler Error', icon: AlertCircle, description: 'Understand what went wrong' },
+  { id: 'visual', label: 'Visual Explanation', icon: Eye, description: 'See your code as a visual concept' },
+];
+
+export default function AITutorPage({ onNavigate }: AITutorPageProps) {
+  const { language, setLanguage } = useLanguage();
+  const [mode, setMode] = useState<Mode>('visual'); // Default to Visual Explanation
+  const [code, setCode] = useState(language === 'java' ? DEFAULT_JAVA_CODE : DEFAULT_C_CODE);
   const [errorText, setErrorText] = useState('');
   const [result, setResult] = useState<string | null>(null);
   const [lineResults, setLineResults] = useState<{ line: string; explanation: string; tamilExplanation: string }[] | null>(null);
@@ -40,6 +62,21 @@ int main() {
   const [category, setCategory] = useState('Variables');
   const [sampleInputVal, setSampleInputVal] = useState('20');
   const [highlightedLineIdx, setHighlightedLineIdx] = useState<number | null>(null);
+
+  const handleLanguageChange = (newLang: 'c' | 'java') => {
+    setLanguage(newLang);
+    setCode(newLang === 'java' ? DEFAULT_JAVA_CODE : DEFAULT_C_CODE);
+    setResult(null);
+    setLineResults(null);
+    setVisualData(null);
+  };
+
+  const handleCodeChange = (newCode: string) => {
+    setCode(newCode);
+    if (isJavaCode(newCode) && language !== 'java') {
+      setLanguage('java');
+    }
+  };
 
   const run = (inputVal?: string) => {
     setResult(null);
@@ -130,6 +167,8 @@ int main() {
                   ? 'Paste Error Message'
                   : mode === 'similar-question'
                   ? 'Choose Category'
+                  : language === 'java'
+                  ? 'Paste Your Java Code'
                   : 'Paste Your C Code'}
               </span>
 
@@ -162,16 +201,14 @@ int main() {
                 spellCheck={false}
               />
             ) : (
-              <div className="rounded-xl bg-ink-950 p-3 border border-ink-800">
-                <div className="mb-2 text-[10px] font-mono text-ink-400 flex items-center justify-between">
-                  <span>main.c</span>
-                  <span className="text-emerald-400 font-bold text-[10px]">C Code Editor</span>
-                </div>
-                <textarea
+              <div className="rounded-xl bg-ink-950 p-2 border border-ink-800">
+                <CCodeEditor
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="h-64 w-full resize-none bg-transparent font-mono text-xs text-emerald-300 outline-none leading-relaxed"
-                  spellCheck={false}
+                  onChange={handleCodeChange}
+                  rows={13}
+                  language={language}
+                  onLanguageChange={handleLanguageChange}
+                  placeholder={language === 'java' ? '// Paste Java code here...' : '// Paste C code here...'}
                 />
               </div>
             )}

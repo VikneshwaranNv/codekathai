@@ -352,7 +352,7 @@ export default function VisualExplanationView({
             <thead className="bg-golden-100/70 dark:bg-golden-950 text-golden-950 dark:text-golden-200 font-bold">
               <tr>
                 <th className="p-3">Real-Life Action (நிஜ உலக செயல்)</th>
-                <th className="p-3">C Keyword (சி சொல்)</th>
+                <th className="p-3">{data.isJava ? 'Java Keyword (ஜாவா சொல்)' : 'C Keyword (சி சொல்)'}</th>
                 <th className="p-3">Concept Explanation</th>
               </tr>
             </thead>

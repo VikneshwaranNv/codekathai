@@ -13,6 +13,14 @@ export interface CodeLineExplanation {
 export function explainLineByLine(code: string): CodeLineExplanation[] {
   const lines = code.split('\n').filter((l) => l.trim().length > 0);
   const explanations: Record<string, { en: string; ta: string }> = {
+    'import java.util.Scanner': { en: 'Imports the Java Scanner utility package to read user input from System.in.', ta: 'பயனரிடமிருந்து உள்ளீடு பெற Scanner பயன்பாட்டு வகுப்பைச் சேர்க்கிறது.' },
+    'public class': { en: 'Declares a public Java class, which serves as the container for fields and methods.', ta: 'பொது அணுகல் கொண்ட Java வகுப்பை (Class) அறிவிக்கிறது.' },
+    'public static void main': { en: 'Main entry point of the Java program where JVM starts code execution.', ta: 'JVM நிரலைத் தொடங்கும் Java முதன்மை நுழைவுப் புள்ளி.' },
+    'System.out.println': { en: 'Prints output text to the console with an automatic new line.', ta: 'கன்சோல் திரையில் புதிய வரியுடன் வெளியீட்டை அச்சிடுகிறது.' },
+    'System.out.print': { en: 'Prints output text to the console without adding a new line.', ta: 'புதிய வரி இன்றி திரையில் அச்சிடுகிறது.' },
+    'Scanner': { en: 'Instantiates a Scanner object to read keyboard stream input.', ta: 'விசைப்பலகை உள்ளீட்டு ஸ்ட்ரீமைப் படிக்க Scanner பொருளை உருவாக்குகிறது.' },
+    'nextInt()': { en: 'Reads the next integer value entered by the user.', ta: 'பயனர் தட்டச்சு செய்யும் அடுத்த முழுஎண்ணைப் படிக்கிறது.' },
+    'nextLine()': { en: 'Reads the entire line of text entered by the user.', ta: 'பயனர் தட்டச்சு செய்யும் முழு உரை வரியையும் படிக்கிறது.' },
     '#include': { en: 'Includes the standard input/output library so we can use printf and scanf.', ta: 'printf, scanf பயன்படுத்த standard input/output library-ஐ சேர்க்கிறது.' },
     'int main': { en: 'The main function — every C program starts running here.', ta: 'main function — ஒவ்வொரு C program-ம் இங்கு தான் தொடங்கும்.' },
     'printf': { en: 'Prints text or values to the screen.', ta: 'திரையில் உரை அல்லது மதிப்புகளை அச்சிடுகிறது.' },
@@ -54,17 +62,23 @@ export function explainLineByLine(code: string): CodeLineExplanation[] {
 export function explainAsTamilStory(code: string): string {
   const hasPrintf = code.includes('printf');
   const hasScanf = code.includes('scanf');
+  const hasPrintln = code.includes('System.out');
+  const hasScanner = code.includes('Scanner') || code.includes('next');
   const hasFor = code.includes('for');
   const hasIf = code.includes('if');
   const hasWhile = code.includes('while');
+  const hasClass = code.includes('class');
 
   let story = 'கதை ஒன்று சொல்கிறேன், கேளு. ';
 
-  if (hasScanf) {
-    story += 'Kavi வகுப்பில் ஆசிரியர் ஒரு கேள்வம் கேட்கிறார் — "உன் வயது என்ன?" Kavi அதற்கு பதில் சொல்கிறாள். அது தான் scanf — program உன்னிடம் உள்ளீடு கேட்கிறது. ';
+  if (hasClass) {
+    story += 'ஒரு வீடு கட்ட புளூபிரிண்ட் வரைபடம் தேவைப்படுவது போல Java-வில் Class அவசியம். ';
   }
-  if (hasPrintf) {
-    story += 'பிறகு Kavi தன் பதிலை அனைவருக்கும் சொல்கிறாள். அது தான் printf — program திரையில் ஏதோ ஒன்றை காட்டுகிறது. ';
+  if (hasScanner || hasScanf) {
+    story += 'Kavi வகுப்பில் ஆசிரியர் ஒரு கேள்வம் கேட்கிறார் — "உன் வயது என்ன?" Kavi அதற்கு பதில் சொல்கிறாள். அது தான் Scanner / scanf — program உன்னிடம் உள்ளீடு கேட்கிறது. ';
+  }
+  if (hasPrintln || hasPrintf) {
+    story += 'பிறகு Kavi தன் பதிலை அனைவருக்கும் சொல்கிறாள். அது தான் System.out.println / printf — program திரையில் ஏதோ ஒன்றை காட்டுகிறது. ';
   }
   if (hasIf) {
     story += 'ஆசிரியர் சொல்கிறார் — "வயது 18-க்கு மேல் இருந்தால் மட்டுமே வாக்காளர் பட்டியலில் சேர்க்கலாம்." அது தான் if — ஒரு நிபந்தனை சரியா தானா பார்த்து முடிவு எடுக்கிறது. ';

@@ -48,16 +48,56 @@ export interface VisualExplanationData {
   realLifeAnalogy: RealLifeAnalogy;
   isValidCode: boolean;
   syntaxErrorMessage?: string;
+  isJava?: boolean;
+}
+
+export function isJavaCode(code: string): boolean {
+  return /public\s+class|System\.out|Scanner|class\s+\w+|public\s+static\s+void\s+main/i.test(code);
+}
+
+function adaptForJava(data: VisualExplanationData): VisualExplanationData {
+  const programFlow = data.programFlow.map((node) => {
+    if (node.includes('scanf')) return 'Input (Scanner)';
+    if (node.includes('printf')) return 'Output (System.out.println)';
+    if (node.includes('main')) return 'JVM Entry (main)';
+    return node;
+  });
+
+  const mappings = data.realLifeAnalogy.mappings.map((m) => {
+    let kw = m.cKeyword;
+    kw = kw.replace(/scanf\("[^"]*",\s*&?(\w+)\)/g, 'sc.nextInt()');
+    kw = kw.replace(/printf\("([^"]*)"\)/g, 'System.out.println("$1")');
+    kw = kw.replace(/printf\(.*?\)/g, 'System.out.println(...)');
+    kw = kw.replace(/int main\(\)/g, 'public static void main(String[] args)');
+    kw = kw.replace(/#include <stdio\.h>/g, 'import java.util.Scanner;');
+    return {
+      ...m,
+      cKeyword: kw,
+    };
+  });
+
+  return {
+    ...data,
+    isJava: true,
+    concept: data.concept.replace(/C Program/gi, 'Java Program').replace(/C Language/gi, 'Java Language'),
+    tamilConcept: data.tamilConcept.replace(/சி நிரல்/g, 'ஜாவா நிரல்'),
+    programFlow,
+    realLifeAnalogy: {
+      ...data.realLifeAnalogy,
+      mappings,
+    },
+  };
 }
 
 /**
- * Intelligent AI Visual Generator Engine for C Programs
+ * Intelligent AI Visual Generator Engine for C & Java Programs
  * Dynamically detects deep program intent (String Reversal, Largest in Array, Factorial,
  * Fibonacci, Palindrome, Prime, Sorting, etc.) rather than defaulting to generic loops.
  */
 export function generateVisualExplanation(code: string, userSampleInput: string = ''): VisualExplanationData {
   const trimmed = code.trim();
   const lower = trimmed.toLowerCase();
+  const isJava = isJavaCode(code);
 
   // Basic syntax validation
   if (!trimmed) {
@@ -75,11 +115,11 @@ export function generateVisualExplanation(code: string, userSampleInput: string 
         mappings: [],
       },
       isValidCode: false,
-      syntaxErrorMessage: 'Please enter C code into the editor to generate visual explanation.',
+      syntaxErrorMessage: `Please enter ${isJava ? 'Java' : 'C'} code into the editor to generate visual explanation.`,
     };
   }
 
-  if (!lower.includes('main')) {
+  if (!lower.includes('main') && !lower.includes('class')) {
     return {
       concept: 'Syntax Issue',
       tamilConcept: 'தொடரியல் பிழை',
@@ -88,15 +128,23 @@ export function generateVisualExplanation(code: string, userSampleInput: string 
       steps: [],
       realLifeAnalogy: {
         title: 'Missing Main Entry',
-        tamilTitle: 'main() சார்பு இல்லை',
-        story: 'Every C program requires an int main() function as the execution entry point.',
-        tamilStory: 'ஒவ்வொரு C நிரலுக்கும் int main() எனும் தொடக்கப் புள்ளி சார்பு தேவை.',
+        tamilTitle: 'main() சார்பு / வகுப்பு இல்லை',
+        story: `Every ${isJava ? 'Java' : 'C'} program requires an entry point.`,
+        tamilStory: `ஒவ்வொரு ${isJava ? 'Java' : 'C'} நிரலுக்கும் தொடக்கப் புள்ளி தேவை.`,
         mappings: [],
       },
       isValidCode: false,
-      syntaxErrorMessage: 'Could not find int main() function. Every valid C program requires an int main() function.',
+      syntaxErrorMessage: `Could not find main() method. Every valid ${isJava ? 'Java' : 'C'} program requires a main entry point.`,
     };
   }
+
+  const resultData = innerGenerateVisualExplanation(code, userSampleInput);
+  return isJava ? adaptForJava(resultData) : resultData;
+}
+
+function innerGenerateVisualExplanation(code: string, userSampleInput: string = ''): VisualExplanationData {
+  const trimmed = code.trim();
+  const lower = trimmed.toLowerCase();
 
   // ----------------------------------------------------------------------
   // 1. STRING REVERSAL DETECTION (e.g. str, strlen, reverse string, fgets)
