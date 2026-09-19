@@ -191,21 +191,6 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
               </span>
 
               <div className="flex items-center gap-2">
-                <div className="hidden sm:flex items-center gap-1 bg-ink-800/80 px-2 py-0.5 rounded-full text-[10px] text-ink-300">
-                  <Sliders className="h-3 w-3 text-emerald-400" />
-                  <span>Font:</span>
-                  {[12, 14, 16].map((sz) => (
-                    <button
-                      key={sz}
-                      onClick={() => setFontSize(sz)}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                        fontSize === sz ? 'bg-emerald-600 text-white' : 'hover:text-white'
-                      }`}
-                    >
-                      {sz}px
-                    </button>
-                  ))}
-                </div>
 
                 <button
                   onClick={() => {

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Play, RotateCcw, Code2, Sliders, Bug, FileText } from 'lucide-react';
+import { Play, RotateCcw, Code2, Bug, FileText } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
 import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
@@ -169,23 +169,8 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
               <Code2 className="h-4 w-4 text-emerald-500" /> {language === 'java' ? 'Main.java Editor' : 'main.c Editor'}
             </span>
 
-            {/* Editor Action Controls: Font Size, Debugger, Cheat Sheet, Clear, Run */}
+            {/* Editor Action Controls: Debugger, Cheat Sheet, Clear, Run */}
             <div className="flex flex-wrap items-center gap-1.5">
-              <div className="hidden sm:flex items-center gap-1 bg-ink-800/80 px-2 py-0.5 rounded-full text-[10px] text-ink-300">
-                <Sliders className="h-3 w-3 text-emerald-400" />
-                <span>Font:</span>
-                {[12, 14, 16].map((sz) => (
-                  <button
-                    key={sz}
-                    onClick={() => setFontSize(sz)}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                      fontSize === sz ? 'bg-emerald-600 text-white' : 'hover:text-white'
-                    }`}
-                  >
-                    {sz}px
-                  </button>
-                ))}
-              </div>
 
               <button
                 onClick={() => setShowDebugger(!showDebugger)}
