@@ -27,6 +27,8 @@ import CCodeEditor from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
 import CheatSheetModal from '@/components/CheatSheetModal';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
+import { compileAndRunJavaProgram } from '@/lib/javaSimulator';
+import { useLanguage } from '@/lib/languageContext';
 
 interface LessonViewerProps {
   lesson: Lesson;
@@ -62,6 +64,7 @@ export default function LessonViewer({
   onCompleteLesson,
   isCompleted,
 }: LessonViewerProps) {
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<Tab>('concept');
   const [sceneIndex, setSceneIndex] = useState(0);
   const [practicePicked, setPracticePicked] = useState<number | null>(null);
@@ -69,10 +72,13 @@ export default function LessonViewer({
   const [challengePassed, setChallengePassed] = useState<boolean | null>(null);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
 
+  // Default starter code based on language
+  const defaultLessonCode = language === 'java'
+    ? (lesson.code.snippet || `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello Java!");\n    }\n}`)
+    : (lesson.code.snippet || `#include <stdio.h>\n\nint main() {\n    printf("Hello Lesson!\\n");\n    return 0;\n}`);
+
   // Lesson Compiler State
-  const initialCode =
-    lesson.code.parts.map((p) => p.text).join('') ||
-    '#include <stdio.h>\n\nint main() {\n    printf("Hello Lesson!\\n");\n    return 0;\n}';
+  const initialCode = lesson.code.parts.map((p) => p.text).join('') || defaultLessonCode;
   const [lessonCode, setLessonCode] = useState(initialCode);
   const [lessonCompilerOutput, setLessonCompilerOutput] = useState('');
   const [lessonCompilerError, setLessonCompilerError] = useState<string | null>(null);
@@ -87,26 +93,35 @@ export default function LessonViewer({
     setShowCompletionModal(false);
 
     const c = lesson.code.parts.map((p) => p.text).join('');
-    setLessonCode(
-      c || '#include <stdio.h>\n\nint main() {\n    printf("Hello Lesson!\\n");\n    return 0;\n}',
-    );
+    setLessonCode(c || defaultLessonCode);
     setLessonCompilerOutput('');
     setLessonCompilerError(null);
-  }, [lesson.id]);
+  }, [lesson.id, language]);
 
   const handleRunLessonCompiler = async (overrideInput?: string) => {
     setIsCompilingLesson(true);
     setLessonCompilerError(null);
-    setLessonCompilerOutput('Compiling lesson code with GCC...');
 
-    const result = await compileAndRunCProgram(lessonCode, overrideInput || '5');
-
-    if (result.error) {
-      setLessonCompilerError(result.error);
-      setLessonCompilerOutput('');
+    if (language === 'java') {
+      setLessonCompilerOutput('Compiling lesson code with Java OpenJDK...');
+      const result = await compileAndRunJavaProgram(lessonCode, overrideInput || '');
+      if (result.error) {
+        setLessonCompilerError(result.error);
+        setLessonCompilerOutput('');
+      } else {
+        setLessonCompilerOutput(result.output || 'Program finished with exit code 0.');
+        setLessonCompilerError(null);
+      }
     } else {
-      setLessonCompilerOutput(result.output || 'Program finished with exit code 0.');
-      setLessonCompilerError(null);
+      setLessonCompilerOutput('Compiling lesson code with GCC...');
+      const result = await compileAndRunCProgram(lessonCode, overrideInput || '5');
+      if (result.error) {
+        setLessonCompilerError(result.error);
+        setLessonCompilerOutput('');
+      } else {
+        setLessonCompilerOutput(result.output || 'Program finished with exit code 0.');
+        setLessonCompilerError(null);
+      }
     }
     setIsCompilingLesson(false);
   };
@@ -334,16 +349,22 @@ export default function LessonViewer({
             <div className="space-y-6">
               <div>
                 <h3 className="font-display text-base font-bold text-bamboo-950 dark:text-white mb-2">
-                  C Code Example (High-Contrast View)
+                  {language === 'java' ? 'Java Code Example (High-Contrast View)' : 'C Code Example (High-Contrast View)'}
                 </h3>
-                <CodeBlock parts={lesson.code.parts} />
+                <CodeBlock
+                  parts={
+                    lesson.code.parts && lesson.code.parts.length > 0
+                      ? lesson.code.parts
+                      : [{ text: lesson.code.snippet || defaultLessonCode, tone: 'plain' }]
+                  }
+                />
               </div>
 
               {/* Interactive Compiler Section inside Lesson */}
               <div className="rounded-2xl border border-bamboo-200 bg-ink-950 p-4 shadow-md dark:border-bamboo-800">
                 <div className="flex items-center justify-between border-b border-ink-800 pb-3 mb-3">
                   <span className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                    <Code2 className="h-4 w-4" /> ⚡ Live Lesson C GCC Compiler (Edit & Run Live)
+                    <Code2 className="h-4 w-4" /> {language === 'java' ? '⚡ Live Lesson Java OpenJDK Compiler (Edit & Run Live)' : '⚡ Live Lesson C GCC Compiler (Edit & Run Live)'}
                   </span>
                   <button
                     onClick={() => handleRunLessonCompiler()}
@@ -356,13 +377,13 @@ export default function LessonViewer({
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                  {/* C Code Editor */}
+                  {/* Code Editor */}
                   <div>
                     <CCodeEditor
                       value={lessonCode}
                       onChange={setLessonCode}
                       rows={10}
-                      placeholder="// Edit lesson C code here..."
+                      placeholder={language === 'java' ? '// Edit lesson Java code here...' : '// Edit lesson C code here...'}
                     />
                   </div>
 
@@ -380,112 +401,77 @@ export default function LessonViewer({
                 </div>
               </div>
 
-              <div>
-                <h4 className="font-display text-sm font-bold text-bamboo-950 dark:text-white mb-3">
-                  Code Token Breakdown
-                </h4>
-                <div className="grid gap-2">
-                  {lesson.code.explanation.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between rounded-lg border border-bamboo-100 bg-bamboo-50/50 p-3 dark:border-bamboo-800 dark:bg-ink-900/50"
-                    >
-                      <code className="font-mono text-xs font-bold text-bamboo-700 dark:text-bamboo-300">
-                        {item.token}
-                      </code>
-                      <span className="font-tamil text-xs text-ink-600 dark:text-ink-400">
-                        {item.meaning}
-                      </span>
-                    </div>
+              {lesson.outputExplanation && (
+                <div className="rounded-xl border border-bamboo-100 bg-bamboo-50/50 p-4 dark:border-bamboo-800 dark:bg-ink-900">
+                  <h4 className="text-xs font-bold text-bamboo-800 dark:text-bamboo-300">
+                    💡 Output Explanation
+                  </h4>
+                  <p className="mt-1 text-xs text-ink-700 dark:text-ink-300">
+                    {lesson.outputExplanation}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: STORY */}
+          {activeTab === 'story' && (
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-bamboo-100 bg-bamboo-50/40 p-6 dark:border-bamboo-800 dark:bg-ink-900/40">
+                <h3 className="font-display text-lg font-bold text-bamboo-950 dark:text-white mb-4">
+                  Tamil Story Walkthrough 🎭
+                </h3>
+                <div className="space-y-4">
+                  {lesson.story.map((scene) => (
+                    <StoryCard key={scene.id} scene={scene} />
                   ))}
                 </div>
               </div>
-
-              <div className="rounded-xl border border-bamboo-200 bg-white p-4 dark:border-bamboo-800 dark:bg-ink-900">
-                <span className="text-xs font-bold text-bamboo-600 dark:text-bamboo-400 uppercase tracking-wider">
-                  Output Explanation
-                </span>
-                <p className="font-tamil mt-1 text-xs text-ink-700 dark:text-ink-300">
-                  {lesson.outputExplanation}
-                </p>
-              </div>
             </div>
           )}
 
-          {/* TAB 5: VISUAL STORY (Kavi & Code Buddy) */}
-          {activeTab === 'story' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-display text-lg font-bold text-bamboo-950 dark:text-white">
-                    Visual Story Kathai 🎭
-                  </h3>
-                  <p className="text-xs text-ink-500">
-                    Scene {sceneIndex + 1} of {lesson.story.length}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    disabled={sceneIndex === 0}
-                    onClick={() => setSceneIndex((s) => Math.max(0, s - 1))}
-                    className="btn-ghost px-3 py-1.5 text-xs disabled:opacity-40"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    disabled={sceneIndex === lesson.story.length - 1}
-                    onClick={() => setSceneIndex((s) => Math.min(lesson.story.length - 1, s + 1))}
-                    className="btn-primary px-3 py-1.5 text-xs disabled:opacity-40"
-                  >
-                    Next Scene
-                  </button>
-                </div>
-              </div>
-
-              {/* Story Scene Card */}
-              {lesson.story[sceneIndex] && <StoryCard scene={lesson.story[sceneIndex]} />}
-            </div>
-          )}
-
-          {/* TAB 6: PRACTICE & MINI CHALLENGE */}
+          {/* TAB 6: PRACTICE & CHALLENGE */}
           {activeTab === 'practice' && (
             <div className="space-y-8">
-              {/* Practice Question */}
+              {/* Practice MCQ */}
               <div className="rounded-2xl border border-bamboo-200 bg-white p-6 dark:border-bamboo-800 dark:bg-ink-900 shadow-sm">
-                <span className="eyebrow mb-2">Practice Quiz</span>
-                <h3 className="font-tamil text-base font-bold text-bamboo-950 dark:text-white mb-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-golden-600 dark:text-golden-400">
+                  Practice MCQ
+                </span>
+                <h3 className="font-display text-base font-bold text-bamboo-950 dark:text-white mt-1">
                   {lesson.practice.question}
                 </h3>
 
-                <div className="grid gap-3">
-                  {lesson.practice.options.map((opt, idx) => {
-                    const isSelected = practicePicked === idx;
-                    const isCorrect = idx === lesson.practice.answerIndex;
+                <div className="mt-4 grid gap-3">
+                  {lesson.practice.options.map((opt, i) => {
+                    const isSelected = practicePicked === i;
+                    const isCorrect = i === lesson.practice.answerIndex;
                     let style =
-                      'border-bamboo-200 bg-bamboo-50/50 hover:bg-bamboo-100 dark:border-bamboo-800 dark:bg-ink-800';
+                      'border-bamboo-200 bg-bamboo-50/50 hover:bg-bamboo-100 text-ink-900 dark:border-bamboo-800 dark:bg-ink-950 dark:text-white';
 
                     if (practicePicked !== null) {
                       if (isCorrect) {
-                        style =
-                          'border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200';
+                        style = 'border-emerald-500 bg-emerald-500 text-white font-bold';
                       } else if (isSelected) {
-                        style =
-                          'border-red-500 bg-red-50 text-red-900 dark:bg-red-950/60 dark:text-red-200';
+                        style = 'border-red-500 bg-red-500 text-white font-bold';
+                      } else {
+                        style = 'opacity-40 border-bamboo-100 dark:border-bamboo-900';
                       }
                     }
 
                     return (
                       <button
-                        key={idx}
-                        onClick={() => handlePracticeOption(idx)}
-                        className={`flex items-center justify-between rounded-xl border p-4 text-left font-semibold transition-all ${style}`}
+                        key={i}
+                        onClick={() => handlePracticeOption(i)}
+                        disabled={practicePicked !== null}
+                        className={`flex w-full items-center justify-between rounded-xl border p-3.5 text-left text-xs font-semibold transition-all ${style}`}
                       >
-                        <span className="text-sm">{opt}</span>
+                        <span>{opt}</span>
                         {practicePicked !== null && isCorrect && (
-                          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                          <CheckCircle2 className="h-4 w-4 text-white" />
                         )}
                         {practicePicked !== null && isSelected && !isCorrect && (
-                          <XCircle className="h-5 w-5 text-red-600" />
+                          <XCircle className="h-4 w-4 text-white" />
                         )}
                       </button>
                     );
@@ -493,58 +479,61 @@ export default function LessonViewer({
                 </div>
 
                 {practicePicked !== null && (
-                  <div className="mt-4 rounded-xl bg-bamboo-50 p-4 dark:bg-ink-800 border border-bamboo-200 dark:border-bamboo-700">
-                    <p className="font-tamil text-xs font-semibold text-bamboo-900 dark:text-bamboo-200">
-                      {lesson.practice.explanation}
-                    </p>
+                  <div className="mt-4 rounded-xl bg-bamboo-50 p-4 border border-bamboo-200 dark:bg-ink-950 dark:border-bamboo-800 text-xs text-bamboo-900 dark:text-bamboo-200 font-medium">
+                    {lesson.practice.explanation}
                   </div>
                 )}
               </div>
 
-              {/* Mini Challenge */}
-              <div className="rounded-2xl border border-bamboo-200 bg-white p-6 dark:border-bamboo-800 dark:bg-ink-900 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase shadow-sm ${
-                    level === 'beginner'
-                      ? 'bg-bamboo-100 text-bamboo-800 border border-bamboo-300 dark:bg-bamboo-950 dark:text-bamboo-300'
-                      : level === 'intermediate'
-                      ? 'bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950 dark:text-amber-300'
-                      : 'bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-950 dark:text-purple-300'
-                  }`}>
-                    {level === 'beginner' ? '🌱 EASY MINI CHALLENGE' : level === 'intermediate' ? '🚀 MEDIUM MINI CHALLENGE' : '🧠 HARD MINI CHALLENGE'}
+              {/* Code Challenge */}
+              <div className="rounded-2xl border border-bamboo-200 bg-ink-950 p-6 dark:border-bamboo-800 shadow-md">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                    {lesson.challenge.title}
+                  </span>
+                  <span className="text-[11px] font-bold text-golden-400">
+                    +{lesson.xp} XP Reward
                   </span>
                 </div>
-                <h3 className="font-display text-base font-bold text-bamboo-950 dark:text-white">
-                  {lesson.challenge.title}
-                </h3>
-                <p className="mt-1 text-xs text-ink-600 dark:text-ink-400">
+
+                <p className="mt-2 text-xs text-white font-semibold leading-relaxed">
                   {lesson.challenge.prompt}
                 </p>
 
                 <div className="mt-4">
-                  <textarea
-                    rows={4}
+                  <CCodeEditor
                     value={challengeCode}
-                    onChange={(e) => setChallengeCode(e.target.value)}
-                    className="w-full rounded-xl border border-bamboo-300 bg-ink-950 p-4 font-mono text-xs text-emerald-400 focus:outline-none focus:ring-2 focus:ring-bamboo-500"
+                    onChange={setChallengeCode}
+                    rows={6}
+                    placeholder="// Write challenge code..."
                   />
                 </div>
 
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-xs text-ink-500">Hint: {lesson.challenge.hint}</span>
-                  <button onClick={checkChallenge} className="btn-primary text-xs px-4 py-2">
-                    Check Challenge
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <button
+                    onClick={checkChallenge}
+                    className="btn-primary text-xs px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5"
+                  >
+                    <Check className="h-4 w-4" /> Verify Solution
+                  </button>
+
+                  <button
+                    onClick={() => handleComplete()}
+                    className="btn-primary text-xs px-5 py-2 bg-bamboo-600 hover:bg-bamboo-700 text-white font-bold flex items-center gap-1.5 shadow-soft"
+                  >
+                    <Trophy className="h-4 w-4" /> Complete Lesson
                   </button>
                 </div>
 
                 {challengePassed === true && (
-                  <div className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-500/10 p-3 text-xs font-semibold text-emerald-600">
-                    <Check className="h-4 w-4" /> Great job! Challenge passed!
+                  <div className="mt-4 rounded-xl bg-emerald-500/20 p-4 border border-emerald-500/50 text-emerald-300 text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-400" /> Great Job! Challenge Passed. Click "Complete Lesson" to earn +{lesson.xp} XP!
                   </div>
                 )}
+
                 {challengePassed === false && (
-                  <div className="mt-4 flex items-center gap-2 rounded-xl bg-red-500/10 p-3 text-xs font-semibold text-red-600">
-                    <XCircle className="h-4 w-4" /> Try again! Make sure your code matches expected syntax.
+                  <div className="mt-4 rounded-xl bg-red-500/20 p-4 border border-red-500/50 text-red-300 text-xs font-medium">
+                    ❌ Not quite right. Hint: <code className="font-mono text-golden-300">{lesson.challenge.hint}</code>
                   </div>
                 )}
               </div>
@@ -553,123 +542,50 @@ export default function LessonViewer({
         </div>
       </div>
 
-      {/* Lesson Navigation Footer */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-ink-900 border border-bamboo-100 dark:border-bamboo-800 shadow-soft">
+      {/* Navigation Footer */}
+      <div className="flex items-center justify-between border-t border-bamboo-200 pt-6 dark:border-bamboo-800">
         {prevLesson ? (
           <button
             onClick={() => onSelectLesson(prevLesson.id)}
-            className="btn-ghost flex items-center gap-2 text-xs font-bold text-ink-700 dark:text-ink-300 hover:text-bamboo-700"
+            className="btn-ghost flex items-center gap-2 text-xs font-bold"
           >
-            <ArrowLeft className="h-4 w-4" /> Previous: {prevLesson.title}
+            <ArrowLeft className="h-4 w-4" /> Prev: {prevLesson.title}
           </button>
         ) : (
-          <button onClick={onNavigateModule} className="btn-ghost flex items-center gap-2 text-xs font-bold">
-            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-          </button>
+          <div />
         )}
-
-        <button
-          onClick={handleComplete}
-          className="btn-primary flex items-center gap-2 bg-gradient-to-r from-bamboo-600 to-golden-600 text-xs px-6 py-3 font-bold shadow-soft hover:opacity-90"
-        >
-          <Sparkles className="h-4 w-4" />
-          {isCompleted ? 'Completed (Earn XP)' : 'Complete Lesson & Claim XP 🎉'}
-        </button>
 
         {nextLesson ? (
           <button
             onClick={() => onSelectLesson(nextLesson.id)}
-            className="btn-primary flex items-center gap-2 bg-bamboo-600 hover:bg-bamboo-700 text-white text-xs px-6 py-3 font-bold shadow-soft transition-all"
+            className="btn-primary flex items-center gap-2 text-xs font-bold bg-bamboo-600 hover:bg-bamboo-700 text-white px-5 py-2.5 shadow-soft"
           >
-            <span>Next Lesson: <strong>{nextLesson.title}</strong> (அடுத்த பாடம்)</span>
-            <ArrowRight className="h-4 w-4" />
+            Next: {nextLesson.title} <ArrowRight className="h-4 w-4" />
           </button>
         ) : (
           <button
-            onClick={onNavigateModule}
-            className="btn-primary flex items-center gap-2 bg-emerald-600 text-white text-xs px-6 py-3 font-bold"
+            onClick={() => onNavigateModule()}
+            className="btn-primary flex items-center gap-2 text-xs font-bold bg-golden-500 hover:bg-golden-400 text-bamboo-950 px-5 py-2.5 shadow-soft"
           >
-            <span>Finish Course Track 🎉</span>
-            <CheckCircle2 className="h-4 w-4" />
+            Finish Module 🎉 <Trophy className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {/* Completion Modal */}
-      {showCompletionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl dark:bg-ink-900 border border-bamboo-100 dark:border-bamboo-800">
-            <span className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-golden-100 text-golden-600 dark:bg-golden-950 dark:text-golden-400 animate-bounce">
-              <Trophy className="h-10 w-10" />
-            </span>
-            <h2 className="mt-5 font-display text-2xl font-bold text-bamboo-950 dark:text-white">
-              🎉 Lesson Complete!
-            </h2>
-            <p className="font-tamil mt-2 text-sm text-bamboo-700 dark:text-bamboo-300">
-              வாழ்த்துகள்! நீங்கள் வெற்றிகரமாக பாடத்தை முடித்துவிட்டீர்கள்.
-            </p>
-
-            <div className="my-6 rounded-2xl bg-bamboo-50 p-4 dark:bg-ink-800 flex justify-around">
-              <div>
-                <span className="text-xs text-ink-500">XP Earned</span>
-                <p className="font-display text-xl font-bold text-golden-600">+{lesson.xp} XP</p>
-              </div>
-              <div className="border-r border-bamboo-200 dark:border-bamboo-700" />
-              <div>
-                <span className="text-xs text-ink-500">Lesson Status</span>
-                <p className="font-display text-xl font-bold text-bamboo-600">Completed</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {nextLesson ? (
-                <button
-                  onClick={() => {
-                    setShowCompletionModal(false);
-                    onSelectLesson(nextLesson.id);
-                  }}
-                  className="btn-primary w-full text-sm py-3 font-bold bg-bamboo-600 hover:bg-bamboo-700 text-white flex items-center justify-center gap-2"
-                >
-                  <span>Next Lesson: <strong>{nextLesson.title}</strong> (அடுத்த பாடம்)</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setShowCompletionModal(false);
-                    onNavigateModule();
-                  }}
-                  className="btn-primary w-full text-sm py-3 bg-emerald-600 text-white font-bold"
-                >
-                  Return to Course Dashboard
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  setShowCompletionModal(false);
-                  onNavigateModule();
-                }}
-                className="btn-ghost w-full text-xs py-2 text-ink-500"
-              >
-                Back to Module Courses
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Printable Cheat Sheet Modal */}
+      {showCheatSheet && (
+        <CheatSheetModal
+          isOpen={showCheatSheet}
+          onClose={() => setShowCheatSheet(false)}
+          title={lesson.title}
+          tamilTitle={lesson.tamilTitle}
+          conceptSummaryEn={lesson.concept}
+          conceptSummaryTa={lesson.tamilExplanation}
+          codeSnippet={lesson.code.snippet || lesson.code.parts.map((p) => p.text).join('')}
+          challengeTitle={lesson.challenge.title}
+          challengeDescription={lesson.challenge.prompt}
+        />
       )}
-
-      {/* PRINTABLE BILINGUAL CHEAT SHEET MODAL */}
-      <CheatSheetModal
-        isOpen={showCheatSheet}
-        onClose={() => setShowCheatSheet(false)}
-        title={lesson.title}
-        tamilTitle={lesson.tamilTitle}
-        conceptSummaryEn={lesson.concept}
-        conceptSummaryTa={lesson.tamilExplanation}
-        codeSnippet={lesson.code.snippet}
-        challengeTitle={lesson.challenge.title}
-        challengeDescription={lesson.challenge.prompt}
-      />
     </div>
   );
 }
