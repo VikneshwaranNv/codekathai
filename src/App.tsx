@@ -14,6 +14,7 @@ import PatternsPage from '@/pages/PatternsPage';
 import AITutorPage from '@/pages/AITutorPage';
 import BugHunterPage from '@/pages/BugHunterPage';
 import TranspilerPage from '@/pages/TranspilerPage';
+import VisualLearningPage from '@/pages/VisualLearningPage';
 import AuthPage from '@/pages/AuthPage';
 import AdminDashboardPage from '@/pages/AdminDashboardPage';
 import type { ModuleId, Level } from '@/types';
@@ -109,6 +110,7 @@ function MainApp() {
         {page === 'playground' && <PlaygroundPage onNavigate={navigate} />}
         {page === 'flowchart' && <FlowchartPage onNavigate={navigate} />}
         {page === 'matrix' && <TranspilerPage onNavigate={navigate} />}
+        {page === 'visual' && <VisualLearningPage onNavigate={navigate} />}
         {page === 'practice' && <PracticePage onNavigate={navigate} />}
         {page === 'patterns' && <PatternsPage onNavigate={navigate} />}
         {page === 'tutor' && <AITutorPage onNavigate={navigate} />}

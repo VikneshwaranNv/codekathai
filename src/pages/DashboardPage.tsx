@@ -89,6 +89,40 @@ export default function DashboardPage({
         <SectionProgressTracker progress={progress} />
       </div>
 
+      {/* Visual Learning Banner */}
+      <div
+        onClick={() => onNavigate('visual')}
+        className="mb-8 p-5 rounded-2xl border border-bamboo-200 bg-gradient-to-r from-emerald-50 via-teal-50 to-bamboo-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-bamboo-950/40 dark:border-emerald-800/60 shadow-soft hover:shadow-lg hover:scale-[1.008] transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-between gap-4"
+      >
+        <div className="flex items-center gap-4">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-600 text-white shadow-md text-xl shrink-0">
+            🖼️
+          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+                New Feature
+              </span>
+              <h3 className="font-display text-base sm:text-lg font-bold text-bamboo-950 dark:text-white">
+                Visual Learning Hub · விஷுவல் கற்றல்
+              </h3>
+            </div>
+            <p className="font-tamil text-xs text-ink-600 dark:text-ink-300 mt-1">
+              5 வண்ண விளக்கப்படங்கள் (For, While, Do-While Loops, Switch Case, Class &amp; Object) கிராமிய உவமைகளுடன்!
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigate('visual');
+          }}
+          className="btn-primary shrink-0 text-xs font-bold py-2 px-4 shadow-soft flex items-center gap-1.5"
+        >
+          View Visuals ➔
+        </button>
+      </div>
+
       {/* Modules Section Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>

@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Bug,
   Workflow,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
@@ -30,6 +31,7 @@ export type Page =
   | 'playground'
   | 'flowchart'
   | 'matrix'
+  | 'visual'
   | 'practice'
   | 'patterns'
   | 'tutor'
@@ -46,6 +48,7 @@ const baseLinks: { id: Page; label: string; icon: typeof BookOpen }[] = [
   { id: 'home', label: 'Home', icon: BookOpen },
   { id: 'levels', label: 'Levels', icon: GraduationCap },
   { id: 'dashboard', label: 'Courses', icon: LayoutGrid },
+  { id: 'visual', label: '🖼️ Visual Learning', icon: ImageIcon },
   { id: 'matrix', label: '🧬 C ↔ Java Matrix', icon: Sparkles },
   { id: 'bughunter', label: '🐛 Bug Hunter', icon: Bug },
   { id: 'flowchart', label: '📊 Flowchart', icon: Workflow },

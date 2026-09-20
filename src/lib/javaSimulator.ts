@@ -24,8 +24,11 @@ export async function compileAndRunJavaProgram(code: string, input: string = '')
     activeInput = '20';
   }
 
-  // 1. Try Wandbox Cloud OpenJDK Compiler API directly
+  // 1. Try Wandbox Cloud OpenJDK Compiler API with fast timeout
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+
     const res = await fetch('https://wandbox.org/api/compile.json', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,7 +37,9 @@ export async function compileAndRunJavaProgram(code: string, input: string = '')
         code: trimmed,
         stdin: activeInput,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
@@ -58,8 +63,8 @@ export async function compileAndRunJavaProgram(code: string, input: string = '')
         passed: !error || error.trim() === '',
       };
     }
-  } catch (err) {
-    console.warn('Wandbox API offline, using local Java simulator fallback:', err);
+  } catch {
+    // Wandbox offline or timed out, seamlessly proceed to local simulator
   }
 
   // 2. Local Educational Java Simulator fallback
@@ -81,9 +86,46 @@ export function simulateJavaProgram(code: string, input: string = ''): JavaRunRe
     return { output: '', error: 'Error: Java code must contain a class and a main method (public static void main).', passed: false };
   }
 
-  // Extract main method or class body
-  const mainMatch = trimmed.match(/(?:public\s+)?(?:static\s+)?void\s+main\s*\([^)]*\)\s*\{([\s\S]*)\}/);
-  let body = mainMatch ? mainMatch[1] : trimmed;
+  // Extract classes and methods defined outside or alongside Main
+  const classDefs: Record<string, { methods: Record<string, string> }> = {};
+  const classRegex = /class\s+([a-zA-Z_]\w*)\s*\{/g;
+  let cm: RegExpExecArray | null;
+  while ((cm = classRegex.exec(trimmed)) !== null) {
+    const clsName = cm[1];
+    if (clsName === 'Main') continue;
+    const startBrace = cm.index + cm[0].length - 1;
+    let bDepth = 1;
+    let endB = startBrace + 1;
+    while (endB < trimmed.length && bDepth > 0) {
+      if (trimmed[endB] === '{') bDepth++;
+      else if (trimmed[endB] === '}') bDepth--;
+      endB++;
+    }
+    const clsBody = trimmed.slice(startBrace + 1, endB - 1);
+    const methods: Record<string, string> = {};
+    const methodMatches = clsBody.matchAll(/void\s+([a-zA-Z_]\w*)\s*\([^)]*\)\s*\{([\s\S]*?)\}/g);
+    for (const mm of methodMatches) {
+      methods[mm[1]] = mm[2].trim();
+    }
+    classDefs[clsName] = { methods };
+  }
+
+  // Extract main method body with brace depth tracking
+  const mainIdx = trimmed.indexOf('main');
+  let body = trimmed;
+  if (mainIdx !== -1) {
+    const openBrace = trimmed.indexOf('{', mainIdx);
+    if (openBrace !== -1) {
+      let bDepth = 1;
+      let endIdx = openBrace + 1;
+      while (endIdx < trimmed.length && bDepth > 0) {
+        if (trimmed[endIdx] === '{') bDepth++;
+        else if (trimmed[endIdx] === '}') bDepth--;
+        endIdx++;
+      }
+      body = trimmed.slice(openBrace + 1, endIdx - 1);
+    }
+  }
 
   // Strip comments
   body = body.replace(/\/\/[^\n]*/g, '');
@@ -104,116 +146,236 @@ export function simulateJavaProgram(code: string, input: string = ''): JavaRunRe
     return '20';
   };
 
-  const lines = body.split('\n');
+  // Parse body statements respecting braces and parentheses
+  const statements: string[] = [];
+  let cur = '';
+  let depth = 0;
+  let pDepth = 0;
+  let inStr = false;
+  let qChar = '';
+
+  for (let idx = 0; idx < body.length; idx++) {
+    const ch = body[idx];
+    const prev = idx > 0 ? body[idx - 1] : '';
+
+    if (!inStr && (ch === '"' || ch === "'")) {
+      inStr = true;
+      qChar = ch;
+      cur += ch;
+    } else if (inStr && ch === qChar && prev !== '\\') {
+      inStr = false;
+      cur += ch;
+    } else if (!inStr && ch === '(') {
+      pDepth++;
+      cur += ch;
+    } else if (!inStr && ch === ')') {
+      pDepth--;
+      cur += ch;
+    } else if (!inStr && ch === '{') {
+      depth++;
+      cur += ch;
+    } else if (!inStr && ch === '}') {
+      depth--;
+      cur += ch;
+      if (depth === 0 && pDepth === 0) {
+        // Check if while(...) follows for do-while
+        const rest = body.slice(idx + 1);
+        const dwMatch = rest.match(/^\s*while\s*\([^)]*\)\s*;/);
+        if (dwMatch) {
+          cur += dwMatch[0];
+          idx += dwMatch[0].length;
+        }
+        statements.push(cur.trim());
+        cur = '';
+      }
+    } else if (!inStr && ch === ';' && depth === 0 && pDepth === 0) {
+      cur += ch;
+      statements.push(cur.trim());
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur.trim()) statements.push(cur.trim());
+
+  const executeStatement = (stmt: string) => {
+    stmt = stmt.trim();
+    if (!stmt) return;
+
+    // FOR LOOP: for(int i = 1; i <= 5; i++) { ... }
+    const forMatch = stmt.match(/^for\s*\(\s*int\s+([a-zA-Z_]\w*)\s*=\s*(\d+);\s*([^;]+);\s*([^)]+)\)\s*\{([\s\S]*?)\}$/);
+    if (forMatch) {
+      const [, varName, startVal, condStr, , loopBody] = forMatch;
+      const start = parseInt(startVal, 10);
+      variables[varName] = start;
+      let iterations = 0;
+      while (evaluateJavaCondition(condStr, variables) && iterations < 100) {
+        iterations++;
+        // Execute inner statements
+        const innerStmts = loopBody.split(';').map((s) => s.trim()).filter(Boolean);
+        for (const is of innerStmts) {
+          executeStatement(is + ';');
+        }
+        variables[varName] = Number(variables[varName]) + 1;
+      }
+      return;
+    }
+
+    // WHILE LOOP: while(waterLevel < 5) { ... }
+    const whileMatch = stmt.match(/^while\s*\(([^)]+)\)\s*\{([\s\S]*?)\}$/);
+    if (whileMatch && !stmt.startsWith('do')) {
+      const [, condStr, loopBody] = whileMatch;
+      let iterations = 0;
+      while (evaluateJavaCondition(condStr, variables) && iterations < 100) {
+        iterations++;
+        const innerStmts = loopBody.split(';').map((s) => s.trim()).filter(Boolean);
+        for (const is of innerStmts) {
+          executeStatement(is + ';');
+        }
+      }
+      return;
+    }
+
+    // DO-WHILE LOOP: do { ... } while(bucket <= 3);
+    const doWhileMatch = stmt.match(/^do\s*\{([\s\S]*?)\}\s*while\s*\(([^)]+)\);$/);
+    if (doWhileMatch) {
+      const [, loopBody, condStr] = doWhileMatch;
+      let iterations = 0;
+      do {
+        iterations++;
+        const innerStmts = loopBody.split(';').map((s) => s.trim()).filter(Boolean);
+        for (const is of innerStmts) {
+          executeStatement(is + ';');
+        }
+      } while (evaluateJavaCondition(condStr, variables) && iterations < 100);
+      return;
+    }
+
+    // SWITCH STATEMENT: switch(choice) { case 1: ... break; ... default: ... }
+    const switchMatch = stmt.match(/^switch\s*\(([^)]+)\)\s*\{([\s\S]*?)\}$/);
+    if (switchMatch) {
+      const [, varExpr, switchBody] = switchMatch;
+      const switchVal = String(evaluateJavaExpr(varExpr.trim(), variables));
+
+      // Match cases
+      const caseBlocks = switchBody.split(/case\s+/);
+      let matched = false;
+
+      for (let c = 1; c < caseBlocks.length; c++) {
+        const block = caseBlocks[c];
+        const colonIdx = block.indexOf(':');
+        if (colonIdx === -1) continue;
+        const caseVal = block.slice(0, colonIdx).trim();
+        const caseContent = block.slice(colonIdx + 1);
+
+        if (caseVal === switchVal) {
+          matched = true;
+          const caseStmts = caseContent.split(';').map((s) => s.trim()).filter(Boolean);
+          for (const cs of caseStmts) {
+            if (cs === 'break') break;
+            executeStatement(cs + ';');
+          }
+          break;
+        }
+      }
+
+      if (!matched && switchBody.includes('default:')) {
+        const defaultBlock = switchBody.slice(switchBody.indexOf('default:') + 8);
+        const defStmts = defaultBlock.split(';').map((s) => s.trim()).filter(Boolean);
+        for (const ds of defStmts) {
+          if (ds === 'break') break;
+          executeStatement(ds + ';');
+        }
+      }
+      return;
+    }
+
+    // PRINT STATEMENT: System.out.println / print
+    const printMatch = stmt.match(/^System\.out\.print(ln)?\s*\(([\s\S]*?)\);$/);
+    if (printMatch) {
+      const [, isLn, innerExpr] = printMatch;
+      output += evaluatePrintExpr(innerExpr.trim(), variables) + (isLn ? '\n' : '');
+      return;
+    }
+
+    // Variable declaration
+    const varDeclMatch = stmt.match(/^(int|double|float|boolean|String|char|var)\s+([a-zA-Z_]\w*)\s*=\s*([\s\S]+?);$/);
+    if (varDeclMatch) {
+      const [, , name, expr] = varDeclMatch;
+      let val: unknown = expr.trim();
+      if (expr.includes('scanner.nextInt()')) {
+        val = parseInt(readNextInput(), 10) || 0;
+      } else if (expr.includes('scanner.nextDouble()') || expr.includes('scanner.nextFloat()')) {
+        val = parseFloat(readNextInput()) || 0.0;
+      } else if (expr.includes('scanner.nextLine()') || expr.includes('scanner.next()')) {
+        val = readNextInput();
+      } else {
+        val = evaluateJavaExpr(expr, variables);
+      }
+      variables[name] = val;
+      return;
+    }
+
+    // Increment / Decrement (i++; waterLevel++;)
+    const incMatch = stmt.match(/^([a-zA-Z_]\w*)\s*(\+\+|--);$/);
+    if (incMatch) {
+      const [, name, op] = incMatch;
+      if (name in variables) {
+        variables[name] = op === '++' ? Number(variables[name]) + 1 : Number(variables[name]) - 1;
+      }
+      return;
+    }
+
+    // Object Instantiation (Cow c1 = new Cow();)
+    const objInstMatch = stmt.match(/^([a-zA-Z_]\w*)\s+([a-zA-Z_]\w*)\s*=\s*new\s+\1\([^)]*\);$/);
+    if (objInstMatch) {
+      const [, className, objName] = objInstMatch;
+      variables[objName] = { _class: className };
+      return;
+    }
+
+    // Property assignment (c1.name = "Lakshmi";)
+    const propMatch = stmt.match(/^([a-zA-Z_]\w*)\.([a-zA-Z_]\w*)\s*=\s*([\s\S]+?);$/);
+    if (propMatch) {
+      const [, objName, propName, rawVal] = propMatch;
+      const val = evaluateJavaExpr(rawVal.trim(), variables);
+      if (typeof variables[objName] === 'object' && variables[objName] !== null) {
+        (variables[objName] as Record<string, unknown>)[propName] = val;
+      }
+      return;
+    }
+
+    // Method invocation (c1.sound();)
+    const methodMatch = stmt.match(/^([a-zA-Z_]\w*)\.([a-zA-Z_]\w*)\s*\([^)]*\);$/);
+    if (methodMatch) {
+      const [, objName, methodName] = methodMatch;
+      const obj = variables[objName] as Record<string, unknown> | undefined;
+      const clsName = obj?._class as string | undefined;
+      if (clsName && classDefs[clsName]?.methods[methodName]) {
+        const methodBody = classDefs[clsName].methods[methodName];
+        // Execute method body in context of obj properties
+        const methodScope = { ...variables, ...obj };
+        const methodPrint = methodBody.match(/System\.out\.print(ln)?\s*\(([\s\S]*?)\);/);
+        if (methodPrint) {
+          const [, isLn, innerExpr] = methodPrint;
+          output += evaluatePrintExpr(innerExpr.trim(), methodScope) + (isLn ? '\n' : '');
+        }
+      }
+      return;
+    }
+
+    // Variable re-assignment (choice = 2; count = count + 1;)
+    const reassignMatch = stmt.match(/^([a-zA-Z_]\w*)\s*=\s*([\s\S]+?);$/);
+    if (reassignMatch) {
+      const [, name, expr] = reassignMatch;
+      variables[name] = evaluateJavaExpr(expr, variables);
+      return;
+    }
+  };
 
   try {
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      // 1. Variable Declarations (int, double, float, boolean, String, char)
-      const varDeclMatch = line.match(/^(int|double|float|boolean|String|char|var)\s+([a-zA-Z_]\w*)\s*=\s*(.+);$/);
-      if (varDeclMatch) {
-        const [, , name, expr] = varDeclMatch;
-        let val: unknown = expr.trim();
-
-        if (expr.includes('scanner.nextInt()')) {
-          val = parseInt(readNextInput(), 10) || 0;
-        } else if (expr.includes('scanner.nextDouble()') || expr.includes('scanner.nextFloat()')) {
-          val = parseFloat(readNextInput()) || 0.0;
-        } else if (expr.includes('scanner.nextLine()') || expr.includes('scanner.next()')) {
-          val = readNextInput();
-        } else {
-          val = evaluateJavaExpr(expr, variables);
-        }
-
-        variables[name] = val;
-        continue;
-      }
-
-      // 2. Variable Reassignment (age = 25; count++;)
-      const incMatch = line.match(/^([a-zA-Z_]\w*)\s*(\+\+|--);$/);
-      if (incMatch) {
-        const [, name, op] = incMatch;
-        if (name in variables) {
-          variables[name] = op === '++' ? Number(variables[name]) + 1 : Number(variables[name]) - 1;
-        }
-        continue;
-      }
-
-      const reassignMatch = line.match(/^([a-zA-Z_]\w*)\s*=\s*(.+);$/);
-      if (reassignMatch && !line.startsWith('return') && !line.startsWith('if') && !line.startsWith('for')) {
-        const [, name, expr] = reassignMatch;
-        variables[name] = evaluateJavaExpr(expr, variables);
-        continue;
-      }
-
-      // 3. Array Declaration (int[] nums = {1, 2, 3};)
-      const arrayDeclMatch = line.match(/^(int|double|String)\[\]\s+([a-zA-Z_]\w*)\s*=\s*\{([^}]+)\};$/);
-      if (arrayDeclMatch) {
-        const [, , name, rawItems] = arrayDeclMatch;
-        const items = rawItems.split(',').map((item) => evaluateJavaExpr(item.trim(), variables));
-        variables[name] = items;
-        continue;
-      }
-
-      // 4. Object Instantiation (Student s = new Student();)
-      const objMatch = line.match(/^([a-zA-Z_]\w*)\s+([a-zA-Z_]\w*)\s*=\s*new\s+\1\([^)]*\);$/);
-      if (objMatch) {
-        const [, className, objName] = objMatch;
-        variables[objName] = { _class: className, id: `0x${Math.floor(Math.random() * 0xffff).toString(16)}` };
-        continue;
-      }
-
-      // 5. System.out.println & System.out.print
-      const printMatch = line.match(/System\.out\.print(ln)?\s*\((.*)\);/);
-      if (printMatch) {
-        const [, isLn, innerExpr] = printMatch;
-        const printedVal = evaluatePrintExpr(innerExpr.trim(), variables);
-        output += printedVal + (isLn ? '\n' : '');
-        continue;
-      }
-
-      // 6. For Loop Counter (for (int i = 0; i < 5; i++))
-      const forMatch = line.match(/for\s*\(\s*int\s+([a-zA-Z_]\w*)\s*=\s*(\d+);\s*\1\s*<\s*(\d+);\s*\1\+\+\s*\)\s*\{([^}]*)\}/);
-      if (forMatch) {
-        const [, varName, startVal, endVal, loopBody] = forMatch;
-        const start = parseInt(startVal, 10);
-        const end = parseInt(endVal, 10);
-
-        for (let loopI = start; loopI < end; loopI++) {
-          variables[varName] = loopI;
-          const innerLines = loopBody.split(';');
-          innerLines.forEach((innerL) => {
-            const innerPrint = innerL.match(/System\.out\.print(ln)?\s*\((.*)\)/);
-            if (innerPrint) {
-              const [, isLn, innerExpr] = innerPrint;
-              output += evaluatePrintExpr(innerExpr.trim(), variables) + (isLn ? '\n' : '');
-            }
-          });
-        }
-        continue;
-      }
-
-      // 7. If-Else Condition
-      const ifMatch = line.match(/if\s*\(([^)]+)\)\s*\{([^}]+)\}(?:\s*else\s*\{([^}]+)\})?/);
-      if (ifMatch) {
-        const [, conditionStr, ifBody, elseBody] = ifMatch;
-        const condResult = evaluateJavaCondition(conditionStr.trim(), variables);
-
-        const targetBody = condResult ? ifBody : elseBody;
-        if (targetBody) {
-          const innerLines = targetBody.split(';');
-          innerLines.forEach((innerL) => {
-            const innerPrint = innerL.match(/System\.out\.print(ln)?\s*\((.*)\)/);
-            if (innerPrint) {
-              const [, isLn, innerExpr] = innerPrint;
-              output += evaluatePrintExpr(innerExpr.trim(), variables) + (isLn ? '\n' : '');
-            }
-          });
-        }
-        continue;
-      }
+    for (const stmt of statements) {
+      executeStatement(stmt);
     }
 
     if (!output && Object.keys(variables).length > 0) {

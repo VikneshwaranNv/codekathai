@@ -56,6 +56,14 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               <Video className="h-5 w-5 text-bamboo-600 dark:text-bamboo-400" /> Learning Through Reels 🎬
             </button>
 
+            {/* Visual Learning Option */}
+            <button
+              onClick={() => onNavigate('visual')}
+              className="btn-secondary px-6 py-3.5 text-base font-bold flex items-center gap-2 border-emerald-300 text-emerald-950 dark:text-white hover:bg-emerald-100 dark:hover:bg-ink-800 hover:scale-105 hover:shadow-md transition-all duration-300"
+            >
+              <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /> Visual Learning 🖼️
+            </button>
+
             <button
               onClick={() => onNavigate('levels')}
               className="btn-ghost px-6 py-3.5 text-base font-bold flex items-center gap-2 text-ink-600 dark:text-ink-300 hover:scale-105 transition-all duration-300"
@@ -91,16 +99,22 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             </p>
           </div>
 
-          {/* Card 2: Visual Stories */}
-          <div className="group card p-6 border border-bamboo-100 dark:border-bamboo-800 hover:-translate-y-2.5 hover:shadow-2xl hover:border-golden-400 dark:hover:border-golden-500 hover:ring-4 hover:ring-golden-500/10 transition-all duration-300 cursor-pointer bg-gradient-to-b from-white via-white to-golden-50/30 dark:from-ink-900 dark:to-ink-900/80">
+          {/* Card 2: Visual Learning & Stories */}
+          <div
+            onClick={() => onNavigate('visual')}
+            className="group card p-6 border border-bamboo-100 dark:border-bamboo-800 hover:-translate-y-2.5 hover:shadow-2xl hover:border-golden-400 dark:hover:border-golden-500 hover:ring-4 hover:ring-golden-500/10 transition-all duration-300 cursor-pointer bg-gradient-to-b from-white via-white to-golden-50/30 dark:from-ink-900 dark:to-ink-900/80"
+          >
             <span className="grid h-12 w-12 place-items-center rounded-2xl bg-golden-100 text-golden-600 dark:bg-golden-950 dark:text-golden-400 mb-4 group-hover:scale-110 group-hover:rotate-6 group-hover:bg-golden-500 group-hover:text-ink-950 transition-all duration-300 shadow-sm">
               <PlayCircle className="h-6 w-6" />
             </span>
-            <h3 className="font-display text-lg font-bold text-bamboo-950 dark:text-white group-hover:text-golden-600 dark:group-hover:text-golden-400 transition-colors">
-              Visual Stories (Kavi & Code Buddy)
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-lg font-bold text-bamboo-950 dark:text-white group-hover:text-golden-600 dark:group-hover:text-golden-400 transition-colors">
+                Visual Learning &amp; Stories 🖼️
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-golden-100 text-golden-800 dark:bg-golden-950 dark:text-golden-300">New</span>
+            </div>
             <p className="font-tamil mt-2 text-xs text-ink-600 dark:text-ink-300 leading-relaxed">
-              கவி மற்றும் கோட் புட்டி கதாபாத்திரங்களின் நகைச்சுவையான உரையாடல்கள் மூலம் புரிதல்.
+              நிஜ வாழ்க்கை கிராமிய உவமைகள் மற்றும் வண்ண விளக்கப்படங்கள் மூலம் Java &amp; C கருத்துகளைப் புரிந்து கொள்ளலாம்.
             </p>
           </div>
 
