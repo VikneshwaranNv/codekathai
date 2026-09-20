@@ -136,9 +136,14 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
 
         {/* User Badge & Actions */}
         <div className="hidden items-center gap-2 lg:flex shrink-0">
-          <span className="rounded-full bg-bamboo-100 px-3 py-1 text-xs font-bold text-bamboo-800 dark:bg-bamboo-950 dark:text-bamboo-300 max-w-[120px] xl:max-w-[160px] truncate">
-            {displayName}
-          </span>
+          <button
+            onClick={() => go('profile')}
+            className="flex items-center gap-1.5 rounded-full bg-bamboo-100 hover:bg-bamboo-200 px-3 py-1 text-xs font-bold text-bamboo-800 dark:bg-bamboo-950 dark:hover:bg-bamboo-900 dark:text-bamboo-300 max-w-[140px] xl:max-w-[180px] truncate transition-all cursor-pointer shadow-xs border border-bamboo-200/60 dark:border-bamboo-800/60"
+            title="View My Profile & Progress"
+          >
+            <User className="h-3.5 w-3.5 text-bamboo-600 dark:text-bamboo-400 shrink-0" />
+            <span className="truncate">{displayName}</span>
+          </button>
           <button
             onClick={() => signOut()}
             className="btn-ghost p-2 text-xs text-ink-500 hover:text-red-600"
@@ -164,9 +169,13 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
       {open && (
         <div className="border-t border-bamboo-100 bg-white/95 backdrop-blur-lg p-4 dark:border-bamboo-800 dark:bg-ink-900 lg:hidden max-w-full overflow-hidden shadow-2xl">
           <div className="mb-3 flex items-center justify-between border-b border-bamboo-100 pb-2 dark:border-bamboo-800">
-            <span className="text-xs font-bold text-bamboo-700 dark:text-bamboo-300 truncate max-w-[200px]">
+            <button
+              onClick={() => go('profile')}
+              className="text-xs font-bold text-bamboo-700 dark:text-bamboo-300 truncate max-w-[200px] flex items-center gap-1 hover:underline cursor-pointer"
+            >
+              <User className="h-3.5 w-3.5" />
               {displayName} {isAdmin && '(Admin)'}
-            </span>
+            </button>
             <span className="text-[10px] uppercase font-bold text-ink-500 bg-ink-100 dark:bg-ink-800 px-2 py-0.5 rounded-full capitalize">
               {profile?.currentLevel ?? 'beginner'} Level
             </span>

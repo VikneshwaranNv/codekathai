@@ -116,8 +116,11 @@ export const javaModules: Module[] = [
     progress: 0,
     topics: [
       { id: 'java-encapsulation', title: 'Encapsulation & Private Fields', tamilTitle: 'உறைபொதியாக்கம் (Encapsulation)' },
+      { id: 'java-polymorphism', title: 'Polymorphism & Method Overriding', tamilTitle: 'பலஉருவாக்கம் (Polymorphism)' },
       { id: 'java-abstract-class', title: 'Abstract Classes & Abstract Methods', tamilTitle: 'அருவ வகுப்பு (Abstract Class)' },
       { id: 'java-interface', title: 'Interfaces & Multiple Inheritance', tamilTitle: 'இடைமுகம் (Interface)' },
+      { id: 'java-packages', title: 'Packages & Namespaces (import com.myapp)', tamilTitle: 'தொகுப்புகள் (Packages)' },
+      { id: 'java-exception-handling', title: 'Exception Handling (try - catch - finally)', tamilTitle: 'விதிவிலக்கு மேலாண்மை (Exception Handling)' },
     ],
   },
 ];
@@ -152,8 +155,11 @@ const topicModuleMap: Record<string, ModuleId> = {
   'java-hybrid-inheritance': 'inheritance',
   'java-super-keyword': 'inheritance',
   'java-encapsulation': 'oop_advanced',
+  'java-polymorphism': 'oop_advanced',
   'java-abstract-class': 'oop_advanced',
   'java-interface': 'oop_advanced',
+  'java-packages': 'oop_advanced',
+  'java-exception-handling': 'oop_advanced',
 };
 
 /**
@@ -2112,6 +2118,221 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
         starter: `interface Camera { void takePhoto(); }\nclass SmartPhone implements Camera {\n    public void takePhoto() { System.out.println("Photo taken!"); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        SmartPhone sp = new SmartPhone();\n        sp.takePhoto();\n    }\n}`,
         hint: 'sp.takePhoto();',
         expected: 'Photo taken!',
+      },
+    };
+  }
+
+  // 27. JAVA POLYMORPHISM
+  if (topicId === 'java-polymorphism') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Polymorphism & Method Overriding',
+      tamilTitle: 'பலஉருவாக்கம் (Polymorphism)',
+      duration: 10,
+      xp: isAdv ? 50 : isInter ? 35 : 20,
+      concept: 'Polymorphism allows one action to take many forms. Method Overriding lets a subclass provide a specific implementation of a method defined in its superclass.',
+      tamilExplanation: 'Polymorphism என்பது ஒரே பெயருடைய செயல்முறை பல வடிவங்களில் செயல்படுவதாகும். Subclass தனது Parent class முறைமையை மேலெழுதுவது (Overriding) இதற்கோர் சிறந்த உதாரணம்.',
+      englishTerms: [
+        { term: 'Polymorphism', meaning: 'பல வடிவங்கள் எடுக்கும் திறன் (Poly = Many, Morph = Form)' },
+        { term: 'Method Overriding', meaning: 'தாய் வகுப்பின் முறைமையை சேய் வகுப்பில் மேலெழுதுதல்' },
+        { term: '@Override', meaning: 'முறைமை மேலெழுதப் பட்டுள்ளதை உணர்த்தும் Annotation' },
+      ],
+      realLife: {
+        title: 'Animal Sound Analogy (மிருகங்களின் ஒலி)',
+        body: 'அனைத்து மிருகங்களுக்கும் makeSound() உண்டு. ஆனால் நாய் (Dog) குரைக்கும் "Woof!", பூனை (Cat) கத்தும் "Meow!" - பெயர் ஒன்று, வடிவம் வேறு!',
+      },
+      visualExplanation: {
+        title: 'Polymorphism Overloading & Overriding Diagram',
+        description: 'Method Overloading vs Method Overriding dynamic execution behavior.',
+        diagramType: 'polymorphism',
+      },
+      code: {
+        snippet: `class Animal {\n    void makeSound() {\n        System.out.println("Animal makes a sound");\n    }\n}\nclass Dog extends Animal {\n    @Override\n    void makeSound() {\n        System.out.println("Dog barks: Woof Woof!");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Animal a = new Dog();\n        a.makeSound();\n    }\n}`,
+        parts: [
+          { text: '@Override\n    void ', tone: 'keyword' },
+          { text: 'makeSound() {\n        System.out.println("Dog barks: Woof Woof!");\n    }', tone: 'plain' },
+        ],
+        explanation: [
+          { token: '@Override', meaning: 'Animal வகுப்பின் makeSound() முறைமையை மேலெழுதுகிறது' },
+        ],
+      },
+      outputExplanation: 'Dog barks: Woof Woof!',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'happy',
+          visual: 'code',
+          dialogue: 'Animal a = new Dog(); என எழுதலாமா?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'நிச்சயமாக! Parent குறிப்பு (Animal) Child பொருளை (Dog) சுட்டலாம்! இதுவே Upcasting / Dynamic Polymorphism!',
+        },
+      ],
+      practice: {
+        question: 'Which concept refers to defining a method in a subclass that already exists in its superclass?',
+        options: ['Method Overriding', 'Method Overloading', 'Encapsulation', 'Abstraction'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! Redefining a parent method in subclass is Method Overriding.',
+      },
+      challenge: {
+        title: 'Polymorphism Call',
+        prompt: 'a.makeSound(); அச்சிடுங்கள்.',
+        starter: `class Animal { void makeSound() { System.out.println("Sound"); } }\nclass Dog extends Animal {\n    void makeSound() { System.out.println("Woof"); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Animal a = new Dog();\n        a.makeSound();\n    }\n}`,
+        hint: 'a.makeSound();',
+        expected: 'Woof',
+      },
+    };
+  }
+
+  // 28. JAVA PACKAGES
+  if (topicId === 'java-packages') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Packages & Namespaces (import com.myapp)',
+      tamilTitle: 'தொகுப்புகள் (Packages)',
+      duration: 10,
+      xp: isAdv ? 45 : isInter ? 30 : 20,
+      concept: 'Packages group related classes into folder namespaces, preventing class name conflicts and controlling access levels.',
+      tamilExplanation: 'Package என்பது ஒரே மாதிரியான Java வகுப்புகளை அடைவு (Folder) கட்டமைப்பில் ஒழுங்குபடுத்தும் தொகுப்பாகும். பெயர்கள் மோதுவதைத் தடுக்கும்.',
+      englishTerms: [
+        { term: 'package', meaning: 'வகுப்புகளைத் தொகுக்கும் அடைவு' },
+        { term: 'import', meaning: 'மற்ற தொகுப்பில் உள்ள வகுப்பைப் பயன்படுத்தும் சொல்' },
+      ],
+      realLife: {
+        title: 'Library Book Sections (நூலக புத்தகப் பிரிவுகள்)',
+        body: 'அறிவியல், கணிதம் புத்தகங்களை தனித்தனி அலமாரியில் அடுக்கி வைப்பது போல, Java வகுப்புகளை Package கோப்புறைகளில் சேமிப்பது எளிது!',
+      },
+      visualExplanation: {
+        title: 'Package Namespace Architecture',
+        description: 'com.myapp.models package containing Student.class & Main.java importing it.',
+        diagramType: 'packages',
+      },
+      code: {
+        snippet: `// File: com/myapp/Main.java\npackage com.myapp;\n\nimport java.util.ArrayList;\n\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> list = new ArrayList<>();\n        list.add("Java Package");\n        System.out.println(list.get(0));\n    }\n}`,
+        parts: [
+          { text: 'package ', tone: 'keyword' },
+          { text: 'com.myapp;\n\n', tone: 'plain' },
+          { text: 'import ', tone: 'keyword' },
+          { text: 'java.util.ArrayList;\n', tone: 'name' },
+        ],
+        explanation: [
+          { token: 'package com.myapp', meaning: 'com.myapp என்ற தொகுப்புப் பெயர்' },
+          { token: 'import java.util.ArrayList', meaning: 'java.util தொகுப்பில் உள்ள ArrayList வகுப்பைச் சேர்த்தல்' },
+        ],
+      },
+      outputExplanation: 'Java Package',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'curious',
+          visual: 'code',
+          dialogue: 'Package பெயர்களை எப்படி வைப்பார்கள் Buddy?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'வழக்கமாக நிறுவனங்களின் domain பெயரின் தலைகீழ் வடிவத்தைப் பயன்படுத்துவர் (எ.கா: com.codekathai.app)!',
+        },
+      ],
+      practice: {
+        question: 'Which keyword imports a built-in or custom package into a Java file?',
+        options: ['import', 'package', 'include', 'using'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! `import` keyword brings package classes into scope.',
+      },
+      challenge: {
+        title: 'Import Package Output',
+        prompt: 'list.get(0) அச்சிடுங்கள்.',
+        starter: `import java.util.ArrayList;\n\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> list = new ArrayList<>();\n        list.add("Package Success");\n        System.out.println(list.get(0));\n    }\n}`,
+        hint: 'System.out.println(list.get(0));',
+        expected: 'Package Success',
+      },
+    };
+  }
+
+  // 29. JAVA EXCEPTION HANDLING
+  if (topicId === 'java-exception-handling') {
+    return {
+      id: topicId,
+      moduleId: modId,
+      level,
+      title: 'Exception Handling (try - catch - finally)',
+      tamilTitle: 'விதிவிலக்கு மேலாண்மை (Exception Handling)',
+      duration: 12,
+      xp: isAdv ? 55 : isInter ? 40 : 25,
+      concept: 'Exception Handling manages runtime errors (like division by zero or null pointer) gracefully using try, catch, and finally blocks without crashing the app.',
+      tamilExplanation: 'நிரல் இயங்கும்போது ஏற்படும் எதிர்பாராத பிழைகளை (Runtime Errors) செயலியை முடக்காமல் (Crash) பாதுகாப்பாகக் கையாள்வதே Exception Handling ஆகும்.',
+      englishTerms: [
+        { term: 'try', meaning: 'பிழை எழ வாய்ப்புள்ள ஆபத்தான நிரல் பகுதி' },
+        { term: 'catch', meaning: 'எழும் பிழையைப் பிடித்து கையாளும் பகுதி' },
+        { term: 'finally', meaning: 'பிழை வந்தாலும் வராவிட்டாலும் எப்போதும் இயங்கும் பகுதி' },
+      ],
+      realLife: {
+        title: 'Helmet & Airbag Safety (பாதுகாப்பு ஏர்பேக்)',
+        body: 'வாகனத்தில் ஏர்பேக் விபத்து நேரும் போது உயிரைப் பாதுகாப்பது போல, try-catch பிழை வரும் போது செயலி முடங்குவதைத் தடுக்கும்!',
+      },
+      visualExplanation: {
+        title: 'Exception Handling try-catch-finally Pipeline',
+        description: 'try block triggers ArithmeticException -> caught by catch block -> finally block executes cleanup.',
+        diagramType: 'exception-handling',
+      },
+      code: {
+        snippet: `public class Main {\n    public static void main(String[] args) {\n        try {\n            int result = 10 / 0;\n            System.out.println("Result: " + result);\n        } catch (ArithmeticException e) {\n            System.out.println("Caught Error: Cannot divide by zero!");\n        } finally {\n            System.out.println("Cleanup completed safely.");\n        }\n    }\n}`,
+        parts: [
+          { text: 'try {\n', tone: 'keyword' },
+          { text: '    int result = 10 / 0;\n} ', tone: 'plain' },
+          { text: 'catch (ArithmeticException e) {\n', tone: 'keyword' },
+          { text: '    System.out.println("Caught Error: Cannot divide by zero!");\n} ', tone: 'plain' },
+          { text: 'finally {\n', tone: 'keyword' },
+          { text: '    System.out.println("Cleanup completed safely.");\n}', tone: 'plain' },
+        ],
+        explanation: [
+          { token: 'try', meaning: '10 / 0 பிழையைக் கொண்ட முயற்சி தொகுதி' },
+          { token: 'catch', meaning: 'ArithmeticException பிழையைப் பிடிக்கும் தொகுதி' },
+          { token: 'finally', meaning: 'எப்போதும் இயங்கும் தூய்மைப்படுத்தும் தொகுதி' },
+        ],
+      },
+      outputExplanation: 'Caught Error: Cannot divide by zero!\nCleanup completed safely.',
+      story: [
+        {
+          id: 1,
+          speaker: 'kavi',
+          emotion: 'curious',
+          visual: 'code',
+          dialogue: 'try-catch இல்லையென்றால் என்ன ஆகும்?',
+        },
+        {
+          id: 2,
+          speaker: 'buddy',
+          emotion: 'explain',
+          visual: 'code',
+          dialogue: 'நிரல் பாதியில் திடீரென Crash ஆகிவிடும்! try-catch போட்டால் பிழையைக் கையாண்டு தொடரலாம்!',
+        },
+      ],
+      practice: {
+        question: 'Which block in Java Exception Handling ALWAYS executes regardless of whether an exception occurs?',
+        options: ['finally', 'catch', 'try', 'throw'],
+        answerIndex: 0,
+        explanation: '🎉 Correct! The `finally` block always runs.',
+      },
+      challenge: {
+        title: 'Exception Catch Output',
+        prompt: 'catch பகுதியில் பிழையை அச்சிடுங்கள்.',
+        starter: `public class Main {\n    public static void main(String[] args) {\n        try {\n            int a = 5 / 0;\n        } catch (Exception e) {\n            System.out.println("Error Handled");\n        }\n    }\n}`,
+        hint: 'System.out.println("Error Handled");',
+        expected: 'Error Handled',
       },
     };
   }
