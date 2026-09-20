@@ -780,7 +780,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
           id: 1,
           speaker: 'kavi',
           emotion: 'curious',
-          visual: 'stack',
+          visual: 'class-object',
           dialogue: 'ஒரு Class-லிருந்து எத்தனை Objects உருவாக்கலாம்?',
         },
         {
@@ -1057,7 +1057,7 @@ export function getJavaLessonForLevel(topicId: string, level: Level = 'beginner'
           id: 1,
           speaker: 'kavi',
           emotion: 'curious',
-          visual: 'stack',
+          visual: 'code',
           dialogue: 'Method பயன்படுத்துவதால் என்ன நன்மை?',
         },
         {

@@ -167,9 +167,9 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
     if (stmt.match(/^(\+\+|--)?\w+(\+\+|--)?;?$/)) {
       const v = stmt.replace(/(\+\+|--|;)/g, '').trim();
       if (stmt.includes('++')) {
-        variables[v] = (variables[v] || 0) + 1;
+        variables[v] = Number(variables[v] || 0) + 1;
       } else if (stmt.includes('--')) {
-        variables[v] = (variables[v] || 0) - 1;
+        variables[v] = Number(variables[v] || 0) - 1;
       }
       return true;
     }
@@ -180,11 +180,12 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
       const name = compoundMatch[1];
       const op = compoundMatch[2];
       const val = resolveValue(compoundMatch[3].replace(/;$/, ''));
-      const curr = variables[name] || 0;
-      if (op === '*=') variables[name] = curr * val;
-      else if (op === '+=') variables[name] = curr + val;
-      else if (op === '-=') variables[name] = curr - val;
-      else if (op === '/=') variables[name] = val !== 0 ? curr / val : 0;
+      const curr = Number(variables[name] || 0);
+      const numVal = Number(val);
+      if (op === '*=') variables[name] = curr * numVal;
+      else if (op === '+=') variables[name] = curr + numVal;
+      else if (op === '-=') variables[name] = curr - numVal;
+      else if (op === '/=') variables[name] = numVal !== 0 ? curr / numVal : 0;
       return true;
     }
 

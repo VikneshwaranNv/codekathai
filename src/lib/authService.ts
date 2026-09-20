@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { UserProfile, UserRole } from '@/types';
+import type { UserProfile, UserRole, Level } from '@/types';
 
 export interface AuthResult {
   success: boolean;

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { CodePart } from '@/types';
+import { useLanguage } from '@/lib/languageContext';
 
 interface CodeBlockProps {
   parts: CodePart[];
   caption?: string;
   animate?: boolean;
   className?: string;
+  filename?: string;
 }
 
 const toneClasses: Record<string, string> = {
@@ -19,8 +21,10 @@ const toneClasses: Record<string, string> = {
   plain: 'text-gray-100 font-medium',       // Plain Variables & Text -> Soft White
 };
 
-export default function CodeBlock({ parts, caption, animate = true, className = '' }: CodeBlockProps) {
+export default function CodeBlock({ parts, caption, animate = true, className = '', filename }: CodeBlockProps) {
+  const { language } = useLanguage();
   const [revealed, setRevealed] = useState(animate ? 0 : parts.length);
+  const displayFilename = filename || (language === 'java' ? 'Main.java' : 'main.c');
 
   useEffect(() => {
     if (!animate) {
@@ -46,7 +50,7 @@ export default function CodeBlock({ parts, caption, animate = true, className = 
           <span className="h-3 w-3 rounded-full bg-red-500/80" />
           <span className="h-3 w-3 rounded-full bg-amber-400/80" />
           <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
-          <span className="ml-2 font-mono text-xs font-bold text-emerald-400">code.c</span>
+          <span className="ml-2 font-mono text-xs font-bold text-emerald-400">{displayFilename}</span>
         </div>
         <div className="flex items-center gap-2.5 text-[11px] font-mono select-none">
           <span className="text-sky-400 font-bold">Data Type</span>

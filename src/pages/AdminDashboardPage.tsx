@@ -393,7 +393,7 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
                 <ArrowUpDown className="h-4 w-4 text-bamboo-600" />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'progress' | 'joined' | 'xp' | 'name')}
+                  onChange={(e) => setSortBy(e.target.value as 'progress' | 'joined' | 'name')}
                   className="rounded-xl border border-bamboo-200 bg-white py-2 px-3 text-xs font-semibold text-ink-900 focus:border-bamboo-600 focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white cursor-pointer"
                 >
                   <option value="progress">Highest Progress %</option>
