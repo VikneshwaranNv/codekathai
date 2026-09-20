@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Play, Video, Sparkles, Film, CheckCircle2 } from 'lucide-react';
+import { X, Play, Video, CheckCircle2 } from 'lucide-react';
 
 interface VideoModalProps {
   isOpen: boolean;

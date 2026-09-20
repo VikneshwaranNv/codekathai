@@ -1,6 +1,12 @@
 // High-Fidelity Web Audio API SFX Engine & Sci-Fi Keyboard Synthesizer for Code Kathai
 // 100% laptop & browser compatibility with automatic Web Audio unlocker
 
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
 const SOUND_MUTED_KEY = 'codekathai_sfx_muted';
 
 let audioCtx: AudioContext | null = null;
@@ -10,7 +16,7 @@ function unlockAudio(): void {
   if (isUnlocked && audioCtx && audioCtx.state === 'running') return;
 
   if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (AudioContextClass) {
       audioCtx = new AudioContextClass();
     }
@@ -107,7 +113,7 @@ export function playMechanicalKeyPressSound(key?: string): void {
     osc2.start(now);
     osc1.stop(now + (isSpaceOrEnter ? 0.25 : 0.15));
     osc2.stop(now + (isSpaceOrEnter ? 0.25 : 0.15));
-  } catch (e) {
+  } catch {
     // Ignore audio context errors
   }
 }

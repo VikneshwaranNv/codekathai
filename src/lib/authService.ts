@@ -129,27 +129,30 @@ export function isValidFullNameFormat(name: string): { valid: boolean; error?: s
 }
 
 // Helper to extract first matching row safely when multiple rows exist per email
-function extractProfile(row: any): UserProfile {
+function extractProfile(row: Record<string, unknown>): UserProfile {
+  const r = row;
+  const email = typeof r.email === 'string' ? r.email : undefined;
+  const fullName = typeof r.full_name === 'string' ? r.full_name : email?.split('@')[0] || 'Learner';
   return {
-    id: row.id || 'usr_' + Date.now(),
-    name: row.full_name || row.email?.split('@')[0] || 'Learner',
-    email: row.email,
-    role: (row.role as UserRole) || 'student',
-    xp: row.xp ?? 150,
-    streak: row.streak ?? 1,
-    completedLessons: Array.isArray(row.completed_lessons)
-      ? row.completed_lessons
-      : typeof row.completed_lessons === 'string'
-      ? JSON.parse(row.completed_lessons)
+    id: typeof r.id === 'string' ? r.id : 'usr_' + Date.now(),
+    name: fullName,
+    email,
+    role: (r.role as UserRole) || 'student',
+    xp: typeof r.xp === 'number' ? r.xp : 150,
+    streak: typeof r.streak === 'number' ? r.streak : 1,
+    completedLessons: Array.isArray(r.completed_lessons)
+      ? (r.completed_lessons as string[])
+      : typeof r.completed_lessons === 'string'
+      ? JSON.parse(r.completed_lessons)
       : [],
-    solvedPractice: Array.isArray(row.solved_practice) ? row.solved_practice : [],
-    completedPatterns: Array.isArray(row.completed_patterns) ? row.completed_patterns : [],
-    playgroundRunsCount: row.playground_runs_count ?? 0,
-    aiVisualsCount: row.ai_visuals_count ?? 0,
-    badges: Array.isArray(row.badges) ? row.badges : ['🌱 Welcome Learner'],
-    currentLevel: row.learning_level || 'beginner',
-    createdAt: row.created_at || new Date().toISOString(),
-    lastActiveAt: row.last_active_at || new Date().toISOString(),
+    solvedPractice: Array.isArray(r.solved_practice) ? (r.solved_practice as string[]) : [],
+    completedPatterns: Array.isArray(r.completed_patterns) ? (r.completed_patterns as string[]) : [],
+    playgroundRunsCount: typeof r.playground_runs_count === 'number' ? r.playground_runs_count : 0,
+    aiVisualsCount: typeof r.ai_visuals_count === 'number' ? r.ai_visuals_count : 0,
+    badges: Array.isArray(r.badges) ? (r.badges as string[]) : ['🌱 Welcome Learner'],
+    currentLevel: (r.learning_level as Level) || 'beginner',
+    createdAt: typeof r.created_at === 'string' ? r.created_at : new Date().toISOString(),
+    lastActiveAt: typeof r.last_active_at === 'string' ? r.last_active_at : new Date().toISOString(),
   };
 }
 
@@ -195,16 +198,17 @@ export async function signInWithEmailPassword(
           email: cleanEmail,
           password,
         });
-      } catch (e) {
+      } catch {
         // Silently catch network or 400 response from Supabase auth token REST endpoint
       }
     }
 
     const profile = extractProfile(data[0]);
     return { success: true, profile };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('signInWithEmailPassword error:', err);
-    return { success: false, error: err?.message || 'Login failed. Please check your credentials.' };
+    const message = err instanceof Error ? err.message : undefined;
+    return { success: false, error: message || 'Login failed. Please check your credentials.' };
   }
 }
 
@@ -250,7 +254,7 @@ export async function adminSignInWithEmailPassword(
           email: cleanEmail,
           password,
         });
-      } catch (e) {
+      } catch {
         // Silently handle auth exception
       }
     }
@@ -259,11 +263,12 @@ export async function adminSignInWithEmailPassword(
     adminProfile.role = 'admin';
 
     return { success: true, profile: adminProfile };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('adminSignInWithEmailPassword error:', err);
+    const message = err instanceof Error ? err.message : undefined;
     return {
       success: false,
-      error: err?.message || 'Admin login failed. Please verify admin credentials.',
+      error: message || 'Admin login failed. Please verify admin credentials.',
     };
   }
 }
@@ -313,7 +318,7 @@ export async function signUpWithEmailPassword(
             data: { full_name: cleanName },
           },
         });
-      } catch (e) {
+      } catch {
         // Silently catch auth signup exceptions
       }
     }
@@ -370,9 +375,10 @@ export async function signUpWithEmailPassword(
     };
 
     return { success: true, profile: newProfile };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('signUpWithEmailPassword error:', err);
-    return { success: false, error: err?.message || 'Account creation failed. Please try again.' };
+    const message = err instanceof Error ? err.message : undefined;
+    return { success: false, error: message || 'Account creation failed. Please try again.' };
   }
 }
 
@@ -398,7 +404,7 @@ export async function resetPasswordForEmail(email: string): Promise<AuthResult> 
       success: true,
       message: `Password reset link sent to ${cleanEmail}. Please check your Gmail inbox to reset your password.`,
     };
-  } catch (err: any) {
+  } catch {
     return {
       success: true,
       message: `Password reset link sent to ${cleanEmail}. Please check your Gmail inbox.`,
@@ -432,7 +438,7 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     }
 
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('signInWithGoogle error:', err);
     return {
       success: false,

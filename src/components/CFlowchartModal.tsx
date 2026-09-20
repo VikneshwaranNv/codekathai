@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { X, GitCommit, ChevronRight, ChevronLeft, Copy, Check, Sparkles, Workflow } from 'lucide-react';
+import { X, GitCommit, ChevronRight, ChevronLeft, Copy, Check, Sparkles } from 'lucide-react';
 import { parseCToFlowchart, type FlowchartNode, type FlowchartNodeType } from '@/lib/cFlowchartParser';
 import { playButtonClickSound } from '@/lib/soundEffects';
 

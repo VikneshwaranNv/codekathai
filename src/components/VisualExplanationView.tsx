@@ -4,14 +4,11 @@ import {
   ArrowRight,
   Play,
   Pause,
-  RotateCcw,
-  CheckCircle2,
   GitFork,
   Box,
   Layers,
   HelpCircle,
   BookOpen,
-  ArrowDown,
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react';
@@ -35,7 +32,7 @@ export default function VisualExplanationView({
 
   // Auto-play timer
   useEffect(() => {
-    let timer: any = null;
+    let timer: ReturnType<typeof setInterval> | null = null;
     if (isPlaying && data.steps.length > 0) {
       timer = setInterval(() => {
         setCurrentStepIdx((prev) => {

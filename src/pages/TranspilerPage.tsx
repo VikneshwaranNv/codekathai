@@ -97,7 +97,7 @@ const MATRIX_PRESETS: MatrixPreset[] = [
   },
 ];
 
-export default function TranspilerPage({ onNavigate: _onNavigate }: TranspilerPageProps) {
+export default function TranspilerPage({ onNavigate }: TranspilerPageProps) {
   const [activePreset, setActivePreset] = useState<MatrixPreset>(MATRIX_PRESETS[0]);
   const [cCode, setCCode] = useState<string>(MATRIX_PRESETS[0].cCode);
   const [javaCode, setJavaCode] = useState<string>(MATRIX_PRESETS[0].javaCode);
@@ -156,6 +156,9 @@ export default function TranspilerPage({ onNavigate: _onNavigate }: TranspilerPa
 
   return (
     <div className="container-page py-6 sm:py-10 text-ink-950 dark:text-white">
+      <button onClick={() => onNavigate('dashboard')} className="btn-ghost mb-4 text-xs font-bold cursor-pointer">
+        ← Back to Courses
+      </button>
       {/* Page Header */}
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-bamboo-200 dark:border-bamboo-800/80 pb-6">
         <div>

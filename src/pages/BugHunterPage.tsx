@@ -1,33 +1,19 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import {
   ArrowLeft,
   Bug,
-  Trophy,
-  Sparkles,
-  Lock,
-  CheckCircle2,
   Play,
   RotateCcw,
   Lightbulb,
   Bot,
-  AlertCircle,
-  Flame,
-  Award,
-  ChevronRight,
   Code2,
-  Terminal,
-  ShieldCheck,
-  Zap,
-  Check,
   X,
   Swords,
   Heart,
-  Skull,
   Volume2,
   VolumeX,
 } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
-import { useAuth } from '@/lib/auth';
 import { useProgress } from '@/lib/useProgress';
 import { BUG_HUNTER_LEVELS, type BugLevel } from '@/data/bugHunterData';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
@@ -50,7 +36,6 @@ interface BugHunterPageProps {
 }
 
 export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
-  const { profile } = useAuth();
   const progress = useProgress();
   const { language, setLanguage } = useLanguage();
 
@@ -69,7 +54,7 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
   // Hint & AI Tutor Modal State
   const [hintIndex, setHintIndex] = useState<number>(-1);
   const [showAiModal, setShowAiModal] = useState<boolean>(false);
-  const [aiMode, setAiMode] = useState<'hint' | 'explain' | 'story' | 'error'>('hint');
+  const [, setAiMode] = useState<'hint' | 'explain' | 'story' | 'error'>('hint');
   const [aiResponseText, setAiResponseText] = useState<string>('');
 
   // Victory Celebration Modal State
@@ -170,9 +155,10 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
           ...combatLog,
         ]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       playShieldDeflectSound();
-      setCompileError(err?.message || 'Execution error during bug validation.');
+      const message = err instanceof Error ? err.message : 'Execution error during bug validation.';
+      setCompileError(message);
       setAttackStatus('miss');
     } finally {
       setIsCompiling(false);
@@ -430,6 +416,14 @@ export default function BugHunterPage({ onNavigate }: BugHunterPageProps) {
                 >
                   <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
                   {hintIndex >= 0 ? `Hint (${hintIndex + 1}/${activeLevel.hints.length})` : 'Get Hint'}
+                </button>
+
+                <button
+                  onClick={() => handleOpenAiTutor('explain')}
+                  className="btn-secondary py-2 px-3 text-xs font-bold flex items-center gap-1.5 bg-bamboo-50 text-bamboo-800 border-bamboo-200 hover:bg-bamboo-100 dark:bg-bamboo-950/60 dark:text-bamboo-300 dark:border-bamboo-800 rounded-xl"
+                >
+                  <Bot className="h-3.5 w-3.5 text-bamboo-600" />
+                  AI Line Guide
                 </button>
 
                 <button

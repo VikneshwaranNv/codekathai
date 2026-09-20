@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useAuth } from '@/lib/auth';
 import type { ModuleId } from '@/types';
 
@@ -28,10 +28,13 @@ export function useProgress(): ProgressState {
   const { profile, updateProfile } = useAuth();
 
   const completedList = profile?.completedLessons ?? [];
-  const completedMap: Record<string, boolean> = {};
-  for (const id of completedList) {
-    completedMap[id] = true;
-  }
+  const completedMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    for (const id of completedList) {
+      map[id] = true;
+    }
+    return map;
+  }, [completedList]);
 
   const xp = profile?.xp ?? 100;
   const streak = profile?.streak ?? 1;

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Play, RotateCcw, Code2, Bug, FileText } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
-import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
+import CCodeEditor from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
 import CDebuggerPanel from '@/components/CDebuggerPanel';
 import CheatSheetModal from '@/components/CheatSheetModal';
@@ -70,10 +70,8 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  // Flowchart Generator Modal State
-  const [showFlowchartModal, setShowFlowchartModal] = useState<boolean>(false);
-
   // Debugger & Cheat Sheet State
+  const [fontSize] = useState<number>(13);
   const [showDebugger, setShowDebugger] = useState<boolean>(false);
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
   const [showCheatSheet, setShowCheatSheet] = useState<boolean>(false);
@@ -84,18 +82,6 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
   }, [code, language]);
 
   const activeDebugStep = debugSteps[activeStepIndex] || debugSteps[0];
-
-  // IDE Studio Customization State
-  const [theme, setTheme] = useState<IdeTheme>(() => {
-    return (localStorage.getItem('codekathai_ide_theme') as IdeTheme) || 'bamboo';
-  });
-
-  const [fontSize, setFontSize] = useState<number>(13);
-
-  const handleThemeChange = (newTheme: IdeTheme) => {
-    setTheme(newTheme);
-    localStorage.setItem('codekathai_ide_theme', newTheme);
-  };
 
   const handleRun = async (overrideInput?: string) => {
     setIsRunning(true);
@@ -131,6 +117,9 @@ export default function PlaygroundPage({ onNavigate }: PlaygroundPageProps) {
 
   return (
     <div className="container-page py-6 sm:py-10">
+      <button onClick={() => onNavigate('dashboard')} className="btn-ghost mb-4 text-xs font-bold cursor-pointer">
+        ← Back to Courses
+      </button>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <span className="eyebrow">{language === 'java' ? 'Interactive Java Compiler Sandbox' : 'Programiz-like Interactive C Compiler'}</span>

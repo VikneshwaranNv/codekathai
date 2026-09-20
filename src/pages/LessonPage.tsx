@@ -2,7 +2,7 @@ import { ArrowLeft, BookOpen } from 'lucide-react';
 import type { ModuleId, Level } from '@/types';
 import { modules as cModules } from '@/data/course';
 import { javaModules, getJavaLessonForLevel } from '@/data/javaCourse';
-import { allLessons, getLessonForLevel } from '@/data/levelLessons';
+import { getLessonForLevel } from '@/data/levelLessons';
 import LessonViewer from '@/components/LessonViewer';
 import type { Page } from '@/components/Navbar';
 import { useLanguage } from '@/lib/languageContext';

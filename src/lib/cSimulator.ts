@@ -83,7 +83,7 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
   body = body.replace(/\/\/[^\n]*/g, '');
   body = body.replace(/\/\*[\s\S]*?\*\//g, '');
 
-  const variables: Record<string, any> = {};
+  const variables: Record<string, string | number> = {};
   let output = '';
 
   const inputLines = input
@@ -126,7 +126,7 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
     }
   };
 
-  const resolveValue = (val: string): any => {
+  const resolveValue = (val: string): string | number => {
     const trimmedVal = val.trim();
     if (trimmedVal.startsWith('"') && trimmedVal.endsWith('"')) {
       return trimmedVal.slice(1, -1);
@@ -150,7 +150,7 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
     // Declarations: int fact = 1, i = 0;
     const declMatch = stmt.match(/^(int|long|unsigned|float|double|char|short|size_t)\s+(.+)$/);
     if (declMatch) {
-      let rest = declMatch[2].replace(/;$/, '').replace(/^(long|unsigned|int|short)\s+/, '');
+      const rest = declMatch[2].replace(/;$/, '').replace(/^(long|unsigned|int|short)\s+/, '');
       const commaParts = rest.split(',').map((p) => p.trim());
       for (const part of commaParts) {
         if (part.includes('=')) {
@@ -164,8 +164,8 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
     }
 
     // Increment / Decrement: i++, ++i, i--, --i
-    if (stmt.match(/^(\+\+|\-\-)?\w+(\+\+|\-\-)?;?$/)) {
-      const v = stmt.replace(/(\+\+|\-\-|;)/g, '').trim();
+    if (stmt.match(/^(\+\+|--)?\w+(\+\+|--)?;?$/)) {
+      const v = stmt.replace(/(\+\+|--|;)/g, '').trim();
       if (stmt.includes('++')) {
         variables[v] = (variables[v] || 0) + 1;
       } else if (stmt.includes('--')) {
@@ -205,10 +205,10 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
         const lastQuote = rawArgs.lastIndexOf('"');
 
         if (firstQuote !== -1 && lastQuote > firstQuote) {
-          let format = rawArgs.slice(firstQuote + 1, lastQuote);
+          const format = rawArgs.slice(firstQuote + 1, lastQuote);
           const restStr = rawArgs.slice(lastQuote + 1).replace(/^,\s*/, '').trim();
 
-          const argValues: any[] = [];
+          const argValues: (string | number | boolean)[] = [];
           if (restStr) {
             const parts = restStr.split(',').map((p) => p.trim());
             for (const p of parts) {
@@ -240,67 +240,64 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
   };
 
   const executeBlock = (blockText: string) => {
-    let text = blockText.trim();
+    const text = blockText.trim();
     let i = 0;
+
+    const findClosingBrace = (str: string, startIndex: number): number => {
+      let braceCount = 0;
+      for (let j = startIndex; j < str.length; j++) {
+        if (str[j] === '{') braceCount++;
+        else if (str[j] === '}') {
+          braceCount--;
+          if (braceCount === 0) return j;
+        }
+      }
+      return -1;
+    };
 
     while (i < text.length) {
       const ifMatch = text.slice(i).match(/^if\s*\(([\s\S]*?)\)\s*\{/);
       if (ifMatch) {
         const fullIfHead = ifMatch[0];
         const condExpr = ifMatch[1];
-        const startIdx = i + fullIfHead.length;
-        let braceCount = 1;
-        let endIdx = startIdx;
-        while (endIdx < text.length && braceCount > 0) {
-          if (text[endIdx] === '{') braceCount++;
-          if (text[endIdx] === '}') braceCount--;
-          endIdx++;
-        }
-        const ifBody = text.slice(startIdx, endIdx - 1);
+        const blockEnd = findClosingBrace(text, i + fullIfHead.length - 1);
+        const ifBody = text.slice(i + fullIfHead.length, blockEnd);
+
         let elseBody = '';
-        const remainder = text.slice(endIdx).trim();
-        let elseLength = 0;
-        if (remainder.startsWith('else')) {
-          const elseMatch = remainder.match(/^else\s*\{/);
+        let endIdx = blockEnd + 1;
+
+        const restText = text.slice(blockEnd + 1).trimStart();
+        if (restText.startsWith('else')) {
+          const elseMatch = restText.match(/^else\s*\{/);
           if (elseMatch) {
-            const elseStartIdx = endIdx + text.slice(endIdx).indexOf('{') + 1;
-            let elseBraceCount = 1;
-            let elseEndIdx = elseStartIdx;
-            while (elseEndIdx < text.length && elseBraceCount > 0) {
-              if (text[elseEndIdx] === '{') elseBraceCount++;
-              if (text[elseEndIdx] === '}') elseBraceCount--;
-              elseEndIdx++;
-            }
-            elseBody = text.slice(elseStartIdx, elseEndIdx - 1);
-            elseLength = elseEndIdx - endIdx;
+            const elseStart = text.indexOf('{', blockEnd + 1);
+            const elseEnd = findClosingBrace(text, elseStart);
+            elseBody = text.slice(elseStart + 1, elseEnd);
+            endIdx = elseEnd + 1;
           }
         }
-        const condVal = evalExpr(condExpr);
-        if (condVal) {
+
+        if (evalExpr(condExpr)) {
           executeBlock(ifBody);
         } else if (elseBody) {
           executeBlock(elseBody);
         }
-        i = endIdx + elseLength;
+
+        i = endIdx;
         continue;
       }
 
-      const forMatch = text.slice(i).match(/^for\s*\(([^;]*);\s*([^;]*);\s*([^)]*)\)\s*\{/);
+      const forMatch = text.slice(i).match(/^for\s*\(([^;]*);([^;]*);([^)]*)\)\s*\{/);
       if (forMatch) {
-        const fullForHead = forMatch[0];
-        const init = forMatch[1];
-        const cond = forMatch[2];
-        const incr = forMatch[3];
-        const startIdx = i + fullForHead.length;
-        let braceCount = 1;
-        let endIdx = startIdx;
-        while (endIdx < text.length && braceCount > 0) {
-          if (text[endIdx] === '{') braceCount++;
-          if (text[endIdx] === '}') braceCount--;
-          endIdx++;
-        }
-        const loopBody = text.slice(startIdx, endIdx - 1);
-        executeStatement(init);
+        const init = forMatch[1].trim();
+        const cond = forMatch[2].trim();
+        const incr = forMatch[3].trim();
+        const blockStart = text.indexOf('{', i);
+        const blockEnd = findClosingBrace(text, blockStart);
+        const loopBody = text.slice(blockStart + 1, blockEnd);
+        const endIdx = blockEnd + 1;
+
+        if (init) executeStatement(init);
         let safety = 1000;
         while (evalExpr(cond) && safety-- > 0) {
           executeBlock(loopBody);
@@ -310,8 +307,8 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
         continue;
       }
 
-      let nextSemi = text.indexOf(';', i);
-      let nextBrace = text.indexOf('{', i);
+      const nextSemi = text.indexOf(';', i);
+      const nextBrace = text.indexOf('{', i);
 
       if (nextSemi !== -1 && (nextBrace === -1 || nextSemi < nextBrace)) {
         const stmt = text.slice(i, nextSemi + 1);
@@ -326,8 +323,9 @@ export function simulateCProgram(code: string, input: string = ''): RunResult {
 
   try {
     executeBlock(body);
-  } catch (err: any) {
-    return { output, error: `Execution error: ${err?.message || 'Syntax error'}`, passed: false };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Syntax error';
+    return { output, error: `Execution error: ${message}`, passed: false };
   }
 
   // Format local simulation output with user input prompt

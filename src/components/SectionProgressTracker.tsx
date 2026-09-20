@@ -1,4 +1,4 @@
-import { BookOpen, Target, Grid, Code2, Sparkles, Trophy, Award, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Target, Grid, Code2, Sparkles, Trophy } from 'lucide-react';
 import type { ProgressState } from '@/lib/useProgress';
 
 interface SectionProgressTrackerProps {

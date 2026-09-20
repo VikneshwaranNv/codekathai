@@ -1,4 +1,4 @@
-import { GraduationCap, Sprout, Flame, Crown, ArrowRight, Check } from 'lucide-react';
+import { Sprout, Flame, Crown, ArrowRight, Check } from 'lucide-react';
 import type { Level } from '@/types';
 import type { Page } from '@/components/Navbar';
 import { useAuth } from '@/lib/auth';

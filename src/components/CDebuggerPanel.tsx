@@ -21,7 +21,7 @@ export default function CDebuggerPanel({
 
   // Auto-play timer
   useEffect(() => {
-    let timer: any = null;
+    let timer: ReturnType<typeof setInterval> | null = null;
     if (isPlaying) {
       timer = setInterval(() => {
         if (activeStepIndex >= totalSteps - 1) {

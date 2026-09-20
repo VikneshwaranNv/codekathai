@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   Play,
   RotateCcw,
-  Sparkles,
   CheckCircle2,
   XCircle,
   Lightbulb,

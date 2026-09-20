@@ -1,36 +1,27 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Users,
-  CheckCircle2,
-  Sparkles,
   Search,
   Filter,
   ArrowUpDown,
   Eye,
   LogOut,
   RefreshCw,
-  Award,
   BookOpen,
-  Calendar,
-  Flame,
   ShieldCheck,
   ShieldAlert,
   Code2,
-  Terminal,
   Activity,
-  Layers,
   X,
-  Clock,
-  Sprout,
-  Crown,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import type { StudentAdminRecord, AdminAnalytics, UserRole, Level } from '@/types';
+import type { Page } from '@/components/Navbar';
 import { allLessons } from '@/data/levelLessons';
 
 interface AdminDashboardPageProps {
-  onNavigate: (page: any) => void;
+  onNavigate: (page: Page) => void;
 }
 
 export default function AdminDashboardPage({ onNavigate }: AdminDashboardPageProps) {
@@ -54,7 +45,7 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
   const advancedTotal = useMemo(() => allLessons.filter((l) => l.level === 'advanced').length, []);
   const totalAppLessons = useMemo(() => allLessons.length, []);
 
-  const fetchStudentData = async () => {
+  const fetchStudentData = useCallback(async () => {
     setRefreshing(true);
     setError('');
     try {
@@ -146,18 +137,18 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
 
         setStudents(records);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load student profiles:', err);
       setError('Failed to connect to database.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [beginnerTotal, intermediateTotal, totalAppLessons]);
 
   useEffect(() => {
     fetchStudentData();
-  }, []);
+  }, [fetchStudentData]);
 
   // Filtered & Sorted Student Directory
   const filteredStudents = useMemo(() => {
@@ -387,7 +378,7 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
                 <Filter className="h-4 w-4 text-bamboo-600" />
                 <select
                   value={levelFilter}
-                  onChange={(e) => setLevelFilter(e.target.value as any)}
+                  onChange={(e) => setLevelFilter(e.target.value as Level | 'all')}
                   className="rounded-xl border border-bamboo-200 bg-white py-2 px-3 text-xs font-semibold text-ink-900 focus:border-bamboo-600 focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white cursor-pointer"
                 >
                   <option value="all">All Levels ({students.length})</option>
@@ -402,7 +393,7 @@ export default function AdminDashboardPage({ onNavigate }: AdminDashboardPagePro
                 <ArrowUpDown className="h-4 w-4 text-bamboo-600" />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as 'progress' | 'joined' | 'xp' | 'name')}
                   className="rounded-xl border border-bamboo-200 bg-white py-2 px-3 text-xs font-semibold text-ink-900 focus:border-bamboo-600 focus:outline-none dark:border-bamboo-800 dark:bg-ink-950 dark:text-white cursor-pointer"
                 >
                   <option value="progress">Highest Progress %</option>

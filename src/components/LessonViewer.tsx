@@ -10,16 +10,14 @@ import {
   XCircle,
   ArrowLeft,
   ArrowRight,
-  Sparkles,
   Trophy,
   Zap,
   Clock,
-  RotateCcw,
   Check,
   Play,
   FileText,
 } from 'lucide-react';
-import type { Lesson, Level, Module } from '@/types';
+import type { Lesson, Level, Module, StoryScene } from '@/types';
 import CodeBlock from '@/components/CodeBlock';
 import StoryCard from '@/components/StoryCard';
 import SceneVisual from '@/components/SceneVisual';
@@ -62,15 +60,14 @@ export default function LessonViewer({
   onNavigateModule,
   onSelectLesson,
   onCompleteLesson,
-  isCompleted,
 }: LessonViewerProps) {
   const { language, setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState<Tab>('concept');
-  const [sceneIndex, setSceneIndex] = useState(0);
+  const [, setSceneIndex] = useState(0);
   const [practicePicked, setPracticePicked] = useState<number | null>(null);
   const [challengeCode, setChallengeCode] = useState(lesson.challenge.starter);
   const [challengePassed, setChallengePassed] = useState<boolean | null>(null);
-  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [, setShowCompletionModal] = useState(false);
 
   // Default starter code based on language
   const defaultLessonCode = language === 'java'
@@ -279,7 +276,7 @@ export default function LessonViewer({
                   {lesson.visualExplanation.description}
                 </p>
                 <div className="mt-4 flex justify-center">
-                  <SceneVisual visual={lesson.visualExplanation.diagramType as any} />
+                  <SceneVisual visual={(lesson.visualExplanation.diagramType as StoryScene['visual']) || 'generic'} />
                 </div>
               </div>
             </div>

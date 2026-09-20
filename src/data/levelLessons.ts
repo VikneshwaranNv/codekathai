@@ -1241,7 +1241,7 @@ function getTopicSnippet(lessonId: string, topicTitle: string, topicTamil: strin
 
   return {
     ...res,
-    parts: res.parts as any,
+    parts: res.parts as Lesson['code']['parts'],
     explanation: [{ token: topicTitle, meaning: topicTamil }],
   };
 }
@@ -1279,7 +1279,7 @@ export function getLessonForLevel(lessonId: string, level: 'beginner' | 'interme
 
     base = {
       id: lessonId,
-      moduleId: foundModuleId as any,
+      moduleId: foundModuleId as Lesson['moduleId'],
       level: 'beginner',
       title: topicTitle,
       tamilTitle: topicTamil,
@@ -1295,7 +1295,7 @@ export function getLessonForLevel(lessonId: string, level: 'beginner' | 'interme
       visualExplanation: {
         title: `${topicTitle} Visual Diagram`,
         description: `Visual model for ${topicTitle}.`,
-        diagramType: topicDiagram as any,
+        diagramType: topicDiagram as Lesson['visualExplanation']['diagramType'],
       },
       code: topicCodeInfo,
       outputExplanation: `${topicTitle} Output என திரையில் அச்சிடப்படும்.`,
@@ -1304,14 +1304,14 @@ export function getLessonForLevel(lessonId: string, level: 'beginner' | 'interme
           id: 1,
           speaker: 'kavi',
           emotion: 'curious',
-          visual: topicDiagram as any,
+          visual: topicDiagram as Lesson['story'][0]['visual'],
           dialogue: `Buddy, ${topicTamil} பற்றி எனக்கு விளக்குங்கள்!`,
         },
         {
           id: 2,
           speaker: 'buddy',
           emotion: 'explain',
-          visual: topicDiagram as any,
+          visual: topicDiagram as Lesson['story'][0]['visual'],
           dialogue: `${topicTitle} என்பது C மொழியில் மிக முக்கியமான கருத்தாகும்!`,
         },
       ],

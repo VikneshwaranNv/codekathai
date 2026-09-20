@@ -1,5 +1,3 @@
-import type { UserProfile, Level, ModuleId } from '@/types';
-
 export interface LearnerStats {
   xp: number;
   streak: number;

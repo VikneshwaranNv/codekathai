@@ -1,10 +1,5 @@
 import {
-  BookOpen,
   ArrowRight,
-  Sparkles,
-  Zap,
-  CheckCircle2,
-  Trophy,
   Flame,
   Sprout,
   Crown,

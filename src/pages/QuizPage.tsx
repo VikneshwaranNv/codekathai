@@ -1,17 +1,12 @@
 import { useState } from 'react';
 import {
   Trophy,
-  Zap,
   RotateCcw,
   CheckCircle2,
   XCircle,
   ArrowRight,
   Award,
   BookOpen,
-  Filter,
-  Code,
-  Sparkles,
-  Check,
   Send,
 } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
@@ -266,7 +261,6 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
   }
 
   const isCorrect = submitted && selectedOption === currentQ.answerIndex;
-  const isIncorrect = submitted && selectedOption !== currentQ.answerIndex;
 
   return (
     <div className="container-page py-6 sm:py-10">
@@ -292,7 +286,7 @@ export default function QuizPage({ onNavigate }: QuizPageProps) {
             <button
               key={lvl.id}
               onClick={() => {
-                setSelectedLevel(lvl.id as any);
+                setSelectedLevel(lvl.id as 'easy' | 'intermediate' | 'advanced');
                 restart();
               }}
               className={`flex-1 rounded-xl py-2.5 px-3 text-xs font-bold transition-all text-center ${

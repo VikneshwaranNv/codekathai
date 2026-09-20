@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
-  PlayCircle,
   RotateCcw,
   CheckCircle2,
   XCircle,
@@ -10,7 +9,6 @@ import {
   Volume2,
   Box,
   Cpu,
-  Code2,
   Trophy,
   Star,
   ChevronRight,
@@ -289,7 +287,6 @@ function Scene1() {
 
 /* ============ SCENE 2: Variable = Box ============ */
 function Scene2() {
-  const highlights = ['Variable', 'data', 'box'];
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center gap-2">

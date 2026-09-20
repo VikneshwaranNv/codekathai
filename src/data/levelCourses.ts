@@ -1,4 +1,4 @@
-import type { Lesson, Module, CodePart, Level } from '@/types';
+import type { CodePart, Level } from '@/types';
 
 const c = (text: string, tone: CodePart['tone'] = 'plain'): CodePart => ({ text, tone });
 
@@ -26,7 +26,7 @@ export interface LevelLesson {
   tamilExplanation: string;
   realLife: { title: string; body: string };
   code: { parts: CodePart[]; explanation: { token: string; meaning: string }[] };
-  story: any[];
+  story: Record<string, unknown>[];
   practice: { question: string; options: string[]; answerIndex: number; explanation: string };
   challenge: { title: string; prompt: string; starter: string; hint: string; expected: string };
 }

@@ -29,7 +29,7 @@ function MainApp() {
   const { user, profile, setLevel, isAdmin } = useAuth();
   const [page, setPage] = useState<Page>(() => {
     if (isAdmin) return 'admin';
-    if (!user) return 'login' as any;
+    if (!user) return 'login';
     return 'home';
   });
 
@@ -41,7 +41,7 @@ function MainApp() {
 
   // Redirect upon login or routing guard
   useEffect(() => {
-    if (user && (page === ('login' as any) || !page)) {
+    if (user && (page === 'login' || !page)) {
       setPage(isAdmin ? 'admin' : 'home');
     } else if (!isAdmin && page === 'admin') {
       setPage('home');

@@ -6,7 +6,7 @@ export interface JavaRunResult {
   error: string | null;
   passed: boolean;
   requiresInput?: boolean;
-  variables?: Record<string, any>;
+  variables?: Record<string, unknown>;
 }
 
 /**
@@ -89,7 +89,7 @@ export function simulateJavaProgram(code: string, input: string = ''): JavaRunRe
   body = body.replace(/\/\/[^\n]*/g, '');
   body = body.replace(/\/\*[\s\S]*?\*\//g, '');
 
-  const variables: Record<string, any> = {};
+  const variables: Record<string, unknown> = {};
   let output = '';
 
   const inputLines = input
@@ -114,8 +114,8 @@ export function simulateJavaProgram(code: string, input: string = ''): JavaRunRe
       // 1. Variable Declarations (int, double, float, boolean, String, char)
       const varDeclMatch = line.match(/^(int|double|float|boolean|String|char|var)\s+([a-zA-Z_]\w*)\s*=\s*(.+);$/);
       if (varDeclMatch) {
-        const [, type, name, expr] = varDeclMatch;
-        let val: any = expr.trim();
+        const [, , name, expr] = varDeclMatch;
+        let val: unknown = expr.trim();
 
         if (expr.includes('scanner.nextInt()')) {
           val = parseInt(readNextInput(), 10) || 0;
@@ -231,10 +231,11 @@ export function simulateJavaProgram(code: string, input: string = ''): JavaRunRe
       passed: true,
       variables,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : undefined;
     return {
       output: output.trim(),
-      error: `Java Simulation Error: ${err.message || 'Check your Java syntax and braces.'}`,
+      error: `Java Simulation Error: ${message || 'Check your Java syntax and braces.'}`,
       passed: false,
     };
   }
@@ -243,7 +244,7 @@ export function simulateJavaProgram(code: string, input: string = ''): JavaRunRe
 /**
  * Helper to evaluate expression string against local variables
  */
-function evaluateJavaExpr(expr: string, vars: Record<string, any>): any {
+function evaluateJavaExpr(expr: string, vars: Record<string, unknown>): unknown {
   expr = expr.trim();
   if (expr.startsWith('"') && expr.endsWith('"')) return expr.slice(1, -1);
   if (expr.startsWith("'") && expr.endsWith("'")) return expr.slice(1, -1);
@@ -274,7 +275,7 @@ function evaluateJavaExpr(expr: string, vars: Record<string, any>): any {
 /**
  * Helper to evaluate System.out.println expressions
  */
-function evaluatePrintExpr(expr: string, vars: Record<string, any>): string {
+function evaluatePrintExpr(expr: string, vars: Record<string, unknown>): string {
   if (!expr) return '';
   const parts = expr.split('+').map((p) => p.trim());
   return parts
@@ -294,7 +295,7 @@ function evaluatePrintExpr(expr: string, vars: Record<string, any>): string {
 /**
  * Helper to evaluate boolean conditions for if/else
  */
-function evaluateJavaCondition(condStr: string, vars: Record<string, any>): boolean {
+function evaluateJavaCondition(condStr: string, vars: Record<string, unknown>): boolean {
   if (condStr.includes('>=')) {
     const [left, right] = condStr.split('>=').map((s) => Number(evaluateJavaExpr(s, vars)));
     return left >= right;

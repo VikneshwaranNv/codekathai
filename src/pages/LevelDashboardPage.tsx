@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import type { ProgressState } from '@/lib/useProgress';

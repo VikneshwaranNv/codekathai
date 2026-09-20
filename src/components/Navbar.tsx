@@ -15,7 +15,6 @@ import {
   Workflow,
 } from 'lucide-react';
 import { useState } from 'react';
-import ThemeToggle from '@/components/ThemeToggle';
 import { useAuth } from '@/lib/auth';
 
 import { useLanguage } from '@/lib/languageContext';
@@ -35,7 +34,8 @@ export type Page =
   | 'patterns'
   | 'tutor'
   | 'bughunter'
-  | 'admin';
+  | 'admin'
+  | 'login';
 
 interface NavbarProps {
   current: Page;
@@ -116,7 +116,6 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
           {links.map((l) => {
             const Icon = l.icon;
             const active = current === l.id || (l.id === 'dashboard' && current === 'lesson');
-            const isAdminBtn = l.id === 'admin';
 
             return (
               <button

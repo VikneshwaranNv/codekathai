@@ -208,6 +208,7 @@ export default function AITutorPage({ onNavigate }: AITutorPageProps) {
                   rows={13}
                   language={language}
                   onLanguageChange={handleLanguageChange}
+                  highlightedStepLineIndex={highlightedLineIdx}
                   placeholder={language === 'java' ? '// Paste Java code here...' : '// Paste C code here...'}
                 />
               </div>

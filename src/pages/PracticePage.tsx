@@ -1,4 +1,4 @@
-import { ArrowLeft, Lightbulb, CheckCircle2, XCircle, Code2, Eye, Bug, FileCode, Star, Send, Award, Play } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Code2, Eye, Bug, FileCode, Star, Send, Award, Play } from 'lucide-react';
 import { useState } from 'react';
 import { practiceProblems, type PracticeProblem, type Difficulty, type ProblemType } from '@/data/practice';
 import { javaPracticeProblems } from '@/data/javaPractice';
@@ -43,11 +43,6 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
   const [active, setActive] = useState<PracticeProblem | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [showHints, setShowHints] = useState(false);
-  const [hintIdx, setHintIdx] = useState(0);
-  const [showSolution, setShowSolution] = useState(false);
-  const [debugInput, setDebugInput] = useState('');
-  const [debugResult, setDebugResult] = useState<'idle' | 'correct' | 'wrong'>('idle');
 
   // Compiler state for practice problems
   const [userCode, setUserCode] = useState('');
@@ -71,11 +66,6 @@ export default function PracticePage({ onNavigate }: PracticePageProps) {
     setActive(p);
     setPicked(null);
     setSubmitted(false);
-    setShowHints(false);
-    setHintIdx(0);
-    setShowSolution(false);
-    setDebugInput(p.buggyCode ?? '');
-    setDebugResult('idle');
     setUserCode(p.code || p.buggyCode || p.solution || defaultStarterCode);
     setProgramInput('9');
     setCompilerOutput('');

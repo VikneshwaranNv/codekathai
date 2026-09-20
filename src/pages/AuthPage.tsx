@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
   BookOpen,
-  Sparkles,
   User,
   Mail,
   Lock,
@@ -52,7 +51,7 @@ export default function AuthPage({ onNavigate }: AuthPageProps = {}) {
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    const hasSymbol = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
 
     const validCount = [minLength, hasUppercase, hasLowercase, hasNumber, hasSymbol].filter(Boolean).length;
     return { minLength, hasUppercase, hasLowercase, hasNumber, hasSymbol, validCount };
@@ -141,8 +140,9 @@ export default function AuthPage({ onNavigate }: AuthPageProps = {}) {
           );
         }
       }
-    } catch (err: any) {
-      setError(err?.message || 'An unexpected error occurred. Please try again.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.';
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -150,6 +150,14 @@ export default function AuthPage({ onNavigate }: AuthPageProps = {}) {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-stone-100 p-4 sm:p-6 dark:bg-ink-950 font-sans relative">
+      {onNavigate && (
+        <button
+          onClick={() => onNavigate('dashboard')}
+          className="absolute top-4 left-4 btn-ghost text-xs font-bold"
+        >
+          ← Back
+        </button>
+      )}
       
       {/* ================= CLEAN CENTERED AUTHENTICATION CONTAINER ================= */}
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-bamboo-200/80 bg-white p-6 sm:p-8 shadow-2xl dark:border-bamboo-900/60 dark:bg-ink-900">

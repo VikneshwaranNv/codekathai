@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Pause, Play } from 'lucide-react';
-import { speakTamilStory, stopTamilStory, isSpeechPlaying } from '@/lib/speechUtils';
+import { Volume2, Pause } from 'lucide-react';
+import { speakTamilStory, stopTamilStory } from '@/lib/speechUtils';
 
 interface AudioPlayerButtonProps {
   text: string;

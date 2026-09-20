@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Sparkles, Play, RotateCcw, Code2, Workflow, Copy, Check, ChevronRight, ChevronLeft, Sliders, Zap } from 'lucide-react';
+import { Sparkles, RotateCcw, Code2, Workflow, Copy, Check, ChevronRight, ChevronLeft, Zap } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
 import { compileAndRunCProgram } from '@/lib/cSimulator';
-import CCodeEditor, { type IdeTheme } from '@/components/CCodeEditor';
+import CCodeEditor from '@/components/CCodeEditor';
 import InteractiveTerminal from '@/components/InteractiveTerminal';
 import { type FlowchartNode, type FlowchartNodeType } from '@/lib/cFlowchartParser';
 import { playButtonClickSound } from '@/lib/soundEffects';
@@ -57,13 +57,7 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
   // Selected Node Index for Step-by-Step Walkthrough
   const [selectedNodeIndex, setSelectedNodeIndex] = useState<number>(0);
   const [copied, setCopied] = useState<boolean>(false);
-
-  // IDE Customization State
-  const [theme, setTheme] = useState<IdeTheme>(() => {
-    return (localStorage.getItem('codekathai_ide_theme') as IdeTheme) || 'bamboo';
-  });
-
-  const [fontSize, setFontSize] = useState<number>(13);
+  const [fontSize] = useState<number>(13);
 
   // Parse active code into Flowchart AST Graph
   const graph = useMemo(() => {
@@ -71,11 +65,6 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
   }, [activeCodeForFlowchart, code, language]);
 
   const activeNode: FlowchartNode | undefined = graph.nodes[selectedNodeIndex] || graph.nodes[0];
-
-  const handleThemeChange = (newTheme: IdeTheme) => {
-    setTheme(newTheme);
-    localStorage.setItem('codekathai_ide_theme', newTheme);
-  };
 
   // Trigger Flowchart Generation & Compile Code
   const handleGenerateAndRun = async () => {
@@ -140,6 +129,12 @@ export default function FlowchartPage({ onNavigate }: FlowchartPageProps) {
   return (
     <div className="container-page py-6 sm:py-10 space-y-8">
       {/* PAGE HEADER */}
+      <div>
+        <button onClick={() => onNavigate('dashboard')} className="btn-ghost text-xs font-bold mb-4 cursor-pointer">
+          ← Back to Courses
+        </button>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <span className="eyebrow flex items-center gap-1.5">

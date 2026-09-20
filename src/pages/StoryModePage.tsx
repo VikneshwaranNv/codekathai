@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, PlayCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Page } from '@/components/Navbar';
-import type { ModuleId } from '@/types';
 import { modules } from '@/data/course';
 import { allLessons } from '@/data/levelLessons';
 import StoryCard from '@/components/StoryCard';
@@ -21,6 +20,9 @@ export default function StoryModePage({ onNavigate }: StoryModePageProps) {
 
   return (
     <div className="container-page py-8 sm:py-12">
+      <button onClick={() => onNavigate('dashboard')} className="btn-ghost mb-4 text-xs font-bold cursor-pointer">
+        ← Back to Courses
+      </button>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <span className="eyebrow">Visual Stories Theater 🎭</span>

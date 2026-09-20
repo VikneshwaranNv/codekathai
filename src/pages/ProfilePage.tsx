@@ -1,4 +1,4 @@
-import { Trophy, Award, Flame, Zap, GraduationCap, CheckCircle2 } from 'lucide-react';
+import { Trophy, Flame, Zap, GraduationCap, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import type { ProgressState } from '@/lib/useProgress';
 import type { Page } from '@/components/Navbar';

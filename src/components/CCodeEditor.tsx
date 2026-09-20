@@ -109,7 +109,7 @@ function highlightSyntax(code: string): string {
   const lines = code.split('\n');
 
   const highlightedLines = lines.map((line) => {
-    let lineText = line;
+    const lineText = line;
     let resultHtml = '';
     let i = 0;
 
@@ -306,12 +306,12 @@ function highlightSyntax(code: string): string {
 
       // 7. Operators & Punctuation
       const char = lineText[i];
-      if (/[+\-*/%=&|!<>?:;.,(){}\[\]]/.test(char)) {
+      if (/[+\-*/%=&|!<>?:;.,(){}[\]]/.test(char)) {
         let opClass = 'text-gray-300';
         if (/[+\-*/%=<>&|!]/.test(char)) {
           // Operators -> Rose Red
           opClass = 'text-rose-400 font-bold';
-        } else if (/[(){}\[\]]/.test(char)) {
+        } else if (/[(){}[\]]/.test(char)) {
           // Brackets -> Warm Yellow
           opClass = 'text-yellow-300 font-bold';
         } else if (/[;,.]/.test(char)) {
@@ -343,7 +343,6 @@ export default function CCodeEditor({
   className = '',
   errorLineIndex = null,
   highlightedStepLineIndex = null,
-  theme = 'matrix',
   fontSize = 12,
   language = 'c',
   onLanguageChange,

@@ -3,8 +3,6 @@
  * Maximum Volume Boost & Crystal Clear Spoken Tamil Delivery.
  */
 
-let currentUtterance: SpeechSynthesisUtterance | null = null;
-
 /**
  * Pre-processes text into pure spoken Tamil script for flawless Tamil voice synthesis.
  */
@@ -37,7 +35,7 @@ export function toPureTamilSpeechText(text: string): string {
     .replace(/\}/g, '')
     .replace(/=/g, 'சமம்')
     .replace(/\+/g, 'கூட்டல்')
-    .replace(/\-/g, 'கழித்தல்')
+    .replace(/-/g, 'கழித்தல்')
     .replace(/\*/g, 'பெருக்கல்')
     .replace(/\//g, 'வகுத்தல்');
 }
@@ -46,7 +44,7 @@ export function speakTamilStory(
   rawText: string,
   speaker: 'kavi' | 'buddy' | 'narrator' = 'narrator',
   onEnd?: () => void,
-  onError?: (err: any) => void
+  onError?: (err: unknown) => void
 ): boolean {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     console.warn('Web Speech API is not supported in this browser.');
@@ -101,16 +99,13 @@ export function speakTamilStory(
     }
 
     utterance.onend = () => {
-      currentUtterance = null;
       if (onEnd) onEnd();
     };
 
     utterance.onerror = (e) => {
-      currentUtterance = null;
       if (onError) onError(e);
     };
 
-    currentUtterance = utterance;
     window.speechSynthesis.speak(utterance);
     return true;
   } catch (err) {
@@ -124,7 +119,6 @@ export function stopTamilStory(): void {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
-  currentUtterance = null;
 }
 
 export function isSpeechPlaying(): boolean {

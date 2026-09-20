@@ -10,7 +10,6 @@ import {
   Upload,
   Sparkles,
   BookOpen,
-  CheckCircle2,
   Heart,
   MessageCircle,
   Gauge,
@@ -138,7 +137,7 @@ export default function ReelsModal({ isOpen, onClose }: ReelsModalProps) {
           });
       }
     }
-  }, [isOpen, currentIndex, currentReel?.src]);
+  }, [isOpen, currentIndex, currentReel?.src, playbackSpeed]);
 
   if (!isOpen) return null;
 

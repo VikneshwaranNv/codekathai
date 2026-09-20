@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { UserProfile, Level, UserRole } from '@/types';
 import { supabase } from '@/lib/supabase';
 
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ? crypto.randomUUID()
           : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0');
 
-      const payload: Record<string, any> = {
+      const payload: Record<string, unknown> = {
         full_name: p.name,
         email: cleanEmail,
         role: p.role || 'student',
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         payload.id = p.id && p.id.includes('-') ? p.id : validUuid;
         await supabase.from('user_profiles').insert([payload]);
       }
-    } catch (err) {
+    } catch {
       // Quietly ignore sync errors
     }
   };
