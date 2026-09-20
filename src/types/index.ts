@@ -70,7 +70,22 @@ export interface StoryScene {
     | 'string-pool'
     | 'scanner-input'
     | 'method-stack'
-    | 'wora';
+    | 'wora'
+    | 'inheritance-intro'
+    | 'single-inheritance'
+    | 'multilevel-inheritance'
+    | 'hierarchical-inheritance'
+    | 'multiple-inheritance'
+    | 'hybrid-inheritance'
+    | 'encapsulation'
+    | 'polymorphism'
+    | 'method-overloading'
+    | 'abstraction'
+    | 'abstract-class'
+    | 'packages'
+    | 'import-package'
+    | 'exception-handling'
+    | 'try-catch';
   dialogue: string;
   code?: CodePart[];
   caption?: string;

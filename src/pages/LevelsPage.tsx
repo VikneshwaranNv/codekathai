@@ -1,4 +1,4 @@
-import { Sprout, Flame, Crown, ArrowRight, Check } from 'lucide-react';
+import { Sprout, ArrowRight, Check } from 'lucide-react';
 import type { Level } from '@/types';
 import type { Page } from '@/components/Navbar';
 import { useAuth } from '@/lib/auth';
@@ -25,76 +25,54 @@ export default function LevelsPage({ onNavigate, onSelectLevel }: LevelsPageProp
   }[] = [
     {
       id: 'beginner',
-      title: '🌱 Beginner Level',
+      title: '🌱 Beginner Level / முதல் படி',
       tamilTitle: 'தொடக்க நிலை',
       icon: Sprout,
-      color: 'border-bamboo-500 text-bamboo-700',
-      bg: 'bg-bamboo-50/60 dark:bg-bamboo-950/30',
-      description: 'Start from scratch — learn fundamentals of C through lunch box, calculator, and everyday stories.',
-      tamilDescription: 'எளிமையான தமிழ் கதைகள் மற்றும் அன்றாட உவமைகள் மூலம் C மொழியின் அடிப்படைகளைக் கற்றுக்கொள்ளுங்கள்.',
-      storyAnalogy: 'Variables = Lunch Box Story, Data Types = Storage Containers',
-    },
-    {
-      id: 'intermediate',
-      title: '🚀 Intermediate Level',
-      tamilTitle: 'நடுநிலை',
-      icon: Flame,
-      color: 'border-golden-500 text-golden-700',
-      bg: 'bg-golden-50/60 dark:bg-golden-950/30',
-      description: 'Build logic & problem solving — student mark lists, shopping invoice logic, and loop iterations.',
-      tamilDescription: 'தர்க்கத்தை வளர்த்து மாணவர் தரவு மற்றும் நிஜ பயன்பாட்டு கதைகள் மூலம் ஆழமாக பயிலுங்கள்.',
-      storyAnalogy: 'Variables = Student Marks Roster, Operators = Shopping Invoice',
-    },
-    {
-      id: 'advanced',
-      title: '🧠 Advanced Level',
-      tamilTitle: 'மேம்பட்ட நிலை',
-      icon: Crown,
-      color: 'border-purple-500 text-purple-700',
-      bg: 'bg-purple-50/60 dark:bg-purple-950/30',
-      description: 'Master memory & architecture — RAM stack frames, static storage, pointer memory maps.',
-      tamilDescription: 'நினைவக கட்டமைப்பு, Stack Frame மற்றும் Pointer Memory Address மேலாண்மை.',
-      storyAnalogy: 'Variables = RAM Stack Frame Memory, Data Types = Byte Memory Representation',
+      color: 'border-bamboo-500 text-bamboo-700 dark:text-bamboo-300',
+      bg: 'bg-gradient-to-r from-bamboo-50 to-emerald-50 dark:from-bamboo-950/40 dark:to-emerald-950/40',
+      description: 'Start your coding journey — master C & Java fundamentals through rich Tamil stories and interactive visual diagrams.',
+      tamilDescription: 'மாறிகள் (Variables), தரவு வகைகள், Control Flow, Methods, Class, Object, Encapsulation, Polymorphism, Abstraction, Interface, Packages & Exception Handling வரை அனைத்தும் எளிய தமிழ் கதைகள் மூலம்!',
+      storyAnalogy: 'Variables = Storage Box, Class & Object = Blueprint, OOP = Real-world Analogies',
     },
   ];
 
   return (
     <div className="container-page py-8 sm:py-12">
       <div className="text-center max-w-2xl mx-auto mb-10">
-        <span className="eyebrow mb-2">Select Your Learning Track</span>
+        <span className="eyebrow mb-2">First Step Learning Journey</span>
         <h1 className="font-display text-3xl font-extrabold text-bamboo-950 dark:text-white sm:text-4xl">
-          Choose Your Level / நிலையைத் தேர்வு செய்க
+          First Step Learning Track / முதல் படி கற்றல் நிலை
         </h1>
         <p className="font-tamil mt-3 text-sm text-ink-600 dark:text-ink-300">
-          ஒவ்வொரு நிலைக்கும் அதற்கே உரிய தனித்துவமான கதைகள் மற்றும் ஆழமான பாடங்கள் வடிவமைக்கப்பட்டுள்ளன.
+          எளிய தமிழ் கதைகள், Visual வரைபடங்கள் மற்றும் நேரடி Compilers கொண்டு C &amp; Java கற்றுக் கொள்ளுங்கள்.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="max-w-2xl mx-auto">
         {levelOptions.map((lvl) => {
           const Icon = lvl.icon;
           const isCurrent = current === lvl.id;
           return (
             <div
               key={lvl.id}
-              className={`card flex flex-col justify-between p-6 border-2 transition-all ${lvl.color} ${lvl.bg} shadow-md`}
+              className={`card flex flex-col justify-between p-8 border-2 transition-all ${lvl.color} ${lvl.bg} shadow-lg`}
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white shadow-soft dark:bg-ink-900">
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-6 w-6 text-bamboo-600" />
                   </span>
                   {isCurrent && (
                     <span className="flex items-center gap-1 rounded-full bg-bamboo-600 px-3 py-1 text-xs font-bold text-white">
-                      <Check className="h-3.5 w-3.5" /> Active Level
+                      <Check className="h-3.5 w-3.5" /> Active Track
                     </span>
                   )}
                 </div>
 
-                <h3 className="font-display text-xl font-bold text-bamboo-950 dark:text-white">
+                <h3 className="font-display text-2xl font-bold text-bamboo-950 dark:text-white">
                   {lvl.title}
                 </h3>
-                <p className="font-tamil text-xs font-bold text-bamboo-700 dark:text-bamboo-300 mt-0.5">
+                <p className="font-tamil text-xs font-bold text-bamboo-700 dark:text-bamboo-300 mt-1">
                   {lvl.tamilTitle}
                 </p>
 
@@ -102,16 +80,16 @@ export default function LevelsPage({ onNavigate, onSelectLevel }: LevelsPageProp
                   {lvl.description}
                 </p>
 
-                <p className="font-tamil mt-2 text-xs text-ink-600 dark:text-ink-400">
+                <p className="font-tamil mt-2 text-xs text-ink-600 dark:text-ink-300 leading-relaxed">
                   {lvl.tamilDescription}
                 </p>
 
-                <div className="mt-4 rounded-xl bg-white/80 p-3 dark:bg-ink-900/80 border border-bamboo-100 dark:border-bamboo-800">
+                <div className="mt-4 rounded-xl bg-white/80 p-4 dark:bg-ink-900/80 border border-bamboo-200 dark:border-bamboo-800">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-bamboo-600">
-                    Key Visual Story:
+                    Covered Core Concepts:
                   </span>
-                  <p className="text-xs font-semibold text-ink-800 dark:text-ink-200">
-                    {lvl.storyAnalogy}
+                  <p className="text-xs font-semibold text-ink-800 dark:text-ink-200 mt-1">
+                    Variables • Data Types • Control Flow • Methods • Class &amp; Objects • Encapsulation • Polymorphism • Abstraction • Interface • Packages • Exception Handling
                   </p>
                 </div>
               </div>
@@ -121,9 +99,9 @@ export default function LevelsPage({ onNavigate, onSelectLevel }: LevelsPageProp
                   onSelectLevel(lvl.id);
                   onNavigate('dashboard');
                 }}
-                className="mt-6 btn-primary w-full py-3 text-xs font-bold flex items-center justify-center gap-2 shadow-soft"
+                className="mt-6 btn-primary w-full py-3.5 text-xs font-bold flex items-center justify-center gap-2 shadow-soft bg-bamboo-600 hover:bg-bamboo-500 text-white"
               >
-                {isCurrent ? 'Continue Learning' : `Switch to ${lvl.title.split(' ')[1]}`}
+                Start Learning Track ➔
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>

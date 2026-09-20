@@ -163,53 +163,30 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
 
       {/* Learning Journey / Levels */}
       <section className="container-page">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <h2 className="font-display text-2xl font-bold text-bamboo-950 dark:text-white sm:text-3xl">
-            Learning Journey / 3 கற்றல் நிலைகள்
+            First Step Learning Journey / முதல் படி கற்றல் நிலை
           </h2>
           <p className="font-tamil mt-2 text-sm text-ink-600 dark:text-ink-400">
-            உங்கள் தகுதிக்கு ஏற்ப நிலை தேர்வு செய்து கற்கலாம்.
+            எளிய தமிழ் கதைகள், Visual மாதிரிகள் மற்றும் நேரடி C &amp; Java Compilers உடன் கற்கலாம்.
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="max-w-2xl mx-auto">
           <div
             onClick={() => onNavigate('levels')}
-            className="group card p-6 border-2 border-bamboo-200 bg-bamboo-50/40 dark:border-bamboo-800 dark:bg-bamboo-950/20 hover:-translate-y-2.5 hover:shadow-2xl hover:border-bamboo-500 hover:bg-bamboo-100/60 transition-all duration-300 cursor-pointer"
+            className="group card p-8 border-2 border-bamboo-500 bg-gradient-to-r from-bamboo-50 to-emerald-50 dark:from-bamboo-950/40 dark:to-emerald-950/40 hover:-translate-y-1.5 hover:shadow-2xl hover:border-emerald-500 transition-all duration-300 cursor-pointer text-center"
           >
-            <span className="eyebrow text-bamboo-700">Level 1</span>
-            <h3 className="font-display text-xl font-bold text-bamboo-950 dark:text-white mt-2 group-hover:text-bamboo-800 transition-colors">
-              🌱 Beginner
+            <span className="eyebrow text-bamboo-700 font-bold">Step 1</span>
+            <h3 className="font-display text-2xl font-bold text-bamboo-950 dark:text-white mt-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
+              🌱 Beginner / ஆரம்ப நிலை
             </h3>
-            <p className="font-tamil mt-2 text-xs text-ink-600 dark:text-ink-300">
-              மிக எளிமையான கதைகள் மற்றும் அன்றாட உவமைகள் மூலம் தொடக்கம்.
+            <p className="font-tamil mt-3 text-sm text-ink-700 dark:text-ink-300 leading-relaxed max-w-xl mx-auto">
+              மாறிகள் (Variables), தரவு வகைகள் (Data Types), Control Flow, Methods, Class &amp; Objects, Encapsulation, Polymorphism, Abstraction, Interface, Packages &amp; Exception Handling என அனைத்து அடிப்படைகளையும் எளிய உவமைகள் மூலம் கற்றுக்கொள்ளுங்கள்!
             </p>
-          </div>
-
-          <div
-            onClick={() => onNavigate('levels')}
-            className="group card p-6 border-2 border-golden-200 bg-golden-50/40 dark:border-golden-800 dark:bg-golden-950/20 hover:-translate-y-2.5 hover:shadow-2xl hover:border-golden-500 hover:bg-golden-100/60 transition-all duration-300 cursor-pointer"
-          >
-            <span className="eyebrow text-golden-700">Level 2</span>
-            <h3 className="font-display text-xl font-bold text-bamboo-950 dark:text-white mt-2 group-hover:text-golden-800 transition-colors">
-              🚀 Intermediate
-            </h3>
-            <p className="font-tamil mt-2 text-xs text-ink-600 dark:text-ink-300">
-              மாணவர் தகவல்கள் மற்றும் நிஜ உலக பயன்பாடுகளுடன் தர்க்கம் வளர்த்தல்.
-            </p>
-          </div>
-
-          <div
-            onClick={() => onNavigate('levels')}
-            className="group card p-6 border-2 border-purple-200 bg-purple-50/40 dark:border-purple-800 dark:bg-purple-950/20 hover:-translate-y-2.5 hover:shadow-2xl hover:border-purple-500 hover:bg-purple-100/60 transition-all duration-300 cursor-pointer"
-          >
-            <span className="eyebrow text-purple-700">Level 3</span>
-            <h3 className="font-display text-xl font-bold text-bamboo-950 dark:text-white mt-2 group-hover:text-purple-800 transition-colors">
-              🧠 Advanced
-            </h3>
-            <p className="font-tamil mt-2 text-xs text-ink-600 dark:text-ink-300">
-              நினைவக அமைப்பு, Pointer Mapping மற்றும் ஆழமான மென்பொருள் நுட்பங்கள்.
-            </p>
+            <button className="btn-primary mt-6 bg-bamboo-600 hover:bg-bamboo-500 text-white px-6 py-2.5 text-xs font-bold shadow-soft">
+              Start Beginner Journey ➔
+            </button>
           </div>
         </div>
       </section>

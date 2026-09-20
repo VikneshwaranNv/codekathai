@@ -202,6 +202,123 @@ function renderVisual(visual: StoryScene['visual'] | string) {
         </svg>
       );
 
+    case 'polymorphism':
+    case 'method-overloading':
+      return (
+        <svg viewBox="0 0 340 180" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="10" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="26" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🎭 Polymorphism: Method Overloading &amp; Overriding
+          </text>
+          <g>
+            <rect x="30" y="48" width="130" height="110" rx="10" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
+            <text x="95" y="68" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">⚡ Overloading</text>
+            <rect x="40" y="80" width="110" height="30" rx="5" fill="#fff" stroke="#479a63" />
+            <text x="95" y="98" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">add(int a, int b)</text>
+            <rect x="40" y="118" width="110" height="30" rx="5" fill="#ffd24a" stroke="#b45309" />
+            <text x="95" y="136" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#78350f">add(double a, double b)</text>
+          </g>
+          <g>
+            <rect x="180" y="48" width="130" height="110" rx="10" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
+            <text x="245" y="68" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1e40af">🔄 Overriding</text>
+            <rect x="190" y="80" width="110" height="30" rx="5" fill="#fff" stroke="#3b82f6" />
+            <text x="245" y="98" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#1e40af">Animal: makeSound()</text>
+            <rect x="190" y="118" width="110" height="30" rx="5" fill="#ecfdf5" stroke="#10b981" />
+            <text x="245" y="136" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#047857">Dog: makeSound() 🐶</text>
+          </g>
+        </svg>
+      );
+
+    case 'abstraction':
+    case 'abstract-class':
+      return (
+        <svg viewBox="0 0 340 180" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="10" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="26" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🧩 Abstraction: Abstract Class &amp; Implementation
+          </text>
+          <g>
+            <rect x="70" y="45" width="200" height="50" rx="8" fill="#fef3c7" stroke="#b45309" strokeWidth="2" strokeDasharray="4 2" />
+            <text x="170" y="65" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#78350f">abstract class Vehicle</text>
+            <text x="170" y="82" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fill="#b45309">abstract void startEngine();</text>
+          </g>
+          <path d="M170 95 L170 118" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#arr-abs)" />
+          <g>
+            <rect x="70" y="120" width="200" height="48" rx="8" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
+            <text x="170" y="138" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#1f412c">class Car extends Vehicle</text>
+            <text x="170" y="154" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#347d4d">@Override void startEngine() 🚗</text>
+          </g>
+          <defs>
+            <marker id="arr-abs" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#3b82f6" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'packages':
+    case 'import-package':
+      return (
+        <svg viewBox="0 0 340 180" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="10" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="26" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            📦 Packages &amp; Namespaces (import com.myapp.models)
+          </text>
+          <rect x="30" y="45" width="280" height="120" rx="12" fill="#e3f4e8" stroke="#479a63" strokeWidth="2" />
+          <g>
+            <rect x="45" y="60" width="110" height="90" rx="8" fill="#fff" stroke="#347d4d" strokeWidth="1.5" />
+            <text x="100" y="78" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1f412c">📁 com.myapp.models</text>
+            <rect x="55" y="90" width="90" height="22" rx="4" fill="#ffd24a" />
+            <text x="100" y="105" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#78350f">Student.class</text>
+            <rect x="55" y="120" width="90" height="22" rx="4" fill="#ffd24a" />
+            <text x="100" y="135" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#78350f">Course.class</text>
+          </g>
+          <path d="M160 105 L180 105" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#arr-pkg)" />
+          <g>
+            <rect x="185" y="60" width="115" height="90" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1.5" />
+            <text x="242" y="78" textAnchor="middle" fontSize="10" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#1e40af">📄 Main.java</text>
+            <text x="242" y="100" textAnchor="middle" fontSize="8" fontFamily="JetBrains Mono" fontWeight="700" fill="#1d4ed8">import com.myapp...</text>
+            <text x="242" y="125" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#1f412c">Student s1;</text>
+          </g>
+          <defs>
+            <marker id="arr-pkg" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#3b82f6" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
+    case 'exception-handling':
+    case 'try-catch':
+      return (
+        <svg viewBox="0 0 340 180" className="h-full w-full max-w-[380px]">
+          <rect x="20" y="10" width="300" height="24" rx="6" fill="#1f412c" />
+          <text x="170" y="26" textAnchor="middle" fontSize="11" fontFamily="Plus Jakarta Sans" fontWeight="800" fill="#ffd24a">
+            🛡️ Exception Handling (try - catch - finally)
+          </text>
+          <g>
+            <rect x="30" y="45" width="280" height="40" rx="8" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
+            <text x="170" y="62" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#78350f">try &#123; int result = 10 / 0; &#125;</text>
+            <text x="170" y="76" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#b45309">⚠️ ArithmeticException Triggered!</text>
+          </g>
+          <path d="M170 85 L170 98" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arr-ex)" />
+          <g>
+            <rect x="30" y="100" width="280" height="35" rx="8" fill="#fee2e2" stroke="#ef4444" strokeWidth="2" />
+            <text x="170" y="117" textAnchor="middle" fontSize="10" fontFamily="JetBrains Mono" fontWeight="800" fill="#991b1b">catch (ArithmeticException e) &#123; ... &#125;</text>
+            <text x="170" y="129" textAnchor="middle" fontSize="8" fontFamily="Plus Jakarta Sans" fill="#dc2626">🛡️ Catches Error Gracefully &amp; Prevents Crash</text>
+          </g>
+          <g>
+            <rect x="30" y="140" width="280" height="30" rx="6" fill="#e3f4e8" stroke="#479a63" strokeWidth="1.5" />
+            <text x="170" y="159" textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fontWeight="700" fill="#1f412c">finally &#123; cleanup(); &#125; (Always Runs)</text>
+          </g>
+          <defs>
+            <marker id="arr-ex" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#ef4444" />
+            </marker>
+          </defs>
+        </svg>
+      );
+
     case 'jvm':
     case 'wora':
       return (
